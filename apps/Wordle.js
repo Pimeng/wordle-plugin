@@ -22,7 +22,7 @@ export class Wordle extends plugin {
           fnc: 'wordle'
         },
         {
-          reg: /^[a-z]+$/,
+          reg: /^(?:#|!)?[a-zA-Z]+$/,
           /** 执行方法 */
           fnc: 'listenMessages',
           log: false
@@ -32,6 +32,22 @@ export class Wordle extends plugin {
     
     // 单词文件路径
     this.wordsPath = './plugins/wordle-plugin/resources/words.txt'
+    
+    // 冷却时间配置（毫秒）
+    this.cooldownTime = 3000 // 3秒冷却时间
+    
+    // 用户冷却状态记录
+    this.userCooldowns = new Map()
+    
+    // 自适应尝试次数配置
+    this.adaptiveAttempts = {
+      3: 4,  // 3字母单词给4次机会
+      4: 5,  // 4字母单词给5次机会
+      5: 6,  // 5字母单词给6次机会（默认）
+      6: 8,  // 6字母单词给8次机会
+      7: 10,  // 7字母单词给10次机会
+      8: 12    // 8字母单词给12次机会
+    }
   }
 
   /**
@@ -50,17 +66,41 @@ export class Wordle extends plugin {
         return false
       }
       
-      const message = e.msg.trim().toLowerCase()
+      // 移除前缀并转换为小写
+      let message = e.msg.trim()
+      const prefixes = ['#','!']
+      let prefix = ''
+      
+      for (const p of prefixes) {
+        if (message.startsWith(p)) {
+          prefix = p
+          message = message.substring(1)
+          break
+        }
+      }
+      
+      message = message.toLowerCase()
+      
+      // 检查冷却时间
+      const cooldownKey = `${groupId}_${userId}`
+      const lastGuess = this.userCooldowns.get(cooldownKey)
+      const now = Date.now()
+      
+      if (lastGuess && (now - lastGuess) < this.cooldownTime) {
+        const remainingTime = Math.ceil((this.cooldownTime - (now - lastGuess)) / 1000)
+        await e.reply(`请等待 ${remainingTime} 秒后再猜测！`, false, {recallMsg: 5})
+        return true
+      }
       
       // 检查群聊中是否有进行中的游戏
       if (global.wordleGames[groupId] && !global.wordleGames[groupId].finished) {
-        // 忽略以#开头的命令消息，让wordle方法处理
-        if (message.startsWith('#')) {
+        // 忽略以#开头的命令消息，让wordle方法处理（除非有前缀）
+        if (!prefix && message.startsWith('wordle')) {
           return false
         }
         
         // 检查是否包含非字母字符
-        if (!/^[a-z]+$/.test(message)) {
+        if (!/^[a-zA-Z.]+$/.test(message)) {
           await e.reply('请输入纯英文单词', false, {recallMsg: 30})
           return true
         }
@@ -74,6 +114,9 @@ export class Wordle extends plugin {
           await e.reply(`请输入${expectedLength}个字母的单词，你输入了${message.length}个字母哦~`, false, {recallMsg: 30})
           return true
         }
+        
+        // 更新冷却时间
+        this.userCooldowns.set(cooldownKey, now)
         
         // 处理猜测
         return await this.processGuess(e, message, groupId)
@@ -157,12 +200,15 @@ export class Wordle extends plugin {
       return true
     }
     
+    // 获取自适应尝试次数
+    const maxAttempts = this.adaptiveAttempts[letterCount] || 6
+    
     // 初始化游戏数据
     global.wordleGames[groupId] = {
       targetWord: targetWord,
       guesses: [],
       attempts: 0,
-      maxAttempts: 6,
+      maxAttempts: maxAttempts,
       finished: false,
       startTime: Date.now(),
       letterCount: letterCount
@@ -173,7 +219,7 @@ export class Wordle extends plugin {
       targetWord: targetWord,
       guesses: [],
       attempts: 0,
-      maxAttempts: 6,
+      maxAttempts: maxAttempts,
       finished: false,
       gameState: 'playing'
     }
@@ -192,13 +238,15 @@ export class Wordle extends plugin {
 `,
         `⬜ = 字母不存在于答案中
 `,
-        `直接发送单词即可猜测！
+        `你有${maxAttempts}次机会，直接发送单词即可猜测！
+`,
+        `也可以使用前缀：#apple !apple
 `,
         img
       ]
       await e.reply(gameStartMessage)
     } else {
-      await e.reply(`🎮 Wordle猜词游戏开始啦！\n请猜测一个${letterCount}字母单词（直接发送单词即可）\n你有${global.wordleGames[groupId].maxAttempts}次机会。\n🟩=字母正确且位置正确，🟨=字母正确但位置错误，⬜=字母不存在`)
+      await e.reply(`🎮 Wordle猜词游戏开始啦！\n请猜测一个${letterCount}字母单词\n你有${maxAttempts}次机会，直接发送单词或使用前缀#*!即可猜测！\n🟩=字母正确且位置正确，🟨=字母正确但位置错误，⬜=字母不存在`)
     }
     
     return true
@@ -222,6 +270,12 @@ export class Wordle extends plugin {
      // 检查猜测次数
      if (game.attempts >= game.maxAttempts) {
        await e.reply('已经用完了所有猜测机会！')
+       return true
+     }
+     
+     // 检查是否已猜过该单词
+     if (game.guesses.includes(guess)) {
+       await e.reply(`你已经猜过 "${guess}" 了！请尝试其他单词。`, false, {recallMsg: 5})
        return true
      }
      
@@ -265,6 +319,10 @@ export class Wordle extends plugin {
          // 备用文本显示
          let feedback = `第${game.attempts}次猜测：${guess}\n`
          feedback += this.formatResult(result)
+         
+         // 添加键盘提示
+         const keyboardHint = this.generateKeyboardHint(game.guesses, game.targetWord)
+         feedback += `\n\n${keyboardHint}`
          
          if (isWin) {
            feedback += `\n🎉 恭喜你猜中了！答案是 ${game.targetWord}`
@@ -404,6 +462,118 @@ export class Wordle extends plugin {
   }
 
   /**
+   * 生成键盘提示
+   * @param guesses 已猜测的单词数组
+   * @param targetWord 目标单词
+   * @returns {string} 键盘提示字符串
+   */
+  generateKeyboardHint(guesses, targetWord) {
+    const alphabet = 'abcdefghijklmnopqrstuvwxyz'
+    const letterStatus = new Map()
+    
+    // 初始化所有字母状态为未知
+    for (const letter of alphabet) {
+      letterStatus.set(letter, 'unknown')
+    }
+    
+    // 根据猜测结果更新字母状态
+    for (const guess of guesses) {
+      const result = this.checkGuess(guess, targetWord)
+      for (let i = 0; i < guess.length; i++) {
+        const letter = guess[i]
+        const status = result[i].status
+        
+        // 更新字母状态，优先级：correct > present > absent > unknown
+        if (status === 'correct') {
+          letterStatus.set(letter, 'correct')
+        } else if (status === 'present' && letterStatus.get(letter) !== 'correct') {
+          letterStatus.set(letter, 'present')
+        } else if (status === 'absent' && letterStatus.get(letter) === 'unknown') {
+          letterStatus.set(letter, 'absent')
+        }
+      }
+    }
+    
+    // 构建键盘提示
+    let hint = '⌨️ 键盘提示：\n'
+    
+    // 第一行 QWERTYUIOP
+    const row1 = 'qwertyuiop'
+    for (const letter of row1) {
+      const status = letterStatus.get(letter)
+      let symbol = letter.toUpperCase()
+      
+      switch (status) {
+        case 'correct':
+          symbol = `🟩${letter.toUpperCase()}`
+          break
+        case 'present':
+          symbol = `🟨${letter.toUpperCase()}`
+          break
+        case 'absent':
+          symbol = `⬛${letter.toUpperCase()}`
+          break
+        case 'unknown':
+          symbol = `⬜${letter.toUpperCase()}`
+          break
+      }
+      hint += symbol + ' '
+    }
+    
+    hint += '\n '
+    
+    // 第二行 ASDFGHJKL
+    const row2 = 'asdfghjkl'
+    for (const letter of row2) {
+      const status = letterStatus.get(letter)
+      let symbol = letter.toUpperCase()
+      
+      switch (status) {
+        case 'correct':
+          symbol = `🟩${letter.toUpperCase()}`
+          break
+        case 'present':
+          symbol = `🟨${letter.toUpperCase()}`
+          break
+        case 'absent':
+          symbol = `⬛${letter.toUpperCase()}`
+          break
+        case 'unknown':
+          symbol = `⬜${letter.toUpperCase()}`
+          break
+      }
+      hint += symbol + ' '
+    }
+    
+    hint += '\n   '
+    
+    // 第三行 ZXCVBNM
+    const row3 = 'zxcvbnm'
+    for (const letter of row3) {
+      const status = letterStatus.get(letter)
+      let symbol = letter.toUpperCase()
+      
+      switch (status) {
+        case 'correct':
+          symbol = `🟩${letter.toUpperCase()}`
+          break
+        case 'present':
+          symbol = `🟨${letter.toUpperCase()}`
+          break
+        case 'absent':
+          symbol = `⬛${letter.toUpperCase()}`
+          break
+        case 'unknown':
+          symbol = `⬜${letter.toUpperCase()}`
+          break
+      }
+      hint += symbol + ' '
+    }
+    
+    return hint
+  }
+
+  /**
     * 验证单词是否在词汇列表中
     * @param {string} word - 要验证的单词
     * @param {number} wordLength - 单词长度（可选，默认为单词实际长度）
@@ -434,7 +604,7 @@ export class Wordle extends plugin {
               
               const word = line.substring(0, firstSpaceIndex).trim()
               
-              // 验证单词格式
+              // 验证单词格式，支持大小写
               if (!word || !/^[a-zA-Z.]+$/.test(word)) return null
               
               return word.toLowerCase()
