@@ -1,0 +1,20 @@
+{
+  "name": "wordle-plugin",
+  "version": "0.0.2",
+  "description": "Wordle游戏插件 for 云崽",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "wordle",
+    "game",
+    "yunzai"
+  ],
+  "author": "Pimeng",
+  "license": "MIT",
+  "dependencies": {
+    "canvas": "^3.2.0"
+  }
+}
