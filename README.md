@@ -29,10 +29,18 @@ pnpm i -P
 ```
 
 ### 常见问题
-如果渲染报错，尝试手动安装canvas依赖
+
+如果渲染报错，请尝试手动安装canvas依赖
 ```console
 pnpm i canvas
 ```
+
+如果报错日志里面的有 `canvas.node` 字样请考虑安装完依赖之后运行安装脚本……
+```console
+pnpm approve-builds
+```
+
+canvas还是有问题那就自己问AI自求多福吧……
 
 ## ✨ 特性
 
@@ -137,6 +145,10 @@ wordle-plugin/
 ## 📄 许可证
 
 本项目基于GPL-3.0许可证开源，您可以在遵守许可证条款的前提下自由使用、修改和分发本项目的代码。
+
+## 🔗 联系我
+
+https://github.com/Pimeng#%E8%81%94%E7%B3%BB%E6%96%B9%E5%BC%8F
 
 ---
 
