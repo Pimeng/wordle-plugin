@@ -29,10 +29,18 @@ pnpm i -P
 ```
 
 ### 常见问题
-如果渲染报错，尝试手动安装canvas依赖
+
+如果渲染报错，请尝试手动安装canvas依赖
 ```console
 pnpm i canvas
 ```
+
+如果报错日志里面的有 `canvas.node` 字样请考虑安装完依赖之后运行安装脚本……
+```console
+pnpm approve-builds
+```
+
+canvas还是有问题那就自己问AI自求多福吧……
 
 ## ✨ 特性
 
