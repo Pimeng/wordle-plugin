@@ -10,7 +10,6 @@
 
 ```console
 git clone https://github.com/Pimeng/wordle-plugin.git ./plugins/wordle-plugin
-cd ./plugins/wordle-plugin
 ```
 
 ### gitee源
