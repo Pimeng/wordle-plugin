@@ -761,7 +761,7 @@ export class Wordle extends plugin {
         ctx.font = '12px Arial'
         ctx.textAlign = 'center'
         ctx.textBaseline = 'middle'
-        ctx.fillText(`${yunzaiName} v${yunzaiVersion} & Wordle-Plugin ${pluginVersion}`, width / 2, height - versionInfoHeight / 2)
+        ctx.fillText(`${yunzaiName} v${yunzaiVersion} & Wordle-Plugin ${pluginVersion} Beta`, width / 2, height - versionInfoHeight / 2)
       } catch (error) {
         logger.error('绘制版本信息时出错:', error)
       }
