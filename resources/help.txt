@@ -8,12 +8,10 @@ Wordle 游戏帮助 🎮
 #wordle 帮助 - 显示帮助
 
 🎯 提交猜测方式：
-• 直接发送单词：apple
 • 使用前缀：#apple !apple
-• 支持大小写：Apple APPLE 都可以
+• 支持大小写：!Apple #APPLE 都可以
 
 📱 使用示例：
 #wordle 5 - 开始5字母游戏
 #wordle 7 - 开始7字母游戏
-crane - 直接猜测单词
 #apple - 使用前缀猜测

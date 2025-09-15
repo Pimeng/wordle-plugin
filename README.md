@@ -1,8 +1,38 @@
-# Wordle 游戏插件 - 增强版 🎮
+# Wordle 游戏插件
 
-基于原Wordle插件的全面优化版本，为云崽Bot提供更智能、更友好的游戏体验。
+基于原Wordle网页版的云崽Bot改版，为云崽Bot提供更智能、更友好的游戏体验。
 
-## ✨ 新功能特性
+## 食用方法
+
+### 1. 下载插件
+
+### github源
+
+```console
+git clone https://github.com/Pimeng/wordle-plugin.git ./plugins/wordle-plugin
+cd ./plugins/wordle-plugin
+```
+
+### gitee源
+
+```console
+git clone https://gitee.com/Pimeng/wordle-plugin.git ./plugins/wordle-plugin
+```
+
+### 2. 安装依赖
+
+```console
+cd ./plugins/wordle-plugin
+pnpm i -P
+```
+
+### 常见问题
+如果渲染报错，尝试手动安装canvas依赖
+```console
+pnpm i canvas
+```
+
+## ✨ 特性
 
 ### 1. 重复单词检测 🔍
 - 自动检测用户输入的重复单词
@@ -19,21 +49,12 @@
 - 兼容原有直接发送单词的方式
 - 满足不同用户的使用习惯
 
-### 4. 自适应尝试次数 📊
-- 根据单词长度智能调整尝试机会：
-  - 3字母：4次机会
-  - 4字母：5次机会
-  - 5字母：6次机会（默认）
-  - 6字母：7次机会
-  - 7字母：8次机会
-  - 8字母：9次机会
-
-### 5. 大小写兼容 🔤
+### 4. 大小写兼容 🔤
 - 完全支持大小写混合输入
 - Apple、APPLE、apple 都能正确识别
 - 提升用户体验
 
-### 6. 智能键盘提示 ⌨️
+### 5. 智能键盘提示 ⌨️
 - 实时显示字母使用状态
 - 三行QWERTY键盘布局
 - 颜色标识：🟩正确 🟨存在 ⬛不存在 ⬜未使用
@@ -42,19 +63,17 @@
 
 ### 基本命令
 ```
-#wordle           # 开始5字母游戏
-#wordle 7         # 开始7字母游戏
-#wordle apple     # 使用前缀猜测
-apple             # 直接发送单词猜测
-#wordle 答案      # 显示答案
-#wordle 帮助      # 查看帮助
+#wordle             # 开始5字母游戏
+#wordle 7           # 开始7字母游戏
+#wordle apple       # 使用前缀猜测
+!apple              # 通过前缀猜词
+#wordle 答案        # 结束游戏
+#wordle 帮助        # 查看帮助
 ```
 
 ### 前缀支持
 - `#apple` - 使用#前缀
-- `*apple` - 使用*前缀  
 - `!apple` - 使用!前缀
-- `apple` - 直接发送
 
 ## 🎮 游戏界面
 
@@ -80,7 +99,8 @@ wordle-plugin/
 │   └── help.txt        # 帮助文档
 ├── data/games.json     # 游戏数据存储
 ├── package.json        # 依赖配置
-└── README.md          # 说明文档
+└── README.md           # 说明文档
+└── index.js            # 入口文件
 ```
 
 ## 🔧 技术特性
@@ -89,11 +109,10 @@ wordle-plugin/
 - **内存缓存**：快速单词验证
 - **正则匹配**：精准命令识别
 - **错误处理**：完善的异常捕获
-- **多语言支持**：中英文混合提示
 
 ## 📝 更新日志
 
-### v0.1.0 (当前版本)
+### v0.0.3 (当前版本)
 - ✅ 新增重复单词检测
 - ✅ 新增冷却时间机制
 - ✅ 新增多前缀支持
@@ -115,7 +134,7 @@ wordle-plugin/
 
 ## 📄 许可证
 
-MIT License - 详见LICENSE文件
+本项目基于GPL-3.0许可证开源，您可以在遵守许可证条款的前提下自由使用、修改和分发本项目的代码。
 
 ---
 
