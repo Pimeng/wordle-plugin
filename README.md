@@ -12,13 +12,13 @@
 ### github源
 
 ```console
-git clone https://github.com/Pimeng/wordle-plugin.git ./plugins/wordle-plugin
+git clone --depth=1 https://github.com/Pimeng/wordle-plugin.git ./plugins/wordle-plugin
 ```
 
 ### gitee源
 
 ```console
-git clone https://gitee.com/Pimeng/wordle-plugin.git ./plugins/wordle-plugin
+git clone --depth=1 https://gitee.com/Pimeng/wordle-plugin.git ./plugins/wordle-plugin
 ```
 
 ### 2. 安装依赖
