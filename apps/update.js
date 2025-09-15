@@ -46,10 +46,10 @@ export class WordleUpdate extends plugin {
       
       // 如果是强制更新，先重置本地修改
       if (e.msg.includes('强制')) {
-        await e.reply('[Wordle] 正在执行强制更新操作，请稍等');
+        await e.reply('[Wordle更新] 正在执行强制更新操作，请稍等');
         command = `git checkout . && ${command}`;
       } else {
-        await e.reply('[Wordle] 正在执行更新操作，请稍等');
+        await e.reply('[Wordle更新] 正在执行更新操作，请稍等');
       }
       
       // 记录更新前的commit id，用于获取更新日志
@@ -75,7 +75,7 @@ export class WordleUpdate extends plugin {
       if (/(Already up[ -]to[ -]date|已经是最新的)/.test(ret.stdout)) {
         await e.reply(`Wordle插件已经是最新的了\n最后更新时间: ${updateTime}`);
       } else {
-        await e.reply(`[Wordle] 插件更新成功\n最后更新时间: ${updateTime}`);
+        await e.reply(`[Wordle更新] 插件更新成功\n最后更新时间: ${updateTime}`);
         
         // 获取更新日志
         let log = await this.getUpdateLog(pluginPath, oldCommitId, e);
@@ -170,14 +170,14 @@ export class WordleUpdate extends plugin {
       // 检查是否有package.json文件
       const packageJsonPath = path.join(pluginPath, 'package.json');
       if (fs.existsSync(packageJsonPath)) {
-        logger.mark('[Wordle] 正在安装/更新依赖...');
+        logger.mark('[Wordle更新] 正在安装/更新依赖...');
         // 尝试使用pnpm安装依赖
         let pnpmCmd = 'pnpm i --registry=https://registry.npmmirror.com';
         let pnpmRet = await this.execCommand(pnpmCmd, pluginPath);
         
         // 如果pnpm失败，尝试使用npm
         if (pnpmRet.error) {
-          logger.warn('[Wordle] pnpm安装依赖失败，尝试使用npm...');
+          logger.warn('[Wordle更新] pnpm安装依赖失败，尝试使用npm...');
           let npmCmd = 'npm i --registry=https://registry.npmmirror.com';
           await this.execCommand(npmCmd, pluginPath);
         }
