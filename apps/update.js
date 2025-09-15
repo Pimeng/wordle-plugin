@@ -19,7 +19,7 @@ export class WordleUpdate extends plugin {
       priority: 500,
       rule: [
         {
-          reg: '^(#|/)?wordle(强制)?更新$',
+          reg: '^(#|/)?(wordle|猜词)(强制)?更新$',
           fnc: 'wordleUpdate',
           Permission: 'master'
         }

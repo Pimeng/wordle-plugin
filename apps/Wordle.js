@@ -4,7 +4,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'url';
 
 // 正则表达式定义
-const REGEX_WORDLE_CMD = /^#[Ww]ordle(.*)$/
+const REGEX_WORDLE_CMD = /^#[Ww]ordle(.*)$/i
 const REGEX_ALPHA = /^[a-zA-Z]+$/
 const REGEX_NUMBER = /^\d+$/
 
@@ -24,7 +24,7 @@ export class Wordle extends plugin {
       rule: [
         {
           /** 命令正则匹配 */
-          reg: '^#[Ww]ordle(.*)$',
+          reg: REGEX_WORDLE_CMD,
           /** 执行方法 */
           fnc: 'wordle'
         },
@@ -152,12 +152,13 @@ export class Wordle extends plugin {
     const groupId = e.group_id
     
     // 首先检查是否是"答案"命令（使用更直接的方式检测）
-    if (originalMsg.includes('wordle 答案') || originalMsg.includes('wordle answer') || originalMsg.includes('wordle 放弃')) {
+    if (originalMsg.includes('wordle 答案') || originalMsg.includes('wordle ans') || originalMsg.includes('wordle 放弃')) {
       return await this.giveUpGame(e)
     }
     
     // 然后使用正则处理获取参数
-    const input = e.msg.replace(REGEX_WORDLE_CMD, '').trim().toLowerCase()
+    const match = e.msg.match(REGEX_WORDLE_CMD)
+    let input = match && match[1] ? match[1].trim().toLowerCase() : ''
     
     // 如果没有参数，开始新游戏（默认5字母）
     if (!input) {
@@ -165,13 +166,15 @@ export class Wordle extends plugin {
     }
     
     // 处理特殊命令 - 使用更灵活的匹配方式
-    if (input.includes('帮助')) {
+    if (input.includes('帮助') || input.includes('help')) {
       return await this.showHelp(e)
     }
     
     // 检查是否是数字（自定义字母数量）
-    if (REGEX_NUMBER.test(input)) {
-      const letterCount = parseInt(input)
+    // 提取纯数字，忽略其他字符
+    const numberMatch = input.match(/^\d+$/)
+    if (numberMatch) {
+      const letterCount = parseInt(numberMatch[0])
       if (letterCount >= 3 && letterCount <= 8) {
         return await this.startNewGame(e, letterCount)
       } else {
@@ -208,7 +211,7 @@ export class Wordle extends plugin {
     
     // 检查群聊是否已有进行中的游戏
     if (global.wordleGames[groupId] && !global.wordleGames[groupId].finished) {
-      await e.reply('当前群聊已经有一个进行中的游戏了哦！请先完成当前游戏或使用 "#wordle 答案" 结束游戏。')
+      await e.reply('当前群聊已经有一个进行中的游戏了哦！请先完成当前游戏或使用 "#wordle 答案" 或 "#wordle ans" 结束游戏。')
       return true
     }
     
@@ -396,7 +399,7 @@ export class Wordle extends plugin {
        message += `\n别灰心，再来一局挑战吧！`
        return message
      } else {
-       return `\n还剩 ${gameData.maxAttempts - gameData.attempts} 次机会，再接再厉！\n直接发送${gameData.letterCount || 5}字母单词继续猜测，或发送 #wordle 答案 结束当前游戏`
+       return `\n还剩 ${gameData.maxAttempts - gameData.attempts} 次机会，再接再厉！\n直接发送${gameData.letterCount || 5}字母单词继续猜测，或发送 #wordle 答案 或 "#wordle ans" 结束当前游戏`
      }
    }
 
