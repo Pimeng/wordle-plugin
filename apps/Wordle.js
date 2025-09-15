@@ -39,12 +39,17 @@ export class Wordle extends plugin {
     
     // 单词文件路径
     this.wordsPath = './plugins/wordle-plugin/resources/words.txt'
+    // 备用单词文件路径
+    this.backupWordsPath = './plugins/wordle-plugin/resources/words-all.txt'
     
     // 单词列表缓存
     this.wordsCache = null
     
     // 冷却时间配置（毫秒）
     this.cooldownTime = 3000 // 3秒冷却时间
+    
+    // Redis键前缀
+    this.WORDBANK_KEY_PREFIX = 'wordle:wordbank:'
     
     // 用户冷却状态记录
     this.userCooldowns = new Map()
@@ -170,6 +175,11 @@ export class Wordle extends plugin {
       return await this.showHelp(e)
     }
     
+    // 处理词库选择命令
+    if (input.includes('词库') || input.includes('wordbank')) {
+      return await this.selectWordbank(e)
+    }
+    
     // 检查是否是数字（自定义字母数量）
     // 提取纯数字，忽略其他字符
     const numberMatch = input.match(/^\d+$/)
@@ -216,7 +226,7 @@ export class Wordle extends plugin {
     }
     
     // 选择随机单词
-    const targetWord = await this.getRandomWord(letterCount)
+    const targetWord = await this.getRandomWord(letterCount, groupId)
     if (!targetWord) {
       await e.reply(`词汇表中没有${letterCount}个字母的单词！请尝试其他字母数量。`)
       return true
@@ -224,6 +234,10 @@ export class Wordle extends plugin {
     
     // 获取自适应尝试次数
     const maxAttempts = this.adaptiveAttempts[letterCount] || 6
+    
+    // 获取当前词库信息
+    const currentWordbank = await this.getWordbankSelection(groupId)
+    const wordbankName = currentWordbank === 'main' ? '四级词库' : '全词库'
     
     // 初始化游戏数据
     global.wordleGames[groupId] = {
@@ -260,6 +274,8 @@ export class Wordle extends plugin {
 `,
           `⬜ = 字母不存在于答案中
 `,
+          `当前词库：${wordbankName}
+`,
           `你有${maxAttempts}次机会
 `,
           `请使用前缀猜测：#apple 或 !apple
@@ -268,7 +284,7 @@ export class Wordle extends plugin {
         ]
       await e.reply(gameStartMessage)
     } else {
-      await e.reply(`🎮 Wordle猜词游戏开始啦！\n请猜测一个${letterCount}字母单词\n你有${maxAttempts}次机会，请使用前缀#或!进行猜测，例如：#apple 或 !apple\n🟩=字母正确且位置正确，🟨=字母正确但位置错误，⬜=字母不存在`)
+      await e.reply(`🎮 Wordle猜词游戏开始啦！\n请猜测一个${letterCount}字母单词\n当前词库：${wordbankName}\n你有${maxAttempts}次机会，请使用前缀#或!进行猜测，例如：#apple 或 !apple\n🟩=字母正确且位置正确，🟨=字母正确但位置错误，⬜=字母不存在`)
     }
     
     return true
@@ -302,7 +318,7 @@ export class Wordle extends plugin {
      }
      
      // 验证单词是否在单词列表中
-     if (!(await this.isValidWord(guess, game.letterCount))) {
+     if (!(await this.isValidWord(guess, game.letterCount, groupId))) {
        // 发送提示并在5秒后撤回
        await e.reply(`"${guess}" 不是有效的英文单词哦~请输入${game.letterCount || 5}个字母的英文单词。`, false, {recallMsg: 30})
        return true
@@ -443,8 +459,32 @@ export class Wordle extends plugin {
       const helpText = fs.readFileSync(helpPath, 'utf-8')
       await e.reply(helpText)
     } else {
-      await e.reply('Wordle 游戏帮助\n\n命令：\n#wordle - 开始新游戏\n#wordle [单词] - 提交猜测\n#wordle 答案 - 显示答案\n#wordle help - 显示帮助')
+      await e.reply('Wordle 游戏帮助\n\n命令：\n#wordle - 开始新游戏\n#wordle [单词] - 提交猜测\n#wordle 答案 - 显示答案\n#wordle help - 显示帮助\n#wordle 词库 - 选择词库')
     }
+    return true
+  }
+
+  /**
+   * 选择词库
+   * @param e
+   * @returns {Promise<boolean>}
+   */
+  async selectWordbank(e) {
+    const groupId = e.group_id
+    
+    // 获取当前词库选择状态
+    const currentWordbank = await this.getWordbankSelection(groupId)
+    
+    // 切换词库
+    const newWordbank = currentWordbank === 'main' ? 'backup' : 'main'
+    await this.setWordbankSelection(groupId, newWordbank)
+    
+    // 发送词库选择结果
+    const currentWordbankName = currentWordbank === 'main' ? '四级词库' : '全词库'
+    const newWordbankName = newWordbank === 'main' ? '四级词库' : '全词库'
+    
+    await e.reply(`词库已切换：${currentWordbankName} → ${newWordbankName}\n\n提示：\n- 四级词库：包含大学英语四级词汇，适合日常练习\n- 全词库：包含更全面的英语词汇，挑战性更高`)
+    
     return true
   }
 
@@ -580,32 +620,52 @@ export class Wordle extends plugin {
     * @param {number} wordLength - 单词长度（可选，默认为单词实际长度）
     * @returns {Promise<boolean>} - 单词是否有效
     */
-    async isValidWord(word, wordLength = null) {
-      const targetWord = word.toLowerCase()
-      const length = wordLength || targetWord.length
-      
-      // 从内存中获取单词列表（使用缓存）
-      const words = await this.loadWords()
-      return words.some(w => w.length === length && w === targetWord)
+    async isValidWord(word, wordLength = null, groupId = null) {
+    const targetWord = word.toLowerCase()
+    const length = wordLength || targetWord.length
+    
+    // 从内存中获取单词列表（使用缓存）
+    const { mainWords, backupWords } = await this.loadWords()
+    
+    // 保持原有逻辑：先查主词库，存在则返回；不存在则查备用词库；均不存在才判定为无此单词
+    // 先在主词库中查找
+    const foundInMain = mainWords.some(w => w.length === length && w === targetWord)
+    if (foundInMain) {
+      return true
     }
+    
+    // 如果主词库中没有，则在备用词库中查找
+    const foundInBackup = backupWords.some(w => w.length === length && w === targetWord)
+    return foundInBackup
+  }
 
    /**
-    * 获取随机单词
-    * @param {number} letterCount - 字母数量（默认为5）
-    * @returns {Promise<string|null>}
-    */
-   async getRandomWord(letterCount = 5) {
-     // 从缓存中获取单词列表
-     const words = await this.loadWords()
-     const filteredWords = words.filter(word => word.length === letterCount)
-     
-     if (filteredWords.length > 0) {
-       const randomIndex = Math.floor(Math.random() * filteredWords.length)
-       return filteredWords[randomIndex]
-     }
-     
-     return null
-   }
+   * 获取随机单词
+   * @param {number} letterCount - 字母数量（默认为5）
+   * @returns {Promise<string|null>}
+   */
+   async getRandomWord(letterCount = 5, groupId = null) {
+    // 从缓存中获取单词列表
+    const { mainWords, backupWords } = await this.loadWords()
+    
+    // 根据词库选择状态决定使用哪个词库
+    let wordbank
+    if (groupId) {
+      const selectedWordbank = await this.getWordbankSelection(groupId)
+      wordbank = selectedWordbank === 'main' ? mainWords : backupWords
+    } else {
+      wordbank = mainWords
+    }
+    
+    const filteredWords = wordbank.filter(word => word.length === letterCount)
+    
+    if (filteredWords.length > 0) {
+      const randomIndex = Math.floor(Math.random() * filteredWords.length)
+      return filteredWords[randomIndex]
+    }
+    
+    return null
+  }
 
   /**
    * 使用Canvas渲染游戏界面
@@ -917,7 +977,7 @@ export class Wordle extends plugin {
 
   /**
    * 加载单词列表（带缓存）
-   * @returns {Promise<Array<string>>} - 单词列表
+   * @returns {Promise<{mainWords: Array<string>, backupWords: Array<string>}>} - 主词库和备用词库
    */
   async loadWords() {
     // 检查是否已有缓存
@@ -930,46 +990,75 @@ export class Wordle extends plugin {
       const __filename = fileURLToPath(import.meta.url);
       const __dirname = path.dirname(__filename);
       const wordsFile = path.resolve(__dirname, '../resources/words.txt');
+      const backupWordsFile = path.resolve(__dirname, '../resources/words-all.txt');
       
-      if (!fs.existsSync(wordsFile)) {
-        logger.error(`单词文件不存在: ${wordsFile}`);
-        return [];
-      }
-
-      // 读取文件内容
-      const content = fs.readFileSync(wordsFile, 'utf-8');
-      const lines = content.split('\n');
+      // 初始化主词库和备用词库
+      const mainWords = [];
+      const backupWords = [];
       
-      // 提取单词
-      const words = [];
-      for (const line of lines) {
-        const trimmedLine = line.trim();
-        if (!trimmedLine) continue;
+      // 加载主词库
+      if (fs.existsSync(wordsFile)) {
+        const content = fs.readFileSync(wordsFile, 'utf-8');
+        const lines = content.split('\n');
         
-        // 处理行号信息（如"314| banner n.旗，旗帜，横幅"）
-        const lineParts = trimmedLine.split('|');
-        let wordPart = lineParts.length > 1 ? lineParts[1].trim() : trimmedLine;
-        
-        // 提取单词部分（第一个空格前的内容）
-        const firstSpaceIndex = wordPart.indexOf(' ');
-        if (firstSpaceIndex !== -1) {
-          const word = wordPart.substring(0, firstSpaceIndex).toLowerCase().trim();
-          if (/^[a-z]+$/.test(word)) {
-            words.push(word);
+        // 提取单词
+        for (const line of lines) {
+          const trimmedLine = line.trim();
+          if (!trimmedLine) continue;
+          
+          // 处理行号信息（如"314| banner n.旗，旗帜，横幅"）
+          const lineParts = trimmedLine.split('|');
+          let wordPart = lineParts.length > 1 ? lineParts[1].trim() : trimmedLine;
+          
+          // 提取单词部分（第一个空格前的内容）
+          const firstSpaceIndex = wordPart.indexOf(' ');
+          if (firstSpaceIndex !== -1) {
+            const word = wordPart.substring(0, firstSpaceIndex).toLowerCase().trim();
+            if (/^[a-z]+$/.test(word)) {
+              mainWords.push(word);
+            }
           }
         }
+      } else {
+        logger.error(`主单词文件不存在: ${wordsFile}`);
+      }
+      
+      // 加载备用词库
+      if (fs.existsSync(backupWordsFile)) {
+        const backupContent = fs.readFileSync(backupWordsFile, 'utf-8');
+        const backupLines = backupContent.split('\n');
+        
+        // 提取单词
+        for (const line of backupLines) {
+          const trimmedLine = line.trim();
+          if (!trimmedLine) continue;
+          
+          // 备用词库每行只有一个单词，直接处理
+          const word = trimmedLine.toLowerCase();
+          if (/^[a-z]+$/.test(word)) {
+            backupWords.push(word);
+          }
+        }
+      } else {
+        logger.error(`备用单词文件不存在: ${backupWordsFile}`);
       }
       
       // 更新缓存
       this.wordsCache = {
-        data: words,
+        data: {
+          mainWords: mainWords,
+          backupWords: backupWords
+        },
         timestamp: Date.now()
       };
       
-      return words;
+      return this.wordsCache.data;
     } catch (error) {
       logger.error('加载单词列表时出错:', error);
-      return [];
+      return {
+        mainWords: [],
+        backupWords: []
+      };
     }
   }
 
@@ -1093,5 +1182,50 @@ export class Wordle extends plugin {
     result = result.trim()
     
     return result
+  }
+
+  /**
+   * 获取群组的词库选择
+   * @param {string} groupId - 群组ID
+   * @returns {Promise<string>} - 词库类型，默认为'main'
+   */
+  async getWordbankSelection(groupId) {
+    try {
+      if (!global.redis) {
+        logger.warn('Redis未启用，使用默认词库')
+        return 'main'
+      }
+      
+      const key = this.WORDBANK_KEY_PREFIX + groupId
+      const wordbank = await global.redis.get(key)
+      
+      return wordbank || 'main'
+    } catch (error) {
+      logger.error('获取词库选择时出错:', error)
+      return 'main'
+    }
+  }
+
+  /**
+   * 设置群组的词库选择
+   * @param {string} groupId - 群组ID
+   * @param {string} wordbankType - 词库类型（'main'或'backup'）
+   * @returns {Promise<boolean>} - 是否设置成功
+   */
+  async setWordbankSelection(groupId, wordbankType) {
+    try {
+      if (!global.redis) {
+        logger.warn('Redis未启用，词库选择将不会持久化')
+        return false
+      }
+      
+      const key = this.WORDBANK_KEY_PREFIX + groupId
+      await global.redis.set(key, wordbankType)
+      
+      return true
+    } catch (error) {
+      logger.error('设置词库选择时出错:', error)
+      return false
+    }
   }
 }
