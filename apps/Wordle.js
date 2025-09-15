@@ -105,7 +105,7 @@ export class Wordle extends plugin {
         }
         
         // 检查是否包含非字母字符
-        if (!/^[a-zA-Z.]+$/.test(message)) {
+        if (!REGEX_ALPHA.test(message)) {
           await e.reply('请输入纯英文单词', false, {recallMsg: 30})
           return true
         }
@@ -138,7 +138,7 @@ export class Wordle extends plugin {
    * @returns {Promise<boolean>}
    */
   async wordle(e) {
-    const input = e.msg.replace(/^#[Ww]ordle\s*/i, '').trim().toLowerCase()
+    const input = e.msg.replace(REGEX_WORDLE_CMD, '').trim().toLowerCase()
     const groupId = e.group_id
     
     // 如果没有参数，开始新游戏（默认5字母）
@@ -156,7 +156,7 @@ export class Wordle extends plugin {
     }
     
     // 检查是否是数字（自定义字母数量）
-    if (/^\d+$/.test(input)) {
+    if (REGEX_NUMBER.test(input)) {
       const letterCount = parseInt(input)
       if (letterCount >= 3 && letterCount <= 8) {
         return await this.startNewGame(e, letterCount)
@@ -194,12 +194,12 @@ export class Wordle extends plugin {
     
     // 检查群聊是否已有进行中的游戏
     if (global.wordleGames[groupId] && !global.wordleGames[groupId].finished) {
-      await e.reply('当前群聊已经有一个进行中的游戏了！请先完成当前游戏或使用 "#wordle 答案" 放弃游戏。')
+      await e.reply('当前群聊已经有一个进行中的游戏了哦！请先完成当前游戏或使用 "#wordle 答案" 结束游戏。')
       return true
     }
     
     // 选择随机单词
-    const targetWord = this.getRandomWord(letterCount)
+    const targetWord = await this.getRandomWord(letterCount)
     if (!targetWord) {
       await e.reply(`词汇表中没有${letterCount}个字母的单词！请尝试其他字母数量。`)
       return true
@@ -285,7 +285,7 @@ export class Wordle extends plugin {
      }
      
      // 验证单词是否在单词列表中
-     if (!this.isValidWord(guess, game.letterCount)) {
+     if (!(await this.isValidWord(guess, game.letterCount))) {
        // 发送提示并在5秒后撤回
        await e.reply(`"${guess}" 不是有效的英文单词哦~请输入${game.letterCount || 5}个字母的英文单词。`, false, {recallMsg: 30})
        return true
@@ -307,6 +307,7 @@ export class Wordle extends plugin {
        game.finished = true
      }
      
+     // 准备游戏状态数据
      const gameData = {
        targetWord: game.targetWord,
        guesses: game.guesses,
@@ -318,50 +319,75 @@ export class Wordle extends plugin {
      }
      
      const img = await this.renderGame(e, gameData)
+     
+     // 处理游戏结果消息
+     await this.sendGameResultMessage(e, gameData, isWin, img)
+     
+     return true
+   }
+   
+   /**
+    * 发送游戏结果消息
+    * @param {*} e - 消息对象
+    * @param {Object} gameData - 游戏数据
+    * @param {boolean} isWin - 是否获胜
+    * @param {*} img - 渲染的图片
+    */
+   async sendGameResultMessage(e, gameData, isWin, img) {
      if (img) {
        await e.reply(img)
      } else {
          // 备用文本显示
-         let feedback = `第${game.attempts}次猜测：${guess}\n`
-         feedback += this.formatResult(result)
+         let feedback = `第${gameData.attempts}次猜测：${gameData.guesses[gameData.guesses.length - 1]}\n`
+         feedback += this.formatResult(gameData.result)
          
          // 添加键盘提示
-         const keyboardHint = this.generateKeyboardHint(game.guesses, game.targetWord)
+         const keyboardHint = this.generateKeyboardHint(gameData.guesses, gameData.targetWord)
          feedback += `\n\n${keyboardHint}`
          
-         if (isWin) {
-           feedback += `\n🎉 恭喜你猜中了！答案是 ${game.targetWord}`
-           
-           // 添加单词释义
-           const definition = this.getWordDefinition(game.targetWord)
-           if (definition) {
-             feedback += `\n【释义】：${definition}`
-           }
-           
-           feedback += `\n你用了 ${game.attempts} 次猜测。\n成绩不错，再来一局吧！`
-         } else if (game.finished) {
-           feedback += `\n😔 很遗憾，你没有猜中。答案是 ${game.targetWord}`
-           
-           // 添加单词释义
-           const definition = this.getWordDefinition(game.targetWord)
-           if (definition) {
-             feedback += `\n【释义】：${definition}`
-           }
-           
-           feedback += `\n别灰心，再来一局挑战吧！`
-         } else {
-           feedback += `\n还剩 ${game.maxAttempts - game.attempts} 次机会，再接再厉！`
-           feedback += `\n直接发送${game.letterCount || 5}字母单词继续猜测，或发送 #wordle 答案 放弃当前游戏`
-         }
+         // 生成结果消息
+         feedback += this.generateResultMessage(gameData, isWin)
        
        await e.reply(feedback)
      }
-     
-     return true
+   }
+   
+   /**
+    * 生成结果消息
+    * @param {Object} gameData - 游戏数据
+    * @param {boolean} isWin - 是否获胜
+    * @returns {string} 结果消息
+    */
+   generateResultMessage(gameData, isWin) {
+     if (isWin) {
+       let message = `\n🎉 恭喜你猜中了！答案是 ${gameData.targetWord}`
+       
+       // 添加单词释义
+       const definition = this.getWordDefinition(gameData.targetWord)
+       if (definition) {
+         message += `\n【释义】：${definition}`
+       }
+       
+       message += `\n你用了 ${gameData.attempts} 次猜测。\n成绩不错，再来一局吧！`
+       return message
+     } else if (gameData.finished) {
+       let message = `\n😔 很遗憾，你没有猜中。答案是 ${gameData.targetWord}`
+       
+       // 添加单词释义
+       const definition = this.getWordDefinition(gameData.targetWord)
+       if (definition) {
+         message += `\n【释义】：${definition}`
+       }
+       
+       message += `\n别灰心，再来一局挑战吧！`
+       return message
+     } else {
+       return `\n还剩 ${gameData.maxAttempts - gameData.attempts} 次机会，再接再厉！\n直接发送${gameData.letterCount || 5}字母单词继续猜测，或发送 #wordle 答案 结束当前游戏`
+     }
    }
 
   /**
-   * 放弃游戏
+   * 结束游戏
    * @param e
    * @returns {Promise<boolean>}
    */
@@ -480,31 +506,8 @@ export class Wordle extends plugin {
       ['Z', 'X', 'C', 'V', 'B', 'N', 'M']
     ]
     
-    const letterStatus = new Map()
-    
-    // 初始化所有字母状态为未知
-    const alphabet = 'abcdefghijklmnopqrstuvwxyz'
-    for (const letter of alphabet) {
-      letterStatus.set(letter, 'unknown')
-    }
-    
-    // 根据猜测结果更新字母状态
-    for (const guess of guesses) {
-      const result = this.checkGuess(guess, targetWord)
-      for (let i = 0; i < guess.length; i++) {
-        const letter = guess[i]
-        const status = result[i].status
-        
-        // 更新字母状态，优先级：correct > present > absent > unknown
-        if (status === 'correct') {
-          letterStatus.set(letter, 'correct')
-        } else if (status === 'present' && letterStatus.get(letter) !== 'correct') {
-          letterStatus.set(letter, 'present')
-        } else if (status === 'absent' && letterStatus.get(letter) === 'unknown') {
-          letterStatus.set(letter, 'absent')
-        }
-      }
-    }
+    // 复用getLetterStatus方法
+    const letterStatus = this.getLetterStatus(guesses, targetWord)
     
     // 构建键盘提示
     let hint = '⌨️ 键盘提示：\n'
@@ -558,123 +561,27 @@ export class Wordle extends plugin {
     * 验证单词是否在词汇列表中
     * @param {string} word - 要验证的单词
     * @param {number} wordLength - 单词长度（可选，默认为单词实际长度）
-    * @returns {boolean} - 单词是否有效
+    * @returns {Promise<boolean>} - 单词是否有效
     */
-    isValidWord(word, wordLength = null) {
+    async isValidWord(word, wordLength = null) {
       const targetWord = word.toLowerCase()
       const length = wordLength || targetWord.length
       
-      // 从内存中获取单词列表
-      if (global.wordleWords && global.wordleWords.length > 0) {
-        return global.wordleWords.filter(w => w.length === length).includes(targetWord)
-      }
-      
-      // 如果内存中没有单词列表，则从文件读取并解析新格式
-      if (fs.existsSync(this.wordsPath)) {
-        try {
-          const wordsContent = fs.readFileSync(this.wordsPath, 'utf-8')
-          // 使用与getRandomWord相同的解析逻辑
-          const words = wordsContent.split('\n')
-            .map(line => {
-              line = line.trim()
-              if (!line) return null
-              
-              // 解析新格式：找到第一个空格
-              const firstSpaceIndex = line.indexOf(' ')
-              if (firstSpaceIndex === -1) return null
-              
-              const word = line.substring(0, firstSpaceIndex).trim()
-              
-              // 验证单词格式，支持大小写
-              if (!word || !/^[a-zA-Z.]+$/.test(word)) return null
-              
-              return word.toLowerCase()
-            })
-            .filter(word => word && word.length === length)
-          
-          return words.includes(targetWord)
-        } catch (err) {
-          logger.warn('读取单词文件时出错:', err)
-        }
-      }
-      
-      // 使用示例单词列表作为备用
-      const sampleWords = [
-        'apple', 'brain', 'chair', 'dance', 'eagle',
-        'flame', 'grape', 'house', 'image', 'juice',
-        'knife', 'lemon', 'mouse', 'night', 'ocean',
-        'paper', 'queen', 'river', 'snake', 'table',
-        'uncle', 'voice', 'water', 'xenon', 'youth',
-        'zebra', 'about', 'beach', 'cloud', 'dream',
-        'at', 'be', 'do', 'go', 'he', 'if', 'in', 'it', 'me', 'my', 'no', 'of', 'on', 'or', 'to', 'up', 'us', 'we'
-      ]
-      
-      return sampleWords.filter(w => w.length === length).includes(targetWord)
+      // 从内存中获取单词列表（使用缓存）
+      const words = await this.loadWords()
+      return words.some(w => w.length === length && w === targetWord)
     }
 
    /**
     * 获取随机单词
     * @param {number} letterCount - 字母数量（默认为5）
-    * @returns {string|null}
+    * @returns {Promise<string|null>}
     */
-   getRandomWord(letterCount = 5) {
-     // 从内存中获取单词列表
-     if (global.wordleWords && global.wordleWords.length > 0) {
-       const filteredWords = global.wordleWords.filter(word => word.length === letterCount)
-       if (filteredWords.length > 0) {
-         const randomIndex = Math.floor(Math.random() * filteredWords.length)
-         return filteredWords[randomIndex]
-       }
-       return null
-     }
+   async getRandomWord(letterCount = 5) {
+     // 从缓存中获取单词列表
+     const words = await this.loadWords()
+     const filteredWords = words.filter(word => word.length === letterCount)
      
-     // 如果内存中没有单词列表，则从文件读取
-     if (fs.existsSync(this.wordsPath)) {
-       try {
-         const wordsContent = fs.readFileSync(this.wordsPath, 'utf-8')
-         // 解析新的单词表格式：每行 "单词 词性.释义"，处理各种特殊情况
-         const words = wordsContent.split('\n')
-           .map(line => {
-             line = line.trim()
-             if (!line) return null
-             
-             // 处理 "P.M. n.下午，午后" 这类带点号的单词
-             // 先找到第一个空格
-             const firstSpaceIndex = line.indexOf(' ')
-             if (firstSpaceIndex === -1) return null
-             
-             const word = line.substring(0, firstSpaceIndex).trim()
-             
-             // 验证单词是否为纯字母（允许带点号如P.M.）
-             if (!word || !/^[a-zA-Z.]+$/.test(word)) return null
-             
-             return word
-           })
-           .filter(word => word && word.length === letterCount) // 按字母数量过滤
-           .map(word => word.toLowerCase())
-         
-         if (words.length > 0) {
-           const randomIndex = Math.floor(Math.random() * words.length)
-           return words[randomIndex]
-         }
-         return null
-       } catch (err) {
-         logger.warn('读取单词文件时出错:', err)
-       }
-     }
-     
-     // 备用单词列表 - 按字母数量过滤
-     const sampleWords = [
-       'apple', 'brain', 'chair', 'dance', 'eagle',
-       'flame', 'grape', 'house', 'image', 'juice',
-       'knife', 'lemon', 'mouse', 'night', 'ocean',
-       'paper', 'queen', 'river', 'snake', 'table',
-       'uncle', 'voice', 'water', 'xenon', 'youth',
-       'zebra', 'about', 'beach', 'cloud', 'dream',
-       'at', 'be', 'do', 'go', 'he', 'if', 'in', 'it', 'me', 'my', 'no', 'of', 'on', 'or', 'to', 'up', 'us', 'we'
-     ]
-     
-     const filteredWords = sampleWords.filter(word => word.length === letterCount)
      if (filteredWords.length > 0) {
        const randomIndex = Math.floor(Math.random() * filteredWords.length)
        return filteredWords[randomIndex]
@@ -861,7 +768,7 @@ export class Wordle extends plugin {
       ['Z', 'X', 'C', 'V', 'B', 'N', 'M']
     ]
     
-    // 获取字母状态
+    // 获取字母状态（复用现有方法）
     const letterStatus = this.getLetterStatus(guesses, targetWord)
     
     // 键盘设置 - 优化版（减小按键大小和间距，确保能看到边框）
