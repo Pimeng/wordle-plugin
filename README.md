@@ -1,3 +1,6 @@
+> [!warning]
+> 目前仍在 Beta 版，有任何使用问题欢迎提 issue
+
 # Wordle 游戏插件
 
 基于原Wordle网页版的云崽Bot改版，为云崽Bot提供更智能、更友好的游戏体验。
