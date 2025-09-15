@@ -94,8 +94,13 @@ export class Wordle extends plugin {
       
       // 检查群聊中是否有进行中的游戏
       if (global.wordleGames[groupId] && !global.wordleGames[groupId].finished) {
-        // 忽略以#开头的命令消息，让wordle方法处理（除非有前缀）
-        if (!prefix && message.startsWith('wordle')) {
+        // 忽略以#开头的命令消息，让wordle方法处理
+        if (message.startsWith('wordle')) {
+          return false
+        }
+        
+        // 必须有前缀才能猜词
+        if (!prefix) {
           return false
         }
         
@@ -227,26 +232,26 @@ export class Wordle extends plugin {
     const img = await this.renderGame(e, gameData)
     if (img) {
       // 添加友好的游戏开始提示
-      const gameStartMessage = [
-        `🎮 Wordle猜词游戏开始啦！
+        const gameStartMessage = [
+          `🎮 Wordle猜词游戏开始啦！
 `,
-        `游戏规则很简单：每轮猜一个${letterCount}字母的英文单词
+          `游戏规则很简单：每轮猜一个${letterCount}字母的英文单词
 `,
-        `🟩 = 字母正确且位置正确
+          `🟩 = 字母正确且位置正确
 `,
-        `🟨 = 字母正确但位置错误
+          `🟨 = 字母正确但位置错误
 `,
-        `⬜ = 字母不存在于答案中
+          `⬜ = 字母不存在于答案中
 `,
-        `你有${maxAttempts}次机会，直接发送单词即可猜测！
+          `你有${maxAttempts}次机会
 `,
-        `也可以使用前缀：#apple !apple
+          `请使用前缀猜测：#apple 或 !apple
 `,
-        img
-      ]
+          img
+        ]
       await e.reply(gameStartMessage)
     } else {
-      await e.reply(`🎮 Wordle猜词游戏开始啦！\n请猜测一个${letterCount}字母单词\n你有${maxAttempts}次机会，直接发送单词或使用前缀#*!即可猜测！\n🟩=字母正确且位置正确，🟨=字母正确但位置错误，⬜=字母不存在`)
+      await e.reply(`🎮 Wordle猜词游戏开始啦！\n请猜测一个${letterCount}字母单词\n你有${maxAttempts}次机会，请使用前缀#或!进行猜测，例如：#apple 或 !apple\n🟩=字母正确且位置正确，🟨=字母正确但位置错误，⬜=字母不存在`)
     }
     
     return true
@@ -462,16 +467,23 @@ export class Wordle extends plugin {
   }
 
   /**
-   * 生成键盘提示
+   * 生成键盘提示 - 模拟网页版布局
    * @param guesses 已猜测的单词数组
    * @param targetWord 目标单词
    * @returns {string} 键盘提示字符串
    */
   generateKeyboardHint(guesses, targetWord) {
-    const alphabet = 'abcdefghijklmnopqrstuvwxyz'
+    // 定义QWERTY键盘布局（不包含删除和回车键）
+    const keyboardLayout = [
+      ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
+      ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
+      ['Z', 'X', 'C', 'V', 'B', 'N', 'M']
+    ]
+    
     const letterStatus = new Map()
     
     // 初始化所有字母状态为未知
+    const alphabet = 'abcdefghijklmnopqrstuvwxyz'
     for (const letter of alphabet) {
       letterStatus.set(letter, 'unknown')
     }
@@ -498,79 +510,48 @@ export class Wordle extends plugin {
     let hint = '⌨️ 键盘提示：\n'
     
     // 第一行 QWERTYUIOP
-    const row1 = 'qwertyuiop'
-    for (const letter of row1) {
-      const status = letterStatus.get(letter)
-      let symbol = letter.toUpperCase()
-      
-      switch (status) {
-        case 'correct':
-          symbol = `🟩${letter.toUpperCase()}`
-          break
-        case 'present':
-          symbol = `🟨${letter.toUpperCase()}`
-          break
-        case 'absent':
-          symbol = `⬛${letter.toUpperCase()}`
-          break
-        case 'unknown':
-          symbol = `⬜${letter.toUpperCase()}`
-          break
-      }
-      hint += symbol + ' '
+    for (const letter of keyboardLayout[0]) {
+      const status = letterStatus.get(letter.toLowerCase())
+      hint += this.getLetterSymbol(letter, status) + '  '
     }
     
-    hint += '\n '
+    hint += '\n  '
     
     // 第二行 ASDFGHJKL
-    const row2 = 'asdfghjkl'
-    for (const letter of row2) {
-      const status = letterStatus.get(letter)
-      let symbol = letter.toUpperCase()
-      
-      switch (status) {
-        case 'correct':
-          symbol = `🟩${letter.toUpperCase()}`
-          break
-        case 'present':
-          symbol = `🟨${letter.toUpperCase()}`
-          break
-        case 'absent':
-          symbol = `⬛${letter.toUpperCase()}`
-          break
-        case 'unknown':
-          symbol = `⬜${letter.toUpperCase()}`
-          break
-      }
-      hint += symbol + ' '
+    for (const letter of keyboardLayout[1]) {
+      const status = letterStatus.get(letter.toLowerCase())
+      hint += this.getLetterSymbol(letter, status) + '  '
     }
     
-    hint += '\n   '
+    hint += '\n    '
     
     // 第三行 ZXCVBNM
-    const row3 = 'zxcvbnm'
-    for (const letter of row3) {
-      const status = letterStatus.get(letter)
-      let symbol = letter.toUpperCase()
-      
-      switch (status) {
-        case 'correct':
-          symbol = `🟩${letter.toUpperCase()}`
-          break
-        case 'present':
-          symbol = `🟨${letter.toUpperCase()}`
-          break
-        case 'absent':
-          symbol = `⬛${letter.toUpperCase()}`
-          break
-        case 'unknown':
-          symbol = `⬜${letter.toUpperCase()}`
-          break
-      }
-      hint += symbol + ' '
+    for (const letter of keyboardLayout[2]) {
+      const status = letterStatus.get(letter.toLowerCase())
+      hint += this.getLetterSymbol(letter, status) + '  '
     }
     
     return hint
+  }
+  
+  /**
+   * 根据字母状态返回对应的显示符号
+   * @param {string} letter - 字母
+   * @param {string} status - 状态：correct, present, absent, unknown
+   * @returns {string} 显示符号
+   */
+  getLetterSymbol(letter, status) {
+    switch (status) {
+      case 'correct':
+        return `🟩${letter}`
+      case 'present':
+        return `🟨${letter}`
+      case 'absent':
+        return `⬛${letter}`
+      case 'unknown':
+      default:
+        return `⬜${letter}`
+    }
   }
 
   /**
@@ -722,13 +703,40 @@ export class Wordle extends plugin {
         const result = this.checkGuess(guesses[i], gameData.targetWord)
         results.push(result)
       }
-  
-      // Canvas设置 - 根据字母数量动态调整宽度
-      const boxSize = 62
+
+      // 获取最大尝试次数
+      const maxAttempts = gameData.maxAttempts || 6
+      
+      const boxSize = 60
       const gap = 8
-      const padding = 30
-      const width = letterCount * boxSize + (letterCount - 1) * gap + 2 * padding
-      const height = 6 * boxSize + 5 * gap + 2 * padding
+      const padding = 40
+      const keyboardHeight = 180
+      const height = maxAttempts * boxSize + (maxAttempts - 1) * gap + 2 * padding + keyboardHeight + 15
+      
+      // 计算基于字母数量的宽度
+      const wordBasedWidth = letterCount * boxSize + (letterCount - 1) * gap + 2 * padding
+      
+      // 计算基于键盘布局的宽度（确保键盘完整显示）
+      const keyWidth = 36
+      const keyGap = 5
+      const keyboardLayout = [
+        ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
+        ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
+        ['Z', 'X', 'C', 'V', 'B', 'N', 'M']
+      ]
+      
+      // 找出最宽的一行键盘
+      let maxKeyboardRowWidth = 0
+      for (const row of keyboardLayout) {
+        const rowWidth = row.length * keyWidth + (row.length - 1) * keyGap
+        maxKeyboardRowWidth = Math.max(maxKeyboardRowWidth, rowWidth)
+      }
+      
+      // 键盘基于的宽度需要考虑左右padding
+      const keyboardBasedWidth = maxKeyboardRowWidth + 2 * padding
+      
+      // 取两者中的较大值作为最终宽度，确保字母区域和键盘区域都能完全显示
+      const width = Math.max(wordBasedWidth, keyboardBasedWidth)
   
       // 创建canvas
       const canvas = createCanvas(width, height)
@@ -738,10 +746,13 @@ export class Wordle extends plugin {
       ctx.fillStyle = '#f8f8f8'
       ctx.fillRect(0, 0, width, height)
   
-      // 绘制游戏板
-      for (let row = 0; row < 6; row++) {
+      // 绘制游戏板（根据最大尝试次数动态调整行数）
+      const boardWidth = letterCount * boxSize + (letterCount - 1) * gap
+      const startX = (width - boardWidth) / 2
+      
+      for (let row = 0; row < maxAttempts; row++) {
         for (let col = 0; col < letterCount; col++) {
-          const x = padding + col * (boxSize + gap)
+          const x = startX + col * (boxSize + gap)
           const y = padding + row * (boxSize + gap)
   
           // 设置颜色
@@ -787,7 +798,10 @@ export class Wordle extends plugin {
           }
         }
       }
-  
+      
+      // 绘制键盘提示（游戏开始就显示）
+      this.drawKeyboardHint(ctx, width, padding, height - keyboardHeight - 10, gameData.guesses, gameData.targetWord)
+      
       // 转换为buffer
       const buffer = canvas.toBuffer('image/png')
       // 构建符合系统要求的图片对象，添加必要参数
@@ -828,6 +842,111 @@ export class Wordle extends plugin {
       logger.error('渲染游戏界面时出错:', err)
       return null
     }
+  }
+  
+  /**
+   * 在Canvas上绘制键盘提示 - 优化版（增加按键大小和间距）
+   * @param ctx Canvas上下文
+   * @param width 画布宽度
+   * @param padding 内边距
+   * @param startY 起始Y坐标
+   * @param guesses 已猜测的单词数组
+   * @param targetWord 目标单词
+   */
+  drawKeyboardHint(ctx, width, padding, startY, guesses, targetWord) {
+    // 定义QWERTY键盘布局（不包含删除和回车键）
+    const keyboardLayout = [
+      ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
+      ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
+      ['Z', 'X', 'C', 'V', 'B', 'N', 'M']
+    ]
+    
+    // 获取字母状态
+    const letterStatus = this.getLetterStatus(guesses, targetWord)
+    
+    // 键盘设置 - 优化版（减小按键大小和间距，确保能看到边框）
+    const keyWidth = 36
+    const keyHeight = 42
+    const keyGap = 5
+    const rowGap = 8
+    
+    // 计算每一行的起始X坐标，使其居中
+    for (let rowIndex = 0; rowIndex < keyboardLayout.length; rowIndex++) {
+      const row = keyboardLayout[rowIndex]
+      const rowWidth = row.length * keyWidth + (row.length - 1) * keyGap
+      const startX = (width - rowWidth) / 2
+      
+      // 绘制该行的每个按键
+      for (let colIndex = 0; colIndex < row.length; colIndex++) {
+        const letter = row[colIndex]
+        const status = letterStatus.get(letter.toLowerCase())
+        const x = startX + colIndex * (keyWidth + keyGap)
+        const y = startY + rowIndex * (keyHeight + rowGap)
+        
+        // 设置按键颜色
+        let bgColor = '#d3d6da' // 默认颜色
+        switch (status) {
+          case 'correct':
+            bgColor = '#6aaa64'
+            break
+          case 'present':
+            bgColor = '#c9b458'
+            break
+          case 'absent':
+            bgColor = '#787c7e'
+            break
+        }
+        
+        // 绘制按键 - 增加圆角
+        ctx.fillStyle = bgColor
+        ctx.beginPath()
+        ctx.roundRect(x, y, keyWidth, keyHeight, 6)
+        ctx.fill()
+        
+        // 绘制字母 - 使用更清晰的字体
+        ctx.fillStyle = bgColor === '#d3d6da' ? '#1a1a1b' : '#ffffff'
+        ctx.font = 'bold 18px Arial'
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'middle'
+        ctx.fillText(letter, x + keyWidth / 2, y + keyHeight / 2)
+      }
+    }
+  }
+  
+  /**
+   * 获取每个字母的状态
+   * @param guesses 已猜测的单词数组
+   * @param targetWord 目标单词
+   * @returns {Map<string, string>} 字母状态映射
+   */
+  getLetterStatus(guesses, targetWord) {
+    const alphabet = 'abcdefghijklmnopqrstuvwxyz'
+    const letterStatus = new Map()
+    
+    // 初始化所有字母状态为未知
+    for (const letter of alphabet) {
+      letterStatus.set(letter, 'unknown')
+    }
+    
+    // 根据猜测结果更新字母状态
+    for (const guess of guesses) {
+      const result = this.checkGuess(guess, targetWord)
+      for (let i = 0; i < guess.length; i++) {
+        const letter = guess[i]
+        const status = result[i].status
+        
+        // 更新字母状态，优先级：correct > present > absent > unknown
+        if (status === 'correct') {
+          letterStatus.set(letter, 'correct')
+        } else if (status === 'present' && letterStatus.get(letter) !== 'correct') {
+          letterStatus.set(letter, 'present')
+        } else if (status === 'absent' && letterStatus.get(letter) === 'unknown') {
+          letterStatus.set(letter, 'absent')
+        }
+      }
+    }
+    
+    return letterStatus
   }
 
   /**
