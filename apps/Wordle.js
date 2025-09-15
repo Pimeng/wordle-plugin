@@ -743,7 +743,6 @@ export class Wordle extends plugin {
         let yunzaiVersion = '3.1.4'
         try {
           const yunzaiPackagePath = path.join(process.cwd(), './package.json')
-          console.log(yunzaiPackagePath)
           if (fs.existsSync(yunzaiPackagePath)) {
             const yunzaiPackage = JSON.parse(fs.readFileSync(yunzaiPackagePath, 'utf8'))
             if (yunzaiPackage.name) {
