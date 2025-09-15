@@ -1,5 +1,12 @@
 import plugin from '../../../lib/plugins/plugin.js'
 import fs from 'fs'
+import path from 'node:path'
+import { fileURLToPath } from 'url';
+
+// 正则表达式定义
+const REGEX_WORDLE_CMD = /^#[Ww]ordle(.*)$/
+const REGEX_ALPHA = /^[a-zA-Z]+$/
+const REGEX_NUMBER = /^\d+$/
 
 // 游戏数据存储在内存中
 global.wordleGames = global.wordleGames || {}
@@ -11,7 +18,7 @@ export class Wordle extends plugin {
       name: 'Wordle游戏',
       /** 功能描述 */
       dsc: '猜单词游戏',
-      event: 'message',
+      event: 'message', 
       /** 优先级，数字越小等级越高 */
       priority: 5000,
       rule: [
@@ -32,6 +39,9 @@ export class Wordle extends plugin {
     
     // 单词文件路径
     this.wordsPath = './plugins/wordle-plugin/resources/words.txt'
+    
+    // 单词列表缓存
+    this.wordsCache = null
     
     // 冷却时间配置（毫秒）
     this.cooldownTime = 3000 // 3秒冷却时间
@@ -88,7 +98,7 @@ export class Wordle extends plugin {
       
       if (lastGuess && (now - lastGuess) < this.cooldownTime) {
         const remainingTime = Math.ceil((this.cooldownTime - (now - lastGuess)) / 1000)
-        await e.reply(`请等待 ${remainingTime} 秒后再猜测！`, false, {recallMsg: 5})
+        await e.reply(`我知道你很急，但你先别急，等 ${remainingTime} 秒！`, false, {recallMsg: 5})
         return true
       }
       
@@ -138,21 +148,25 @@ export class Wordle extends plugin {
    * @returns {Promise<boolean>}
    */
   async wordle(e) {
-    const input = e.msg.replace(REGEX_WORDLE_CMD, '').trim().toLowerCase()
+    const originalMsg = e.msg.toLowerCase()
     const groupId = e.group_id
+    
+    // 首先检查是否是"答案"命令（使用更直接的方式检测）
+    if (originalMsg.includes('wordle 答案') || originalMsg.includes('wordle answer') || originalMsg.includes('wordle 放弃')) {
+      return await this.giveUpGame(e)
+    }
+    
+    // 然后使用正则处理获取参数
+    const input = e.msg.replace(REGEX_WORDLE_CMD, '').trim().toLowerCase()
     
     // 如果没有参数，开始新游戏（默认5字母）
     if (!input) {
       return await this.startNewGame(e, 5)
     }
     
-    // 处理特殊命令
-    if (input === '帮助') {
+    // 处理特殊命令 - 使用更灵活的匹配方式
+    if (input.includes('帮助')) {
       return await this.showHelp(e)
-    }
-    
-    if (input === '答案') {
-      return await this.giveUpGame(e)
     }
     
     // 检查是否是数字（自定义字母数量）
@@ -161,7 +175,7 @@ export class Wordle extends plugin {
       if (letterCount >= 3 && letterCount <= 8) {
         return await this.startNewGame(e, letterCount)
       } else {
-        await e.reply('请输入3-8之间的字母数量！')
+        await e.reply('请输入3-8之间的字母数！')
         return true
       }
     }
@@ -618,7 +632,9 @@ export class Wordle extends plugin {
       const gap = 8
       const padding = 40
       const keyboardHeight = 180
-      const height = maxAttempts * boxSize + (maxAttempts - 1) * gap + 2 * padding + keyboardHeight + 15
+      // 增加底部空间以容纳版本信息
+      const versionInfoHeight = 25
+      const height = maxAttempts * boxSize + (maxAttempts - 1) * gap + 2 * padding + keyboardHeight + 15 + versionInfoHeight
       
       // 计算基于字母数量的宽度
       const wordBasedWidth = letterCount * boxSize + (letterCount - 1) * gap + 2 * padding
@@ -707,7 +723,48 @@ export class Wordle extends plugin {
       }
       
       // 绘制键盘提示（游戏开始就显示）
-      this.drawKeyboardHint(ctx, width, padding, height - keyboardHeight - 10, gameData.guesses, gameData.targetWord)
+      this.drawKeyboardHint(ctx, width, padding, height - keyboardHeight - versionInfoHeight - 10, gameData.guesses, gameData.targetWord)
+      
+      // 绘制版本信息
+      try {
+        // 尝试读取plugin的package.json获取版本信息
+        let pluginVersion = '0.0.3' // 默认版本
+        const pluginPackagePath = path.join(process.cwd(), './plugins/wordle-plugin/package.json')
+        if (fs.existsSync(pluginPackagePath)) {
+          const pluginPackage = JSON.parse(fs.readFileSync(pluginPackagePath, 'utf8'))
+          pluginVersion = pluginPackage.version || pluginVersion
+        }
+        
+        // 尝试读取根目录的package.json获取云崽名称
+        let yunzaiName = 'Yunzai' // 默认名称
+        let yunzaiVersion = '3.1.4'
+        try {
+          const yunzaiPackagePath = path.join(process.cwd(), './package.json')
+          console.log(yunzaiPackagePath)
+          if (fs.existsSync(yunzaiPackagePath)) {
+            const yunzaiPackage = JSON.parse(fs.readFileSync(yunzaiPackagePath, 'utf8'))
+            if (yunzaiPackage.name) {
+              yunzaiName = yunzaiPackage.name.replace(/(^\w|-\w)/g, s => s.toUpperCase())
+            }
+
+            if (yunzaiPackage.version) {
+              yunzaiVersion = yunzaiPackage.version
+            }
+          }
+        } catch (error) {
+          // 如果无法读取根目录的package.json，使用默认值
+          logger.debug('无法读取云崽package.json:', error.message)
+        }
+        
+        // 绘制版本信息文本
+        ctx.fillStyle = '#787c7e'
+        ctx.font = '12px Arial'
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'middle'
+        ctx.fillText(`${yunzaiName} v${yunzaiVersion} & Wordle-Plugin ${pluginVersion}`, width / 2, height - versionInfoHeight / 2)
+      } catch (error) {
+        logger.error('绘制版本信息时出错:', error)
+      }
       
       // 转换为buffer
       const buffer = canvas.toBuffer('image/png')
@@ -857,6 +914,64 @@ export class Wordle extends plugin {
   }
 
   /**
+   * 加载单词列表（带缓存）
+   * @returns {Promise<Array<string>>} - 单词列表
+   */
+  async loadWords() {
+    // 检查是否已有缓存
+    if (this.wordsCache && Date.now() - this.wordsCache.timestamp < 3600000) { // 缓存1小时
+      return this.wordsCache.data;
+    }
+
+    try {
+      // 构建完整的文件路径 - 使用fileURLToPath正确处理路径
+      const __filename = fileURLToPath(import.meta.url);
+      const __dirname = path.dirname(__filename);
+      const wordsFile = path.resolve(__dirname, '../resources/words.txt');
+      
+      if (!fs.existsSync(wordsFile)) {
+        logger.error(`单词文件不存在: ${wordsFile}`);
+        return [];
+      }
+
+      // 读取文件内容
+      const content = fs.readFileSync(wordsFile, 'utf-8');
+      const lines = content.split('\n');
+      
+      // 提取单词
+      const words = [];
+      for (const line of lines) {
+        const trimmedLine = line.trim();
+        if (!trimmedLine) continue;
+        
+        // 处理行号信息（如"314| banner n.旗，旗帜，横幅"）
+        const lineParts = trimmedLine.split('|');
+        let wordPart = lineParts.length > 1 ? lineParts[1].trim() : trimmedLine;
+        
+        // 提取单词部分（第一个空格前的内容）
+        const firstSpaceIndex = wordPart.indexOf(' ');
+        if (firstSpaceIndex !== -1) {
+          const word = wordPart.substring(0, firstSpaceIndex).toLowerCase().trim();
+          if (/^[a-z]+$/.test(word)) {
+            words.push(word);
+          }
+        }
+      }
+      
+      // 更新缓存
+      this.wordsCache = {
+        data: words,
+        timestamp: Date.now()
+      };
+      
+      return words;
+    } catch (error) {
+      logger.error('加载单词列表时出错:', error);
+      return [];
+    }
+  }
+
+  /**
   * 获取单词释义
   * @param {string} word - 要查询的单词
   * @returns {string} - 单词释义
@@ -871,8 +986,14 @@ export class Wordle extends plugin {
       const lines = wordsContent.split('\n')
       
       for (const line of lines) {
-        const trimmedLine = line.trim()
+        let trimmedLine = line.trim()
         if (!trimmedLine) continue
+        
+        // 处理行号信息（如"314| banner n.旗，旗帜，横幅"）
+        if (trimmedLine.includes('|')) {
+          const parts = trimmedLine.split('|')
+          trimmedLine = parts[parts.length - 1].trim()
+        }
         
         // 找到第一个空格
         const firstSpaceIndex = trimmedLine.indexOf(' ')
@@ -884,14 +1005,8 @@ export class Wordle extends plugin {
           // 提取释义部分（词性后面的内容）
           const definitionPart = trimmedLine.substring(firstSpaceIndex + 1).trim()
           
-          // 处理 "n.谋杀，凶杀" 或 "a.男的，雄的 n.男子" 这样的格式
-          let definition = definitionPart
-          
-          // 移除词性标记（如 n., a., vt. 等）
-          definition = definition.replace(/^[a-zA-Z]+\./, '').trim()
-          
-          // 处理多个词性用 & 连接的情况
-          definition = definition.replace(/&[a-zA-Z]+\./g, '').trim()
+          // 优化的释义提取逻辑
+          let definition = this.extractDefinition(definitionPart)
           
           return definition || ''
         }
@@ -901,5 +1016,80 @@ export class Wordle extends plugin {
     }
     
     return ''
+  }
+
+  /**
+   * 提取并清理单词释义
+   * @param {string} text - 包含词性和释义的文本
+   * @returns {string} - 清理后的释义文本
+   */
+  extractDefinition(text) {
+    // 定义常见的词性缩写模式
+    const posPattern = /[a-zA-Z]+\./g
+    
+    // 提取所有词性标记
+    const posMatches = text.match(posPattern) || []
+    
+    // 如果没有词性标记，直接返回文本
+    if (posMatches.length === 0) {
+      return text.trim()
+    }
+    
+    // 处理单个词性的情况
+    if (posMatches.length === 1 && text.startsWith(posMatches[0])) {
+      return text.substring(posMatches[0].length).trim()
+    }
+    
+    // 处理多个词性的情况
+    let result = ''
+    let currentPos = ''
+    let currentDef = ''
+    let inDefinition = false
+    
+    // 遍历文本的每个字符
+    for (let i = 0; i < text.length; i++) {
+      // 检查是否开始新的词性标记
+      let foundPos = false
+      for (const pos of posMatches) {
+        if (text.substr(i, pos.length) === pos) {
+          // 如果已经有积累的释义，添加到结果
+          if (currentDef.trim()) {
+            if (result) result += '；'
+            result += currentDef.trim()
+            currentDef = ''
+          }
+          
+          currentPos = pos
+          inDefinition = true
+          i += pos.length - 1 // 跳过词性标记
+          foundPos = true
+          break
+        }
+      }
+      
+      // 如果不是词性标记，且在释义部分，添加到当前释义
+      if (!foundPos && inDefinition) {
+        currentDef += text[i]
+      }
+    }
+    
+    // 添加最后一个释义
+    if (currentDef.trim()) {
+      if (result) result += '；'
+      result += currentDef.trim()
+    }
+    
+    // 如果没有提取到有效释义，尝试使用简单的正则方法
+    if (!result) {
+      // 移除所有词性标记
+      result = text.replace(posPattern, '').trim()
+    }
+    
+    // 清理多余的空格和分号
+    result = result.replace(/\s+/g, ' ')
+    result = result.replace(/；+/g, '；')
+    result = result.trim()
+    
+    return result
   }
 }
