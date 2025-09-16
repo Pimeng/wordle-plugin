@@ -15,7 +15,7 @@ export class Wordle extends plugin {
   constructor() {
     super({
       /** 功能名称 */
-      name: 'Wordle游戏',
+      name: 'Wordle',
       /** 功能描述 */
       dsc: '猜单词游戏',
       event: 'message', 
@@ -379,7 +379,7 @@ export class Wordle extends plugin {
          feedback += `\n\n${keyboardHint}`
          
          // 生成结果消息
-         feedback += this.generateResultMessage(gameData, isWin)
+         feedback += this.generateResultMessage(e, gameData, isWin)
        
        await e.reply(feedback)
      }
@@ -387,13 +387,14 @@ export class Wordle extends plugin {
    
    /**
     * 生成结果消息
+    * @param {*} e 
     * @param {Object} gameData - 游戏数据
     * @param {boolean} isWin - 是否获胜
     * @returns {string} 结果消息
     */
-   generateResultMessage(gameData, isWin) {
+   generateResultMessage(e, gameData, isWin) {
      if (isWin) {
-       let message = `\n🎉 恭喜你猜中了！答案是 ${gameData.targetWord}`
+       let message = `🎉 恭喜 ${e.sender.card} 猜中了！\n答案是 ${gameData.targetWord}`
        
        // 添加单词释义
        const definition = this.getWordDefinition(gameData.targetWord)
@@ -661,6 +662,7 @@ export class Wordle extends plugin {
     
     if (filteredWords.length > 0) {
       const randomIndex = Math.floor(Math.random() * filteredWords.length)
+      logger.mark("[Wordle] 单词：" + filteredWords[randomIndex])
       return filteredWords[randomIndex]
     }
     
@@ -840,14 +842,14 @@ export class Wordle extends plugin {
       
       // 构建消息数组（图文混排）
       if (gameData.gameState === 'win') {
-        const messages = [`🎉 恭喜你猜中了单词 ${gameData.targetWord}！`, imageSegment]
+        const messages = [`🎉 恭喜 ${e.sender.card} 猜中了！\n答案是 ${gameData.targetWord}`, imageSegment]
         
         // 添加单词释义
         const definition = this.getWordDefinition(gameData.targetWord)
         if (definition) {
           messages.push(`【释义】：${definition}`)
         }
-        
+        messages.push(`\n你用了 ${gameData.attempts} 次猜测。\n成绩不错，再来一局吧！`)
         return messages
       } else if (gameData.gameState === 'lose') {
         const messages = []
