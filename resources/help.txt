@@ -6,7 +6,7 @@ Wordle 游戏帮助 🎮
 ![单词] - 提交猜测
 #wordle (答案|ans) - 结束游戏
 #wordle 帮助 - 显示帮助
-#wordle 词库 - 切换词库（全词库/四级词库）
+#wordle 词库 - 切换词库
 
 🎯 提交猜测方式：
 • 使用前缀：#apple !apple
@@ -17,4 +17,4 @@ Wordle 游戏帮助 🎮
 !apple - 通过前缀猜词
 #wordle 7 - 开始7字母游戏
 #apple - 使用前缀猜测
-#wordle 词库 全词库 - 切换到全词库（按群保存）
+#wordle 词库- 切换词库（按群保存）

@@ -2,6 +2,7 @@ import plugin from '../../../lib/plugins/plugin.js'
 import fs from 'fs'
 import path from 'node:path'
 import { fileURLToPath } from 'url';
+import { createCanvas } from 'canvas';
 
 // 正则表达式定义
 const REGEX_WORDLE_CMD = /^#[Ww]ordle(.*)$/i
@@ -37,32 +38,24 @@ export class Wordle extends plugin {
       ]
     })
     
-    // 单词文件路径
+    // 重要配置区，默认没必要改
     this.wordsPath = './plugins/wordle-plugin/resources/words.txt'
-    // 备用单词文件路径
     this.backupWordsPath = './plugins/wordle-plugin/resources/words-all.txt'
-    
-    // 单词列表缓存
     this.wordsCache = null
-    
-    // 冷却时间配置（毫秒）
-    this.cooldownTime = 3000 // 3秒冷却时间
-    
-    // Redis键前缀
+    this.cooldownTime = 10000 // 5秒冷却时间
     this.WORDBANK_KEY_PREFIX = 'wordle:wordbank:'
-    
-    // 用户冷却状态记录
     this.userCooldowns = new Map()
-    
-    // 自适应尝试次数配置
+    this.canvasCache = new Map()
+    this.lengthStats = null
     this.adaptiveAttempts = {
-      3: 4,  // 3字母单词给4次机会
-      4: 5,  // 4字母单词给5次机会
-      5: 6,  // 5字母单词给6次机会（默认）
-      6: 8,  // 6字母单词给8次机会
-      7: 10,  // 7字母单词给10次机会
-      8: 12    // 8字母单词给12次机会
+      3: 4,
+      4: 5,
+      5: 6,
+      6: 8,
+      7: 10,
+      8: 12
     }
+
   }
 
   /**
@@ -71,7 +64,7 @@ export class Wordle extends plugin {
    * @returns {Promise<boolean>}
    */
   async listenMessages(e) {
-    // 只在群聊中监听
+    // 仅群聊
     if (e.group_id) {
       const groupId = e.group_id
       const userId = e.user_id
@@ -100,50 +93,40 @@ export class Wordle extends plugin {
       const cooldownKey = `${groupId}_${userId}`
       const lastGuess = this.userCooldowns.get(cooldownKey)
       const now = Date.now()
-      
       if (lastGuess && (now - lastGuess) < this.cooldownTime) {
         const remainingTime = Math.ceil((this.cooldownTime - (now - lastGuess)) / 1000)
         await e.reply(`我知道你很急，但你先别急，等 ${remainingTime} 秒！`, false, {recallMsg: 5})
         return true
       }
-      
       // 检查群聊中是否有进行中的游戏
       if (global.wordleGames[groupId] && !global.wordleGames[groupId].finished) {
         // 忽略以#开头的命令消息，让wordle方法处理
         if (message.startsWith('wordle')) {
           return false
         }
-        
         // 必须有前缀才能猜词
         if (!prefix) {
           return false
         }
-        
         // 检查是否包含非字母字符
         if (!REGEX_ALPHA.test(message)) {
           await e.reply('请输入纯英文单词', false, {recallMsg: 30})
           return true
         }
-        
         // 获取当前游戏的字母数量
         const game = global.wordleGames[groupId]
         const expectedLength = game.letterCount || 5
         
-        // 检查字母数是否匹配
         if (message.length !== expectedLength) {
           await e.reply(`请输入${expectedLength}个字母的单词，你输入了${message.length}个字母哦~`, false, {recallMsg: 30})
           return true
         }
-        
         // 更新冷却时间
         this.userCooldowns.set(cooldownKey, now)
-        
-        // 处理猜测
         return await this.processGuess(e, message, groupId)
       }
     }
     
-    // 不是游戏中的有效猜测，让消息继续处理
     return false
   }
   
@@ -156,12 +139,10 @@ export class Wordle extends plugin {
     const originalMsg = e.msg.toLowerCase()
     const groupId = e.group_id
     
-    // 首先检查是否是"答案"命令（使用更直接的方式检测）
     if (originalMsg.includes('wordle 答案') || originalMsg.includes('wordle ans') || originalMsg.includes('wordle 放弃')) {
       return await this.giveUpGame(e)
     }
     
-    // 然后使用正则处理获取参数
     const match = e.msg.match(REGEX_WORDLE_CMD)
     let input = match && match[1] ? match[1].trim().toLowerCase() : ''
     
@@ -174,13 +155,10 @@ export class Wordle extends plugin {
     if (input.includes('帮助') || input.includes('help')) {
       return await this.showHelp(e)
     }
-    
-    // 处理词库选择命令
     if (input.includes('词库') || input.includes('wordbank')) {
       return await this.selectWordbank(e)
     }
     
-    // 检查是否是数字（自定义字母数量）
     // 提取纯数字，忽略其他字符
     const numberMatch = input.match(/^\d+$/)
     if (numberMatch) {
@@ -207,7 +185,6 @@ export class Wordle extends plugin {
       }
     }
     
-    // 其他情况显示帮助
     return await this.showHelp(e)
   }
 
@@ -262,26 +239,25 @@ export class Wordle extends plugin {
     
     const img = await this.renderGame(e, gameData)
     if (img) {
-      // 添加友好的游戏开始提示
-        const gameStartMessage = [
-          `🎮 Wordle猜词游戏开始啦！
+      const gameStartMessage = [
+        `🎮 Wordle猜词游戏开始啦！
 `,
-          `游戏规则很简单：每轮猜一个${letterCount}字母的英文单词
+        `游戏规则很简单：每轮猜一个${letterCount}字母的英文单词
 `,
-          `🟩 = 字母正确且位置正确
+        `🟩 = 字母正确且位置正确
 `,
-          `🟨 = 字母正确但位置错误
+        `🟨 = 字母正确但位置错误
 `,
-          `⬜ = 字母不存在于答案中
+        `⬜ = 字母不存在于答案中
 `,
-          `当前词库：${wordbankName}
+        `当前词库：${wordbankName}
 `,
-          `你有${maxAttempts}次机会
+        `你有${maxAttempts}次机会
 `,
-          `请使用前缀猜测：#apple 或 !apple
+        `请使用前缀猜测：#apple 或 !apple
 `,
-          img
-        ]
+        img
+      ]
       await e.reply(gameStartMessage)
     } else {
       await e.reply(`🎮 Wordle猜词游戏开始啦！\n请猜测一个${letterCount}字母单词\n当前词库：${wordbankName}\n你有${maxAttempts}次机会，请使用前缀#或!进行猜测，例如：#apple 或 !apple\n🟩=字母正确且位置正确，🟨=字母正确但位置错误，⬜=字母不存在`)
@@ -323,15 +299,9 @@ export class Wordle extends plugin {
        await e.reply(`"${guess}" 不是有效的英文单词哦~请输入${game.letterCount || 5}个字母的英文单词。`, false, {recallMsg: 30})
        return true
      }
-     
-     // 记录猜测
      game.guesses.push(guess)
      game.attempts++
-     
-     // 检查结果
      const result = this.checkGuess(guess, game.targetWord)
-     
-     // 检查是否猜中
      let isWin = false
      if (guess === game.targetWord) {
        isWin = true
@@ -352,16 +322,13 @@ export class Wordle extends plugin {
      }
      
      const img = await this.renderGame(e, gameData)
-     
-     // 处理游戏结果消息
      await this.sendGameResultMessage(e, gameData, isWin, img)
-     
      return true
    }
    
    /**
     * 发送游戏结果消息
-    * @param {*} e - 消息对象
+    * @param {*} e
     * @param {Object} gameData - 游戏数据
     * @param {boolean} isWin - 是否获胜
     * @param {*} img - 渲染的图片
@@ -382,6 +349,18 @@ export class Wordle extends plugin {
          feedback += this.generateResultMessage(e, gameData, isWin)
        
        await e.reply(feedback)
+     }
+     if (gameData.finished) {
+       const groupId = e.group_id
+       setTimeout(() => {
+         if (global.wordleGames && global.wordleGames[groupId]) {
+           delete global.wordleGames[groupId]
+         }
+         // 清理Canvas缓存
+         if (this.canvasCache && this.canvasCache.has(groupId)) {
+           this.canvasCache.delete(groupId)
+         }
+       }, 30000) // 5分钟后清理
      }
    }
    
@@ -460,7 +439,23 @@ export class Wordle extends plugin {
       const helpText = fs.readFileSync(helpPath, 'utf-8')
       await e.reply(helpText)
     } else {
-      await e.reply('Wordle 游戏帮助\n\n命令：\n#wordle - 开始新游戏\n#wordle [单词] - 提交猜测\n#wordle 答案 - 显示答案\n#wordle help - 显示帮助\n#wordle 词库 - 选择词库')
+      await e.reply(`Wordle 游戏帮助
+
+基本命令：
+#wordle - 开始新游戏（默认5字母）
+#wordle [数字] - 开始指定字母数量的游戏
+![单词] - 提交猜测
+#wordle (答案|ans) - 结束游戏
+#wordle 帮助 - 显示帮助
+#wordle 词库 - 切换词库
+
+使用示例：
+#apple - 使用前缀猜测
+!apple - 通过前缀猜词
+#wordle 7 - 开始7字母游戏
+#apple - 使用前缀猜测
+#wordle 词库- 切换词库（按群保存）
+`)
     }
     return true
   }
@@ -472,20 +467,15 @@ export class Wordle extends plugin {
    */
   async selectWordbank(e) {
     const groupId = e.group_id
-    
-    // 获取当前词库选择状态
     const currentWordbank = await this.getWordbankSelection(groupId)
-    
-    // 切换词库
     const newWordbank = currentWordbank === 'main' ? 'backup' : 'main'
     await this.setWordbankSelection(groupId, newWordbank)
-    
-    // 发送词库选择结果
     const currentWordbankName = currentWordbank === 'main' ? '四级词库' : '全词库'
     const newWordbankName = newWordbank === 'main' ? '四级词库' : '全词库'
-    
-    await e.reply(`词库已切换：${currentWordbankName} → ${newWordbankName}\n\n提示：\n- 四级词库：包含大学英语四级词汇，适合日常练习\n- 全词库：包含更全面的英语词汇，挑战性更高`)
-    
+    const wordbankDesc = newWordbank === 'main' ? 
+      '四级词库：包含大学英语四级词汇，适合日常练习' : 
+      '全词库：包含更全面的英语词汇，挑战性更高'
+    await e.reply(`词库已切换：${currentWordbankName} → ${newWordbankName}\n当前词库信息：\n- ${wordbankDesc}`)
     return true
   }
 
@@ -551,13 +541,12 @@ export class Wordle extends plugin {
   }
 
   /**
-   * 生成键盘提示 - 模拟网页版布局
+   * 生成键盘提示
    * @param guesses 已猜测的单词数组
    * @param targetWord 目标单词
    * @returns {string} 键盘提示字符串
    */
   generateKeyboardHint(guesses, targetWord) {
-    // 定义QWERTY键盘布局（不包含删除和回车键）
     const keyboardLayout = [
       ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
       ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
@@ -616,36 +605,47 @@ export class Wordle extends plugin {
   }
 
   /**
-    * 验证单词是否在词汇列表中
-    * @param {string} word - 要验证的单词
-    * @param {number} wordLength - 单词长度（可选，默认为单词实际长度）
-    * @returns {Promise<boolean>} - 单词是否有效
-    */
-    async isValidWord(word, wordLength = null, groupId = null) {
+   * 验证单词是否在词汇列表中
+   * @param {string} word - 要验证的单词
+   * @param {number} wordLength - 单词长度（可选，默认为单词实际长度）
+   * @returns {Promise<boolean>} - 单词是否有效
+   */
+  async isValidWord(word, wordLength = null) {
     const targetWord = word.toLowerCase()
     const length = wordLength || targetWord.length
     
-    // 从内存中获取单词列表（使用缓存）
+    // 快速检查长度（大多数无效猜测会在此被过滤）
+    if (!this.lengthStats) {
+      // 初始化长度统计
+      const { mainWords, backupWords } = await this.loadWords()
+      this.lengthStats = new Set()
+      for (const word of [...mainWords, ...backupWords]) {
+        this.lengthStats.add(word.length);
+      }
+    }
+    
+    // 如果长度不在词库中，直接返回false
+    if (!this.lengthStats.has(length)) {
+      return false
+    }
+    
     const { mainWords, backupWords } = await this.loadWords()
     
-    // 保持原有逻辑：先查主词库，存在则返回；不存在则查备用词库；均不存在才判定为无此单词
-    // 先在主词库中查找
     const foundInMain = mainWords.some(w => w.length === length && w === targetWord)
     if (foundInMain) {
       return true
     }
     
-    // 如果主词库中没有，则在备用词库中查找
     const foundInBackup = backupWords.some(w => w.length === length && w === targetWord)
     return foundInBackup
   }
 
-   /**
+  /**
    * 获取随机单词
    * @param {number} letterCount - 字母数量（默认为5）
    * @returns {Promise<string|null>}
    */
-   async getRandomWord(letterCount = 5, groupId = null) {
+  async getRandomWord(letterCount = 5, groupId = null) {
     // 从缓存中获取单词列表
     const { mainWords, backupWords } = await this.loadWords()
     
@@ -676,8 +676,8 @@ export class Wordle extends plugin {
    * @returns {Promise<*>}
    */
   async renderGame(e, gameData) {
+    const startTime = Date.now()
     try {
-      const { createCanvas } = await import('canvas')
       const guesses = Array.isArray(gameData.guesses) ? gameData.guesses : []
       const results = []
       
@@ -693,18 +693,14 @@ export class Wordle extends plugin {
       // 获取最大尝试次数
       const maxAttempts = gameData.maxAttempts || 6
       
+      // 样式计算
       const boxSize = 60
       const gap = 8
       const padding = 40
       const keyboardHeight = 180
-      // 增加底部空间以容纳版本信息
       const versionInfoHeight = 25
       const height = maxAttempts * boxSize + (maxAttempts - 1) * gap + 2 * padding + keyboardHeight + 15 + versionInfoHeight
-      
-      // 计算基于字母数量的宽度
       const wordBasedWidth = letterCount * boxSize + (letterCount - 1) * gap + 2 * padding
-      
-      // 计算基于键盘布局的宽度（确保键盘完整显示）
       const keyWidth = 36
       const keyGap = 5
       const keyboardLayout = [
@@ -719,22 +715,34 @@ export class Wordle extends plugin {
         const rowWidth = row.length * keyWidth + (row.length - 1) * keyGap
         maxKeyboardRowWidth = Math.max(maxKeyboardRowWidth, rowWidth)
       }
-      
-      // 键盘基于的宽度需要考虑左右padding
       const keyboardBasedWidth = maxKeyboardRowWidth + 2 * padding
-      
-      // 取两者中的较大值作为最终宽度，确保字母区域和键盘区域都能完全显示
       const width = Math.max(wordBasedWidth, keyboardBasedWidth)
-  
-      // 创建canvas
-      const canvas = createCanvas(width, height)
-      const ctx = canvas.getContext('2d')
-  
-      // 背景 - 浅灰色
+
+      const groupId = e.group_id
+      let canvas, ctx
+      
+      if (this.canvasCache.has(groupId)) {
+        canvas = this.canvasCache.get(groupId)
+        ctx = canvas.getContext('2d')
+        
+        // 检查Canvas尺寸是否匹配，如果不匹配则重新创建
+        if (canvas.width !== width || canvas.height !== height) {
+          canvas = createCanvas(width, height)
+          ctx = canvas.getContext('2d')
+          this.canvasCache.set(groupId, canvas)
+        } else {
+          ctx.fillStyle = '#f8f8f8'
+          ctx.fillRect(0, 0, canvas.width, canvas.height)
+        }
+      } else {
+        canvas = createCanvas(width, height)
+        ctx = canvas.getContext('2d')
+        this.canvasCache.set(groupId, canvas)
+      }
+
       ctx.fillStyle = '#f8f8f8'
       ctx.fillRect(0, 0, width, height)
-  
-      // 绘制游戏板（根据最大尝试次数动态调整行数）
+
       const boardWidth = letterCount * boxSize + (letterCount - 1) * gap
       const startX = (width - boardWidth) / 2
       
@@ -786,23 +794,18 @@ export class Wordle extends plugin {
           }
         }
       }
-      
-      // 绘制键盘提示（游戏开始就显示）
       this.drawKeyboardHint(ctx, width, padding, height - keyboardHeight - versionInfoHeight - 10, gameData.guesses, gameData.targetWord)
       
-      // 绘制版本信息
       try {
-        // 尝试读取plugin的package.json获取版本信息
-        let pluginVersion = '0.0.3' // 默认版本
+        let pluginVersion = '0.0.5'
         const pluginPackagePath = path.join(process.cwd(), './plugins/wordle-plugin/package.json')
         if (fs.existsSync(pluginPackagePath)) {
           const pluginPackage = JSON.parse(fs.readFileSync(pluginPackagePath, 'utf8'))
           pluginVersion = pluginPackage.version || pluginVersion
         }
         
-        // 尝试读取根目录的package.json获取云崽名称
-        let yunzaiName = 'Yunzai' // 默认名称
-        let yunzaiVersion = '3.1.4'
+        let yunzaiName = '未知Yunzai'
+        let yunzaiVersion = '3.1.3'
         try {
           const yunzaiPackagePath = path.join(process.cwd(), './package.json')
           if (fs.existsSync(yunzaiPackagePath)) {
@@ -816,7 +819,6 @@ export class Wordle extends plugin {
             }
           }
         } catch (error) {
-          // 如果无法读取根目录的package.json，使用默认值
           logger.debug('无法读取云崽package.json:', error.message)
         }
         
@@ -830,9 +832,7 @@ export class Wordle extends plugin {
         logger.error('绘制版本信息时出错:', error)
       }
       
-      // 转换为buffer
       const buffer = canvas.toBuffer('image/png')
-      // 构建符合系统要求的图片对象，添加必要参数
       const imageSegment = {
         type: 'image',
         file: buffer,
@@ -840,11 +840,8 @@ export class Wordle extends plugin {
         filename: `wordle-${Date.now()}.png`
       }
       
-      // 构建消息数组（图文混排）
       if (gameData.gameState === 'win') {
         const messages = [`🎉 恭喜 ${e.sender.card} 猜中了！\n答案是 ${gameData.targetWord}`, imageSegment]
-        
-        // 添加单词释义
         const definition = this.getWordDefinition(gameData.targetWord)
         if (definition) {
           messages.push(`【释义】：${definition}`)
@@ -855,8 +852,6 @@ export class Wordle extends plugin {
         const messages = []
         messages.push(`😔 很遗憾，正确答案是 ${gameData.targetWord}`)
         messages.push(imageSegment)
-        
-        // 添加单词释义
         const definition = this.getWordDefinition(gameData.targetWord)
         if (definition) {
           messages.push(`【释义】：${definition}`)
@@ -867,13 +862,18 @@ export class Wordle extends plugin {
         return [`你还有 ${gameData.maxAttempts - gameData.attempts} 次机会`, imageSegment]
       }
     } catch (err) {
-      logger.error('渲染游戏界面时出错:', err)
+      logger.error(`[Wordle] 渲染错误 [群:${e.group_id}]`, err)
       return null
+    } finally {
+      const renderTime = Date.now() - startTime
+      if (renderTime > 1000) {
+        logger.warn(`[Wordle] 渲染性能警告 [群:${e.group_id}] 耗时:${renderTime}ms`)
+      }
     }
   }
   
   /**
-   * 在Canvas上绘制键盘提示 - 优化版（增加按键大小和间距）
+   * 在Canvas上绘制键盘提示
    * @param ctx Canvas上下文
    * @param width 画布宽度
    * @param padding 内边距
@@ -882,23 +882,16 @@ export class Wordle extends plugin {
    * @param targetWord 目标单词
    */
   drawKeyboardHint(ctx, width, padding, startY, guesses, targetWord) {
-    // 定义QWERTY键盘布局（不包含删除和回车键）
     const keyboardLayout = [
       ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
       ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
       ['Z', 'X', 'C', 'V', 'B', 'N', 'M']
     ]
-    
-    // 获取字母状态（复用现有方法）
     const letterStatus = this.getLetterStatus(guesses, targetWord)
-    
-    // 键盘设置 - 优化版（减小按键大小和间距，确保能看到边框）
     const keyWidth = 36
     const keyHeight = 42
     const keyGap = 5
     const rowGap = 8
-    
-    // 计算每一行的起始X坐标，使其居中
     for (let rowIndex = 0; rowIndex < keyboardLayout.length; rowIndex++) {
       const row = keyboardLayout[rowIndex]
       const rowWidth = row.length * keyWidth + (row.length - 1) * keyGap
@@ -1044,8 +1037,7 @@ export class Wordle extends plugin {
       } else {
         logger.error(`备用单词文件不存在: ${backupWordsFile}`);
       }
-      
-      // 更新缓存
+
       this.wordsCache = {
         data: {
           mainWords: mainWords,
@@ -1117,35 +1109,23 @@ export class Wordle extends plugin {
    * @returns {string} - 清理后的释义文本
    */
   extractDefinition(text) {
-    // 定义常见的词性缩写模式
     const posPattern = /[a-zA-Z]+\./g
-    
-    // 提取所有词性标记
     const posMatches = text.match(posPattern) || []
-    
-    // 如果没有词性标记，直接返回文本
     if (posMatches.length === 0) {
       return text.trim()
     }
-    
-    // 处理单个词性的情况
     if (posMatches.length === 1 && text.startsWith(posMatches[0])) {
       return text.substring(posMatches[0].length).trim()
     }
-    
-    // 处理多个词性的情况
     let result = ''
     let currentPos = ''
     let currentDef = ''
     let inDefinition = false
     
-    // 遍历文本的每个字符
     for (let i = 0; i < text.length; i++) {
-      // 检查是否开始新的词性标记
       let foundPos = false
       for (const pos of posMatches) {
         if (text.substr(i, pos.length) === pos) {
-          // 如果已经有积累的释义，添加到结果
           if (currentDef.trim()) {
             if (result) result += '；'
             result += currentDef.trim()

@@ -1,17 +1,13 @@
 {
   "name": "wordle-plugin",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Wordle游戏插件 for 云崽",
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "app": "echo \"？你想干啥，插件不能独立启动，请检查当前运行目录\" && exit 1"
   },
-  "keywords": [
-    "wordle",
-    "game",
-    "yunzai"
-  ],
   "author": "Pimeng",
   "license": "GPL-3.0",
   "dependencies": {
