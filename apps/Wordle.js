@@ -242,25 +242,15 @@ export class Wordle extends plugin {
       const gameStartMessage = [
         `🎮 Wordle猜词游戏开始啦！
 `,
-        `游戏规则很简单：每轮猜一个${letterCount}字母的英文单词
-`,
-        `🟩 = 字母正确且位置正确
-`,
-        `🟨 = 字母正确但位置错误
-`,
-        `⬜ = 字母不存在于答案中
-`,
         `当前词库：${wordbankName}
 `,
         `你有${maxAttempts}次机会
-`,
-        `请使用前缀猜测：#apple 或 !apple
 `,
         img
       ]
       await e.reply(gameStartMessage)
     } else {
-      await e.reply(`🎮 Wordle猜词游戏开始啦！\n请猜测一个${letterCount}字母单词\n当前词库：${wordbankName}\n你有${maxAttempts}次机会，请使用前缀#或!进行猜测，例如：#apple 或 !apple\n🟩=字母正确且位置正确，🟨=字母正确但位置错误，⬜=字母不存在`)
+      await e.reply(`🎮 Wordle猜词游戏开始啦！\n请猜测一个${letterCount}字母单词\n当前词库：${wordbankName}\n你有${maxAttempts}次机会，请使用前缀#或!进行猜测\n例如：#apple 或 !apple\n🟩字母正确且位置正确\n🟨字母正确但位置错误\n⬜字母不存在`)
     }
     
     return true
@@ -296,7 +286,7 @@ export class Wordle extends plugin {
      // 验证单词是否在单词列表中
      if (!(await this.isValidWord(guess, game.letterCount, groupId))) {
        // 发送提示并在5秒后撤回
-       await e.reply(`"${guess}" 不是有效的英文单词哦~请输入${game.letterCount || 5}个字母的英文单词。`, false, {recallMsg: 30})
+       await e.reply(`"${guess}" 不是有效的英文单词哦~\n请输入${game.letterCount || 5}个字母的英文单词。`, false, {recallMsg: 30})
        return true
      }
      game.guesses.push(guess)
@@ -846,7 +836,7 @@ export class Wordle extends plugin {
         if (definition) {
           messages.push(`【释义】：${definition}`)
         }
-        messages.push(`\n你用了 ${gameData.attempts} 次猜测。\n成绩不错，再来一局吧！`)
+        message += `\n ${gameData.attempts} 次就猜出来了\n成绩不错，再来一局吧！`
         return messages
       } else if (gameData.gameState === 'lose') {
         const messages = []
