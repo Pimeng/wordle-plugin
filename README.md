@@ -1,4 +1,4 @@
-> [!warning]
+f> [!warning]
 > 目前仍在 Beta 版，有任何使用问题欢迎提 issue
 
 # Wordle 游戏插件
@@ -19,6 +19,12 @@ git clone --depth=1 https://github.com/Pimeng/wordle-plugin.git ./plugins/wordle
 
 ```console
 git clone --depth=1 https://gitee.com/Pimeng/wordle-plugin.git ./plugins/wordle-plugin
+```
+
+### github代理加速
+
+```console
+git clone --depth=1 https://gh-proxy.com/https://github.com/Pimeng/wordle-plugin.git ./plugins/wordle-plugin
 ```
 
 ### 2. 安装依赖
