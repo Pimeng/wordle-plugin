@@ -244,8 +244,6 @@ export class Wordle extends plugin {
 `,
         `当前词库：${wordbankName}
 `,
-        `你有${maxAttempts}次机会
-`,
         img
       ]
       await e.reply(gameStartMessage)
@@ -836,7 +834,7 @@ export class Wordle extends plugin {
         if (definition) {
           messages.push(`【释义】：${definition}`)
         }
-        message.push(`\n ${gameData.attempts} 次就猜出来了\n成绩不错，再来一局吧！`)
+        messages.push(`\n ${gameData.attempts} 次就猜出来了\n成绩不错，再来一局吧！`)
         return messages
       } else if (gameData.gameState === 'lose') {
         const messages = []
