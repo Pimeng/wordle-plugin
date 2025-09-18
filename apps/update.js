@@ -57,10 +57,6 @@ export class WordleUpdate extends plugin {
       
       // 执行git pull命令
       let ret = await this.execCommand(command, pluginPath);
-      
-      // 安装依赖
-      await this.installDependencies(pluginPath);
-      
       // 检查更新结果
       if (ret.error) {
         this.handleGitError(ret.error, ret.stdout, e);
@@ -159,31 +155,6 @@ export class WordleUpdate extends plugin {
     } catch (error) {
       logger.error(`获取更新时间失败: ${error.message}`);
       return '获取时间失败';
-    }
-  }
-
-  /**
-   * 安装依赖
-   */
-  async installDependencies(pluginPath) {
-    try {
-      // 检查是否有package.json文件
-      const packageJsonPath = path.join(pluginPath, 'package.json');
-      if (fs.existsSync(packageJsonPath)) {
-        logger.mark('[Wordle更新] 正在安装/更新依赖...');
-        // 尝试使用pnpm安装依赖
-        let pnpmCmd = 'pnpm i --registry=https://registry.npmmirror.com';
-        let pnpmRet = await this.execCommand(pnpmCmd, pluginPath);
-        
-        // 如果pnpm失败，尝试使用npm
-        if (pnpmRet.error) {
-          logger.warn('[Wordle更新] pnpm安装依赖失败，尝试使用npm...');
-          let npmCmd = 'npm i --registry=https://registry.npmmirror.com';
-          await this.execCommand(npmCmd, pluginPath);
-        }
-      }
-    } catch (error) {
-      logger.error(`安装依赖失败: ${error.message}`);
     }
   }
 
