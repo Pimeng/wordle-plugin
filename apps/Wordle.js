@@ -9,29 +9,20 @@ const REGEX_WORDLE_CMD = /^#[Ww]ordle(.*)$/i
 const REGEX_ALPHA = /^[a-zA-Z]+$/
 const REGEX_NUMBER = /^\d+$/
 
-// 游戏数据存储在内存中
-global.wordleGames = global.wordleGames || {}
-
 export class Wordle extends plugin {
   constructor() {
     super({
-      /** 功能名称 */
       name: 'Wordle',
-      /** 功能描述 */
       dsc: '猜单词游戏',
       event: 'message', 
-      /** 优先级，数字越小等级越高 */
       priority: 5000,
       rule: [
         {
-          /** 命令正则匹配 */
           reg: REGEX_WORDLE_CMD,
-          /** 执行方法 */
           fnc: 'wordle'
         },
         {
-          reg: /^(?:#|!)?[a-zA-Z]+$/,
-          /** 执行方法 */
+          reg: /^(?:#|!|！)?[a-zA-Z]+$/,
           fnc: 'listenMessages',
           log: false
         }
@@ -44,6 +35,7 @@ export class Wordle extends plugin {
     this.wordsCache = null
     this.cooldownTime = 10000 // 5秒冷却时间
     this.WORDBANK_KEY_PREFIX = 'wordle:wordbank:'
+    this.GAME_KEY_PREFIX = 'wordle:game:'
     this.userCooldowns = new Map()
     this.canvasCache = new Map()
     this.lengthStats = null
@@ -57,6 +49,94 @@ export class Wordle extends plugin {
     }
 
   }
+
+  /**
+   * 从Redis获取游戏数据
+   * @param {string} groupId - 群组ID
+   * @returns {Promise<Object|null>} - 游戏数据对象或null
+   */
+  async getGameData(groupId) {
+    try {
+      if (!global.redis) {
+        // Redis不可用时，使用内存中的数据
+        return global.wordleGames?.[groupId] || null
+      }
+      
+      const key = this.GAME_KEY_PREFIX + groupId
+      const gameDataStr = await global.redis.get(key)
+      
+      if (gameDataStr) {
+        const gameData = JSON.parse(gameDataStr)
+        // 将时间戳字符串转换回数字
+        if (gameData.startTime && typeof gameData.startTime === 'string') {
+          gameData.startTime = parseInt(gameData.startTime, 10)
+        }
+        return gameData
+      }
+      return null
+    } catch (error) {
+      logger.error(`获取游戏数据时出错:`, error)
+      return global.wordleGames?.[groupId] || null
+    }
+  }
+
+  /**
+   * 保存游戏数据到Redis
+   * @param {string} groupId - 群组ID
+   * @param {Object} gameData - 游戏数据对象
+   * @returns {Promise<boolean>} - 是否保存成功
+   */
+  async saveGameData(groupId, gameData) {
+    try {
+      // 总是在内存中保留一份副本，作为Redis不可用时的备份
+      if (!global.wordleGames) {
+        global.wordleGames = {}
+      }
+      global.wordleGames[groupId] = gameData
+      
+      if (!global.redis) {
+        logger.warn('Redis未启用，游戏数据将仅保存在内存中')
+        return false
+      }
+      
+      const key = this.GAME_KEY_PREFIX + groupId
+      const gameDataStr = JSON.stringify(gameData)
+      
+      // 设置过期时间：24小时（86400秒）
+      await global.redis.set(key, gameDataStr, { EX: 86400 })
+      return true
+    } catch (error) {
+      logger.error(`保存游戏数据时出错:`, error)
+      return false
+    }
+  }
+
+  /**
+   * 删除游戏数据
+   * @param {string} groupId - 群组ID
+   * @returns {Promise<boolean>} - 是否删除成功
+   */
+  async deleteGameData(groupId) {
+    try {
+      // 从内存中删除
+      if (global.wordleGames && global.wordleGames[groupId]) {
+        delete global.wordleGames[groupId]
+      }
+      
+      if (!global.redis) {
+        return true
+      }
+      
+      const key = this.GAME_KEY_PREFIX + groupId
+      await global.redis.del(key)
+      return true
+    } catch (error) {
+      logger.error(`删除游戏数据时出错:`, error)
+      return false
+    }
+  }
+
+
 
   /**
    * 监听所有消息，用于游戏进行中的直接猜测
@@ -99,7 +179,8 @@ export class Wordle extends plugin {
         return true
       }
       // 检查群聊中是否有进行中的游戏
-      if (global.wordleGames[groupId] && !global.wordleGames[groupId].finished) {
+      const game = await this.getGameData(groupId)
+      if (game && !game.finished) {
         // 忽略以#开头的命令消息，让wordle方法处理
         if (message.startsWith('wordle')) {
           return false
@@ -114,7 +195,6 @@ export class Wordle extends plugin {
           return true
         }
         // 获取当前游戏的字母数量
-        const game = global.wordleGames[groupId]
         const expectedLength = game.letterCount || 5
         
         if (message.length !== expectedLength) {
@@ -174,7 +254,7 @@ export class Wordle extends plugin {
     // 处理猜测
     if (/^[a-z]+$/.test(input)) {
       // 获取当前游戏的字母数量
-      const currentGame = global.wordleGames[groupId]
+      const currentGame = await this.getGameData(groupId)
       const expectedLength = currentGame ? currentGame.letterCount : 5
       
       if (input.length === expectedLength) {
@@ -197,7 +277,8 @@ export class Wordle extends plugin {
     const groupId = e.group_id
     
     // 检查群聊是否已有进行中的游戏
-    if (global.wordleGames[groupId] && !global.wordleGames[groupId].finished) {
+    const existingGame = await this.getGameData(groupId)
+    if (existingGame && !existingGame.finished) {
       await e.reply('当前群聊已经有一个进行中的游戏了哦！请先完成当前游戏或使用 "#wordle 答案" 或 "#wordle ans" 结束游戏。')
       return true
     }
@@ -217,7 +298,7 @@ export class Wordle extends plugin {
     const wordbankName = currentWordbank === 'main' ? '四级词库' : '全词库'
     
     // 初始化游戏数据
-    global.wordleGames[groupId] = {
+    const gameData = {
       targetWord: targetWord,
       guesses: [],
       attempts: 0,
@@ -227,8 +308,11 @@ export class Wordle extends plugin {
       letterCount: letterCount
     }
     
+    // 保存游戏数据到Redis
+    await this.saveGameData(groupId, gameData)
+    
     // 使用Puppeteer渲染游戏界面
-    const gameData = {
+    const renderData = {
       targetWord: targetWord,
       guesses: [],
       attempts: 0,
@@ -237,7 +321,7 @@ export class Wordle extends plugin {
       gameState: 'playing'
     }
     
-    const img = await this.renderGame(e, gameData)
+    const img = await this.renderGame(e, renderData)
     if (img) {
       const gameStartMessage = [
         `🎮 Wordle猜词游戏开始啦！
@@ -262,12 +346,11 @@ export class Wordle extends plugin {
    */
    async processGuess(e, guess, groupId) {
      // 检查群聊中是否有进行中的游戏
-     if (!global.wordleGames[groupId] || global.wordleGames[groupId].finished) {
+     let game = await this.getGameData(groupId)
+     if (!game || game.finished) {
        await e.reply('当前群聊没有进行中的游戏！请先发送 "#wordle" 开始游戏。')
        return true
      }
-     
-     const game = global.wordleGames[groupId]
      
      // 检查猜测次数
      if (game.attempts >= game.maxAttempts) {
@@ -297,6 +380,9 @@ export class Wordle extends plugin {
      } else if (game.attempts >= game.maxAttempts) {
        game.finished = true
      }
+     
+     // 保存更新后的游戏数据到Redis
+     await this.saveGameData(groupId, game)
      
      // 准备游戏状态数据
      const gameData = {
@@ -340,10 +426,9 @@ export class Wordle extends plugin {
      }
      if (gameData.finished) {
        const groupId = e.group_id
-       setTimeout(() => {
-         if (global.wordleGames && global.wordleGames[groupId]) {
-           delete global.wordleGames[groupId]
-         }
+       setTimeout(async () => {
+         // 从Redis中删除游戏数据
+         await this.deleteGameData(groupId)
          // 清理Canvas缓存
          if (this.canvasCache && this.canvasCache.has(groupId)) {
            this.canvasCache.delete(groupId)
@@ -395,13 +480,18 @@ export class Wordle extends plugin {
   async giveUpGame(e) {
     const groupId = e.group_id
     
-    if (!global.wordleGames[groupId] || global.wordleGames[groupId].finished) {
+    // 获取游戏数据
+    const game = await this.getGameData(groupId)
+    if (!game || game.finished) {
       await e.reply('当前群聊没有进行中的游戏哦qwq')
       return true
     }
     
-    const targetWord = global.wordleGames[groupId].targetWord
-    global.wordleGames[groupId].finished = true
+    const targetWord = game.targetWord
+    game.finished = true
+    
+    // 保存更新后的游戏状态
+    await this.saveGameData(groupId, game)
     
     let message = `游戏结束了哦
 【单词】：${targetWord}`
@@ -413,6 +503,16 @@ export class Wordle extends plugin {
     }
     
     await e.reply(message)
+    
+    // 5分钟后清理游戏数据
+    setTimeout(async () => {
+      await this.deleteGameData(groupId)
+      // 清理Canvas缓存
+      if (this.canvasCache && this.canvasCache.has(groupId)) {
+        this.canvasCache.delete(groupId)
+      }
+    }, 30000)
+    
     return true
   }
 
@@ -494,10 +594,10 @@ export class Wordle extends plugin {
        if (result[i].status === 'pending') {
          const index = targetLetters.indexOf(guessLetters[i])
          if (index !== -1) {
-           result[i].status = 'present' // 黄色
-           targetLetters[index] = null // 标记为已使用
+           result[i].status = 'present'
+           targetLetters[index] = null
          } else {
-           result[i].status = 'absent' // 灰色
+           result[i].status = 'absent'
          }
        }
      }
@@ -602,9 +702,7 @@ export class Wordle extends plugin {
     const targetWord = word.toLowerCase()
     const length = wordLength || targetWord.length
     
-    // 快速检查长度（大多数无效猜测会在此被过滤）
     if (!this.lengthStats) {
-      // 初始化长度统计
       const { mainWords, backupWords } = await this.loadWords()
       this.lengthStats = new Set()
       for (const word of [...mainWords, ...backupWords]) {
@@ -612,7 +710,6 @@ export class Wordle extends plugin {
       }
     }
     
-    // 如果长度不在词库中，直接返回false
     if (!this.lengthStats.has(length)) {
       return false
     }
@@ -699,10 +796,8 @@ export class Wordle extends plugin {
       
       // 找出最宽的一行键盘
       let maxKeyboardRowWidth = 0
-      for (const row of keyboardLayout) {
-        const rowWidth = row.length * keyWidth + (row.length - 1) * keyGap
-        maxKeyboardRowWidth = Math.max(maxKeyboardRowWidth, rowWidth)
-      }
+      for (const row of keyboardLayout)
+        maxKeyboardRowWidth = Math.max(maxKeyboardRowWidth, row.length * keyWidth + (row.length - 1) * keyGap)
       const keyboardBasedWidth = maxKeyboardRowWidth + 2 * padding
       const width = Math.max(wordBasedWidth, keyboardBasedWidth)
 
@@ -738,12 +833,11 @@ export class Wordle extends plugin {
         for (let col = 0; col < letterCount; col++) {
           const x = startX + col * (boxSize + gap)
           const y = padding + row * (boxSize + gap)
-  
-          // 设置颜色
+
           let bgColor = '#ffffff'
           let borderColor = '#d3d6da'
           let letter = ''
-  
+
           if (row < guesses.length && typeof guesses[row] === 'string' && col < guesses[row].length) {
             letter = guesses[row][col]
             if (results[row] && results[row][col]) {
@@ -764,15 +858,13 @@ export class Wordle extends plugin {
               }
             }
           }
-  
-          // 绘制方块
+
           ctx.fillStyle = bgColor
           ctx.fillRect(x, y, boxSize, boxSize)
           ctx.strokeStyle = borderColor
           ctx.lineWidth = 2
           ctx.strokeRect(x, y, boxSize, boxSize)
-  
-          // 绘制字母
+
           if (letter) {
             ctx.fillStyle = bgColor === '#ffffff' ? '#1a1a1b' : '#ffffff'
             ctx.font = 'bold 32px Arial'
@@ -798,13 +890,10 @@ export class Wordle extends plugin {
           const yunzaiPackagePath = path.join(process.cwd(), './package.json')
           if (fs.existsSync(yunzaiPackagePath)) {
             const yunzaiPackage = JSON.parse(fs.readFileSync(yunzaiPackagePath, 'utf8'))
-            if (yunzaiPackage.name) {
+            if (yunzaiPackage.name)
               yunzaiName = yunzaiPackage.name.replace(/(^\w|-\w)/g, s => s.toUpperCase())
-            }
-
-            if (yunzaiPackage.version) {
+            if (yunzaiPackage.version)
               yunzaiVersion = yunzaiPackage.version
-            }
           }
         } catch (error) {
           logger.debug('无法读取云崽package.json:', error.message)
@@ -831,9 +920,7 @@ export class Wordle extends plugin {
       if (gameData.gameState === 'win') {
         const messages = [`🎉 恭喜 ${e.sender.card} 猜中了！\n答案是 ${gameData.targetWord}`, imageSegment]
         const definition = this.getWordDefinition(gameData.targetWord)
-        if (definition) {
-          messages.push(`【释义】：${definition}`)
-        }
+        if (definition) messages.push(`【释义】：${definition}`)
         messages.push(`\n ${gameData.attempts} 次就猜出来了\n成绩不错，再来一局吧！`)
         return messages
       } else if (gameData.gameState === 'lose') {
@@ -841,9 +928,7 @@ export class Wordle extends plugin {
         messages.push(`😔 很遗憾，正确答案是 ${gameData.targetWord}`)
         messages.push(imageSegment)
         const definition = this.getWordDefinition(gameData.targetWord)
-        if (definition) {
-          messages.push(`【释义】：${definition}`)
-        }
+        if (definition) messages.push(`【释义】：${definition}`)
         
         return messages
       } else {
@@ -885,15 +970,13 @@ export class Wordle extends plugin {
       const rowWidth = row.length * keyWidth + (row.length - 1) * keyGap
       const startX = (width - rowWidth) / 2
       
-      // 绘制该行的每个按键
       for (let colIndex = 0; colIndex < row.length; colIndex++) {
         const letter = row[colIndex]
         const status = letterStatus.get(letter.toLowerCase())
         const x = startX + colIndex * (keyWidth + keyGap)
         const y = startY + rowIndex * (keyHeight + rowGap)
         
-        // 设置按键颜色
-        let bgColor = '#d3d6da' // 默认颜色
+        let bgColor = '#d3d6da'
         switch (status) {
           case 'correct':
             bgColor = '#6aaa64'
@@ -906,13 +989,11 @@ export class Wordle extends plugin {
             break
         }
         
-        // 绘制按键 - 增加圆角
         ctx.fillStyle = bgColor
         ctx.beginPath()
         ctx.roundRect(x, y, keyWidth, keyHeight, 6)
         ctx.fill()
         
-        // 绘制字母 - 使用更清晰的字体
         ctx.fillStyle = bgColor === '#d3d6da' ? '#1a1a1b' : '#ffffff'
         ctx.font = 'bold 18px Arial'
         ctx.textAlign = 'center'
@@ -932,26 +1013,21 @@ export class Wordle extends plugin {
     const alphabet = 'abcdefghijklmnopqrstuvwxyz'
     const letterStatus = new Map()
     
-    // 初始化所有字母状态为未知
-    for (const letter of alphabet) {
+    for (const letter of alphabet)
       letterStatus.set(letter, 'unknown')
-    }
     
-    // 根据猜测结果更新字母状态
     for (const guess of guesses) {
       const result = this.checkGuess(guess, targetWord)
       for (let i = 0; i < guess.length; i++) {
         const letter = guess[i]
         const status = result[i].status
         
-        // 更新字母状态，优先级：correct > present > absent > unknown
-        if (status === 'correct') {
+        if (status === 'correct')
           letterStatus.set(letter, 'correct')
-        } else if (status === 'present' && letterStatus.get(letter) !== 'correct') {
+        else if (status === 'present' && letterStatus.get(letter) !== 'correct')
           letterStatus.set(letter, 'present')
-        } else if (status === 'absent' && letterStatus.get(letter) === 'unknown') {
+        else if (status === 'absent' && letterStatus.get(letter) === 'unknown')
           letterStatus.set(letter, 'absent')
-        }
       }
     }
     
@@ -1050,9 +1126,7 @@ export class Wordle extends plugin {
   * @returns {string} - 单词释义
   */
   getWordDefinition(word) {
-    if (!fs.existsSync(this.wordsPath)) {
-      return ''
-    }
+    if (!fs.existsSync(this.wordsPath)) return ''
     
     try {
       const wordsContent = fs.readFileSync(this.wordsPath, 'utf-8')
@@ -1062,25 +1136,19 @@ export class Wordle extends plugin {
         let trimmedLine = line.trim()
         if (!trimmedLine) continue
         
-        // 处理行号信息（如"314| banner n.旗，旗帜，横幅"）
         if (trimmedLine.includes('|')) {
           const parts = trimmedLine.split('|')
           trimmedLine = parts[parts.length - 1].trim()
         }
         
-        // 找到第一个空格
         const firstSpaceIndex = trimmedLine.indexOf(' ')
         if (firstSpaceIndex === -1) continue
         
         const currentWord = trimmedLine.substring(0, firstSpaceIndex).trim().toLowerCase()
         
         if (currentWord === word.toLowerCase()) {
-          // 提取释义部分（词性后面的内容）
           const definitionPart = trimmedLine.substring(firstSpaceIndex + 1).trim()
-          
-          // 优化的释义提取逻辑
           let definition = this.extractDefinition(definitionPart)
-          
           return definition || ''
         }
       }
@@ -1099,14 +1167,11 @@ export class Wordle extends plugin {
   extractDefinition(text) {
     const posPattern = /[a-zA-Z]+\./g
     const posMatches = text.match(posPattern) || []
-    if (posMatches.length === 0) {
-      return text.trim()
-    }
-    if (posMatches.length === 1 && text.startsWith(posMatches[0])) {
+    if (posMatches.length === 0) return text.trim()
+    if (posMatches.length === 1 && text.startsWith(posMatches[0]))
       return text.substring(posMatches[0].length).trim()
-    }
+    
     let result = ''
-    let currentPos = ''
     let currentDef = ''
     let inDefinition = false
     
@@ -1119,38 +1184,25 @@ export class Wordle extends plugin {
             result += currentDef.trim()
             currentDef = ''
           }
-          
-          currentPos = pos
           inDefinition = true
-          i += pos.length - 1 // 跳过词性标记
+          i += pos.length - 1
           foundPos = true
           break
         }
       }
       
-      // 如果不是词性标记，且在释义部分，添加到当前释义
-      if (!foundPos && inDefinition) {
+      if (!foundPos && inDefinition)
         currentDef += text[i]
-      }
     }
     
-    // 添加最后一个释义
     if (currentDef.trim()) {
       if (result) result += '；'
       result += currentDef.trim()
     }
     
-    // 如果没有提取到有效释义，尝试使用简单的正则方法
-    if (!result) {
-      // 移除所有词性标记
-      result = text.replace(posPattern, '').trim()
-    }
+    if (!result) result = text.replace(posPattern, '').trim()
     
-    // 清理多余的空格和分号
-    result = result.replace(/\s+/g, ' ')
-    result = result.replace(/；+/g, '；')
-    result = result.trim()
-    
+    result = result.replace(/\s+/g, ' ').replace(/；+/g, '；').trim()
     return result
   }
 

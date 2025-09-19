@@ -15,28 +15,54 @@
 git clone --depth=1 https://github.com/Pimeng/wordle-plugin.git ./plugins/wordle-plugin
 ```
 
-### gitee源
+### gitee源（国内用户推荐，更新可能延迟）
 
 ```console
 git clone --depth=1 https://gitee.com/Pimeng/wordle-plugin.git ./plugins/wordle-plugin
 ```
 
-### github代理加速
+### github代理加速（速度可能不稳定）
 
 ```console
 git clone --depth=1 https://gh-proxy.com/https://github.com/Pimeng/wordle-plugin.git ./plugins/wordle-plugin
 ```
 
-### 2. 安装依赖
+### 2. 安装依赖（By 千奈千祁）
+
+#### Linux安装
+
+##### I. Ubuntu / Debian
 
 ```console
-cd ./plugins/wordle-plugin
-pnpm i -P
+sudo apt update
+sudo apt install -y build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
 ```
+
+##### I. CentOS / RHEL
+
+```console
+sudo yum install -y gcc-c++ cairo-devel pango-devel libjpeg-turbo-devel giflib-devel librsvg2-devel
+```
+
+##### II. 编译安装canvas
+```console
+cd plugins/wordle-plugin
+npm i
+npm install canvas --build-from-source
+```
+#### Windows & Other
+
+```console
+cd plugins/wordle-plugin
+pnpm i
+pnpm approve-builds
+```
+
+### 3. 重启云崽之后就可以食用啦
 
 ### 常见问题
 
-如果渲染报错，请尝试手动安装canvas依赖
+如果渲染报错，请尝试使用pnpm安装canvas依赖
 ```console
 pnpm i canvas
 ```
@@ -61,9 +87,8 @@ canvas还是有问题那就自己问AI自求多福吧……
 - 提升群聊环境的友好度
 
 ### 3. 多前缀支持 🎯
-- 支持 `#apple` `!apple` 三种前缀格式
-- 兼容原有直接发送单词的方式
-- 满足不同用户的使用习惯
+- 支持 `#apple` `!apple` 两种前缀格式
+- 避免因为插件优先级被抢了导致不能正常进行游戏
 
 ### 4. 大小写兼容 🔤
 - 完全支持大小写混合输入
@@ -106,20 +131,6 @@ canvas还是有问题那就自己问AI自求多福吧……
 - 键盘提示更新
 - 单词释义（游戏结束时）
 
-## 📁 文件结构
-
-```
-wordle-plugin/
-├── apps/Wordle.js      # 主程序文件
-├── resources/
-│   ├── words.txt       # 单词库
-│   └── help.txt        # 帮助文档
-├── data/games.json     # 游戏数据存储
-├── package.json        # 依赖配置
-└── README.md           # 说明文档
-└── index.js            # 入口文件
-```
-
 ## 🔧 技术特性
 
 - **Node.js Canvas渲染**：高质量游戏界面
@@ -127,7 +138,17 @@ wordle-plugin/
 - **正则匹配**：精准命令识别
 - **错误处理**：完善的异常捕获
 
+## 插件效果预览
+
+![game-preview](https://gitee.com/pimeng/wordle-plugin/raw/main/resources/game-preview.png)
+
 ## 📝 更新日志
+
+### v0.0.5 (当前版本)
+
+- ✅ 重构大量代码
+- ✅ 改用Redis储存游戏数据
+- ✅ 文本提示进一步优化
 
 ### v0.0.4 (当前版本)
 
