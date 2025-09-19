@@ -140,7 +140,7 @@ canvas还是有问题那就自己问AI自求多福吧……
 
 ## 插件效果预览
 
-![game-preview](https://gitee.com/pimeng/wordle-plugin/raw/main/resources/game-preview.png)
+<img src="https://gitee.com/pimeng/wordle-plugin/raw/main/resources/game-preview.png" width="60%" />
 
 ## 📝 更新日志
 
