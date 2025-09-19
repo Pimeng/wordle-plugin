@@ -1,6 +1,6 @@
 {
   "name": "wordle-plugin",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Wordle游戏插件 for 云崽",
   "main": "index.js",
   "type": "module",
@@ -11,6 +11,7 @@
   "author": "Pimeng",
   "license": "GPL-3.0",
   "dependencies": {
-    "canvas": "^3.2.0"
+    "canvas": "^3.2.0",
+    "yaml": "^2.3.4"
   }
 }
