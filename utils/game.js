@@ -299,7 +299,8 @@ class WordleGame {
       const definition = await this.utils.word.getWordDefinition(gameData.targetWord);
       if (definition) {
         message += `
-【释义】：\n${definition}`;
+【释义】：
+${definition}`;
       }
       
       message += `\n你用了 ${gameData.attempts} 次猜测。\n成绩不错，再来一局吧！`;
@@ -310,7 +311,8 @@ class WordleGame {
       const definition = await this.utils.word.getWordDefinition(gameData.targetWord);
       if (definition) {
         message += `
-【释义】：\n${definition}`;
+【释义】：
+${definition}`;
       }
       message += `\n别灰心，再来一局吧！`;
       return message;
