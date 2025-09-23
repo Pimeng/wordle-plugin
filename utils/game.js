@@ -268,16 +268,17 @@ class WordleGame {
       await e.reply('渲染失败，请稍后再试或联系开发者获取帮助');
     }
     if (gameData.finished) {
-      const groupId = e.group_id;
-      setTimeout(async () => {
-        // 删除游戏数据
-        await this.utils.db.deleteGameData(groupId);
-        // 清理Canvas缓存
-        if (this.utils.renderer.canvasCache && this.utils.renderer.canvasCache.has(groupId)) {
-          this.utils.renderer.canvasCache.delete(groupId);
-        }
-      }, 30000); // 30秒后清理
-    }
+        const groupId = e.group_id;
+        // 使用箭头函数确保正确的this上下文
+        setTimeout(async () => {
+          // 删除游戏数据
+          await this.utils.db.deleteGameData(groupId);
+          // 清理Canvas缓存
+          if (this.utils.renderer.canvasCache && this.utils.renderer.canvasCache.has(groupId)) {
+            this.utils.renderer.canvasCache.delete(groupId);
+          }
+        }, 30000); // 30秒后清理
+      }
   }
   
   /**
@@ -332,14 +333,15 @@ class WordleGame {
       message += `\n【释义】：${definition}`;
     }
     await e.reply(message);
-    // 5分钟后清理游戏数据
-    setTimeout(async () => {
-      await this.utils.db.deleteGameData(groupId);
-      // 清理Canvas缓存
-      if (this.utils.renderer.canvasCache && this.utils.renderer.canvasCache.has(groupId)) {
-        this.utils.renderer.canvasCache.delete(groupId);
-      }
-    }, 30000);
+    // 30秒后清理游戏数据
+      // 使用箭头函数确保正确的this上下文
+      setTimeout(async () => {
+        await this.utils.db.deleteGameData(groupId);
+        // 清理Canvas缓存
+        if (this.utils.renderer.canvasCache && this.utils.renderer.canvasCache.has(groupId)) {
+          this.utils.renderer.canvasCache.delete(groupId);
+        }
+      }, 30000);
     
     return true;
   }
