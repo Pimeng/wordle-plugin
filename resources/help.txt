@@ -3,18 +3,17 @@ Wordle 游戏帮助 🎮
 📋 基本命令：
 #wordle - 开始新游戏（默认5字母）
 #wordle [数字] - 开始指定字母数量的游戏
-![单词] - 提交猜测
 #wordle (答案|ans) - 结束游戏
 #wordle 帮助 - 显示帮助
-#wordle 词库 - 切换词库
-
+#wordle 词典 - 切换词典（循环切换）
+#wordle 词典 [名称] - 按名称切换词典
 🎯 提交猜测方式：
 • 使用前缀：#apple !apple
-• 支持大小写：!Apple #APPLE 都可以
-
 📱 使用示例：
 #apple - 使用前缀猜测
 !apple - 通过前缀猜词
 #wordle 7 - 开始7字母游戏
 #apple - 使用前缀猜测
-#wordle 词库- 切换词库（按群保存）
+#wordle 词典 - 循环切换词典
+#wordle 词典 四级 - 切换到四级词典
+#wordle 词典 六级 - 切换到六级词典

@@ -1,6 +1,3 @@
-import fs from 'fs';
-import yaml from 'yaml';
-
 /**
  * Wordle游戏数据存储模块
  * 负责游戏数据的存取、删除等操作
@@ -12,20 +9,23 @@ class WordleDB {
   }
 
   /**
+   * 检查Redis是否可用
+   * @returns {boolean} - Redis是否可用
+   */
+  isRedisAvailable() {
+    return !!global.redis;
+  }
+
+  /**
    * 从Redis获取游戏数据
    * @param {string} groupId - 群组ID
    * @returns {Promise<Object|null>} - 游戏数据对象或null
    */
   async getGameData(groupId) {
     try {
-      if (!global.redis) {
-        // Redis不可用时，使用内存中的数据
-        return global.wordleGames?.[groupId] || null;
-      }
-      
+      if (!this.isRedisAvailable()) return null;
       const key = this.GAME_KEY_PREFIX + groupId;
       const gameDataStr = await global.redis.get(key);
-      
       if (gameDataStr) {
         const gameData = JSON.parse(gameDataStr);
         // 将时间戳字符串转换回数字
@@ -37,7 +37,7 @@ class WordleDB {
       return null;
     } catch (error) {
       logger.error(`获取游戏数据时出错:`, error);
-      return global.wordleGames?.[groupId] || null;
+      return null;
     }
   }
 
@@ -49,20 +49,9 @@ class WordleDB {
    */
   async saveGameData(groupId, gameData) {
     try {
-      // 总是在内存中保留一份副本，作为Redis不可用时的备份
-      if (!global.wordleGames) {
-        global.wordleGames = {};
-      }
-      global.wordleGames[groupId] = gameData;
-      
-      if (!global.redis) {
-        logger.warn('Redis未启用，游戏数据将仅保存在内存中');
-        return false;
-      }
-      
+      if (!this.isRedisAvailable()) return false;
       const key = this.GAME_KEY_PREFIX + groupId;
       const gameDataStr = JSON.stringify(gameData);
-      
       // 设置过期时间：24小时（86400秒）
       await global.redis.set(key, gameDataStr, { EX: 86400 });
       return true;
@@ -79,15 +68,7 @@ class WordleDB {
    */
   async deleteGameData(groupId) {
     try {
-      // 从内存中删除
-      if (global.wordleGames && global.wordleGames[groupId]) {
-        delete global.wordleGames[groupId];
-      }
-      
-      if (!global.redis) {
-        return true;
-      }
-      
+      if (!this.isRedisAvailable()) return true;
       const key = this.GAME_KEY_PREFIX + groupId;
       await global.redis.del(key);
       return true;
@@ -100,41 +81,31 @@ class WordleDB {
   /**
    * 获取群组的词库选择
    * @param {string} groupId - 群组ID
-   * @returns {Promise<string>} - 词库类型，默认为'main'
+   * @returns {Promise<string>} - 词典名称，默认为'CET4'
    */
   async getWordbankSelection(groupId) {
     try {
-      if (!global.redis) {
-        logger.warn('Redis未启用，使用默认词库');
-        return 'main';
-      }
-      
+      if (!this.isRedisAvailable()) return 'CET4';
       const key = this.WORDBANK_KEY_PREFIX + groupId;
       const wordbank = await global.redis.get(key);
-      
-      return wordbank || 'main';
+      return wordbank || 'CET4';
     } catch (error) {
       logger.error('获取词库选择时出错:', error);
-      return 'main';
+      return 'CET4';
     }
   }
 
   /**
    * 设置群组的词库选择
    * @param {string} groupId - 群组ID
-   * @param {string} wordbankType - 词库类型（'main'或'backup'）
+   * @param {string} dictionaryName - 词典名称
    * @returns {Promise<boolean>} - 是否设置成功
    */
-  async setWordbankSelection(groupId, wordbankType) {
+  async setWordbankSelection(groupId, dictionaryName) {
     try {
-      if (!global.redis) {
-        logger.warn('Redis未启用，词库选择将不会持久化');
-        return false;
-      }
-      
+      if (!this.isRedisAvailable()) return false;
       const key = this.WORDBANK_KEY_PREFIX + groupId;
-      await global.redis.set(key, wordbankType);
-      
+      await global.redis.set(key, dictionaryName);
       return true;
     } catch (error) {
       logger.error('设置词库选择时出错:', error);

@@ -111,7 +111,7 @@ class WordleRenderer {
           }
         }
       }
-      this.drawKeyboardHint(ctx, width, padding, height - keyboardHeight - versionInfoHeight - 10, gameData.guesses, gameData.targetWord, this.getLetterStatus.bind(this, checkGuessFunc));
+      this.drawKeyboardHint(ctx, width, padding, height - keyboardHeight - versionInfoHeight - 10, gameData.guesses, gameData.targetWord, checkGuessFunc);
       try {
         let pluginVersion = '5.1.4';
         const pluginPackagePath = path.join(process.cwd(), './plugins/wordle-plugin/package.json');
@@ -199,19 +199,21 @@ class WordleRenderer {
    * 在Canvas上绘制键盘提示
    * @param {CanvasRenderingContext2D} ctx - Canvas上下文
    * @param {number} width - 画布宽度
-   * @param {number} padding - 内边距
    * @param {number} startY - 起始Y坐标
    * @param {Array<string>} guesses - 已猜测的单词数组
    * @param {string} targetWord - 目标单词
-   * @param {Function} getLetterStatusFunc - 获取字母状态的函数
    */
-  drawKeyboardHint(ctx, width, padding, startY, guesses, targetWord, getLetterStatusFunc) {
+  async drawKeyboardHint(ctx, width, startY, guesses, targetWord) {
     const keyboardLayout = [
       ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
       ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
       ['Z', 'X', 'C', 'V', 'B', 'N', 'M']
     ];
-    const letterStatus = getLetterStatusFunc(guesses, targetWord);
+    
+    // 使用utils模块的方法获取字母状态
+    const utils = (await import('./utils.js')).default;
+    const letterStatus = utils.getLetterStatus(guesses, targetWord);
+    
     const keyWidth = 36;
     const keyHeight = 42;
     const keyGap = 5;
@@ -248,38 +250,6 @@ class WordleRenderer {
         ctx.fillText(letter, x + keyWidth / 2, y + keyHeight / 2);
       }
     }
-  }
-
-  /**
-   * 获取每个字母的状态
-   * @param {Function} checkGuessFunc - 检查猜测结果的函数
-   * @param {Array<string>} guesses - 已猜测的单词数组
-   * @param {string} targetWord - 目标单词
-   * @returns {Map<string, string>} 字母状态映射
-   */
-  getLetterStatus(checkGuessFunc, guesses, targetWord) {
-    const alphabet = 'abcdefghijklmnopqrstuvwxyz';
-    const letterStatus = new Map();
-    
-    for (const letter of alphabet)
-      letterStatus.set(letter, 'unknown');
-    
-    for (const guess of guesses) {
-      const result = checkGuessFunc(guess, targetWord);
-      for (let i = 0; i < guess.length; i++) {
-        const letter = guess[i];
-        const status = result[i].status;
-        
-        if (status === 'correct')
-          letterStatus.set(letter, 'correct');
-        else if (status === 'present' && letterStatus.get(letter) !== 'correct')
-          letterStatus.set(letter, 'present');
-        else if (status === 'absent' && letterStatus.get(letter) === 'unknown')
-          letterStatus.set(letter, 'absent');
-      }
-    }
-    
-    return letterStatus;
   }
 
   /**

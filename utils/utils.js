@@ -1,6 +1,5 @@
-import word from './word.js';
+import word from './word-new.js';
 import renderer from './renderer.js';
-import translate from './translate.js';
 import db from './db.js';
 
 /**
@@ -12,7 +11,6 @@ class WordleUtils {
     this.db = db;
     this.word = word;
     this.renderer = renderer;
-    this.translate = translate;
     
     // 注入必要的方法依赖
     this._injectDependencies();
@@ -23,7 +21,6 @@ class WordleUtils {
    * 确保各个模块能够正常协作
    */
   _injectDependencies() {
-    // 注入getWordbankSelection方法到word模块
     this.word.injectGetWordbankSelection(this.db.getWordbankSelection.bind(this.db));
   }
 

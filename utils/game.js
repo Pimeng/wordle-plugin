@@ -1,5 +1,3 @@
-import fs from 'fs';
-import path from 'node:path';
 import utils from './utils.js';
 
 /**
@@ -13,13 +11,11 @@ class WordleGame {
     this.REGEX_NUMBER = /^\d+$/;
     
     // 配置
-    this.wordsPath = './plugins/wordle-plugin/resources/words.txt';
-    this.backupWordsPath = './plugins/wordle-plugin/resources/words-all.txt';
     this.cooldownTime = 10000; // 10秒冷却时间
     this.adaptiveAttempts = {
-      3: 4,
-      4: 5,
-      5: 6,
+      3: 5,
+      4: 6,
+      5: 8,
       6: 8,
       7: 10,
       8: 12
@@ -105,7 +101,7 @@ class WordleGame {
     if (input.includes('帮助') || input.includes('help')) {
       return await this.showHelp(e);
     }
-    if (input.includes('词库') || input.includes('wordbank')) {
+    if (input.includes('词库') || input.includes('词典') || input.includes('wordbank')) {
       return await this.selectWordbank(e);
     }
     if (!input) {
@@ -154,8 +150,10 @@ class WordleGame {
       return true;
     }
     const maxAttempts = this.adaptiveAttempts[letterCount] || 6;
-    const currentWordbank = await this.utils.db.getWordbankSelection(groupId);
-    const wordbankName = currentWordbank === 'main' ? '四级词库' : '全词库';
+    const currentDict = await this.utils.db.getWordbankSelection(groupId);
+    const availableDicts = await this.utils.word.getAvailableDictionaries();
+    const currentDictInfo = availableDicts.find(dict => dict.id === currentDict) || availableDicts[0];
+    const wordbankName = currentDictInfo.name;
     
     // 初始化游戏数据
     const gameData = {
@@ -268,17 +266,22 @@ class WordleGame {
       await e.reply('渲染失败，请稍后再试或联系开发者获取帮助');
     }
     if (gameData.finished) {
-        const groupId = e.group_id;
-        // 使用箭头函数确保正确的this上下文
-        setTimeout(async () => {
-          // 删除游戏数据
-          await this.utils.db.deleteGameData(groupId);
-          // 清理Canvas缓存
-          if (this.utils.renderer.canvasCache && this.utils.renderer.canvasCache.has(groupId)) {
+      const groupId = e.group_id;
+      // 仅清理本群的游戏数据和缓存，避免影响其他群
+      setTimeout(async () => {
+        await this.utils.db.deleteGameData(groupId);
+        // 只删除本群的canvasCache（如果是Map或对象）
+        if (this.utils.renderer.canvasCache && typeof this.utils.renderer.canvasCache === 'object') {
+          if (typeof this.utils.renderer.canvasCache.delete === 'function') {
+            // Map结构
             this.utils.renderer.canvasCache.delete(groupId);
+          } else {
+            // 普通对象结构
+            delete this.utils.renderer.canvasCache[groupId];
           }
-        }, 30000); // 30秒后清理
-      }
+        }
+      }, 30000); // 30秒后清理
+    }
   }
   
   /**
@@ -290,19 +293,23 @@ class WordleGame {
    */
   async generateResultMessage(e, gameData, isWin) {
     if (isWin) {
-      let message = `🎉 恭喜 ${e.sender.card} 猜中了！\n答案是 ${gameData.targetWord}`;
+      let message = `🎉 恭喜 ${e.sender.card} 猜中了！
+答案是 ${gameData.targetWord}`;
       const definition = await this.utils.word.getWordDefinition(gameData.targetWord);
       if (definition) {
-        message += `\n【释义】：${definition}`;
+        message += `
+【释义】：${definition}`;
       }
       
       message += `\n你用了 ${gameData.attempts} 次猜测。\n成绩不错，再来一局吧！`;
       return message;
     } else if (gameData.finished) {
-      let message = `\n😔 很遗憾，你没有猜中。答案是 ${gameData.targetWord}`;
+      let message = `
+😔 很遗憾，你没有猜中。答案是 ${gameData.targetWord}`;
       const definition = await this.utils.word.getWordDefinition(gameData.targetWord);
       if (definition) {
-        message += `\n【释义】：${definition}`;
+        message += `
+【释义】：${definition}`;
       }
       message += `\n别灰心，再来一局吧！`;
       return message;
@@ -330,19 +337,21 @@ class WordleGame {
 【单词】：${targetWord}`;
     const definition = await this.utils.word.getWordDefinition(targetWord);
     if (definition) {
-      message += `\n【释义】：${definition}`;
+      message += `
+【释义】：${definition}`;
     }
     await e.reply(message);
-    // 30秒后清理游戏数据
-      // 使用箭头函数确保正确的this上下文
-      setTimeout(async () => {
-        await this.utils.db.deleteGameData(groupId);
-        // 清理Canvas缓存
-        if (this.utils.renderer.canvasCache && this.utils.renderer.canvasCache.has(groupId)) {
+    // 30秒后清理游戏数据，仅清理本群
+    setTimeout(async () => {
+      await this.utils.db.deleteGameData(groupId);
+      if (this.utils.renderer.canvasCache && typeof this.utils.renderer.canvasCache === 'object') {
+        if (typeof this.utils.renderer.canvasCache.delete === 'function') {
           this.utils.renderer.canvasCache.delete(groupId);
+        } else {
+          delete this.utils.renderer.canvasCache[groupId];
         }
-      }, 30000);
-    
+      }
+    }, 30000);
     return true;
   }
   
@@ -385,16 +394,58 @@ class WordleGame {
    */
   async selectWordbank(e) {
     const groupId = e.group_id;
-    const currentWordbank = await this.utils.db.getWordbankSelection(groupId);
-    const newWordbank = currentWordbank === 'main' ? 'backup' : 'main';
-    await this.utils.db.setWordbankSelection(groupId, newWordbank);
-    const currentWordbankName = currentWordbank === 'main' ? '四级词库' : '全词库';
-    const newWordbankName = newWordbank === 'main' ? '四级词库' : '全词库';
-    const wordbankDesc = newWordbank === 'main' ? 
-      '四级词库：包含大学英语四级词汇，适合日常练习' : 
-      '全词库：包含更全面的英语词汇，挑战性更高';
-    await e.reply(`词库已切换：${currentWordbankName} → ${newWordbankName}\n当前词库信息：\n- ${wordbankDesc}`);
-    return true;
+    const input = e.msg.trim().toLowerCase();
+    
+    // 获取所有可用的词典
+    const availableDicts = await this.utils.word.getAvailableDictionaries();
+    
+    // 检查是否指定了词典名称
+    const dictNameMatch = input.match(/#wordle\s+(?:词库|词典|wordbank)\s+(.+)/);
+    
+    if (dictNameMatch && dictNameMatch[1]) {
+      // 按名称切换词典
+      const targetDictName = dictNameMatch[1].trim();
+      const targetDict = availableDicts.find(dict => 
+        dict.name.toLowerCase().includes(targetDictName.toLowerCase()) ||
+        dict.id.toLowerCase().includes(targetDictName.toLowerCase())
+      );
+      
+      if (targetDict) {
+        const currentDict = await this.utils.db.getWordbankSelection(groupId);
+        const currentDictInfo = availableDicts.find(dict => dict.id === currentDict) || availableDicts[0];
+        
+        // 设置新的词典选择
+        await this.utils.db.setWordbankSelection(groupId, targetDict.id);
+        
+        await e.reply(`词典已切换：${currentDictInfo.name} → ${targetDict.name}\n当前词典信息：\n- 包含 ${targetDict.wordCount} 个单词\n- 使用 #wordle 开始新游戏生效`);
+        return true;
+      } else {
+        // 列出所有可用的词典
+        const dictList = availableDicts.map(dict => `- ${dict.name} (${dict.wordCount}个单词)`).join('\n');
+        await e.reply(`未找到名为"${targetDictName}"的词典\n\n可用词典列表：\n${dictList}\n\n请使用正确的词典名称，例如：#wordle 词典 四级`);
+        return true;
+      }
+    } else {
+      // 循环切换词典（原有逻辑）
+      const currentDict = await this.utils.db.getWordbankSelection(groupId);
+      
+      // 找到当前词典的索引
+      let currentIndex = availableDicts.findIndex(dict => dict.id === currentDict);
+      if (currentIndex === -1) currentIndex = 0;
+      
+      // 计算下一个词典的索引（循环选择）
+      const nextIndex = (currentIndex + 1) % availableDicts.length;
+      const nextDict = availableDicts[nextIndex];
+      
+      // 设置新的词典选择
+      await this.utils.db.setWordbankSelection(groupId, nextDict.id);
+      
+      const currentDictInfo = availableDicts[currentIndex];
+      const nextDictInfo = nextDict;
+      
+      await e.reply(`词典已切换：${currentDictInfo.name} → ${nextDictInfo.name}\n当前词典信息：\n- 包含 ${nextDictInfo.wordCount} 个单词\n- 使用 #wordle 开始新游戏生效`);
+      return true;
+    }
   }
 }
 
