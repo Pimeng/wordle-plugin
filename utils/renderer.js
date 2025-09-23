@@ -216,7 +216,9 @@ class WordleRenderer {
     for (const letter of alphabet)
       letterStatus.set(letter, 'unknown');
     
-    for (const guess of guesses) {
+    // 确保guesses是数组
+    const guessArray = Array.isArray(guesses) ? guesses : [];
+    for (const guess of guessArray) {
       if (!guess || typeof guess !== 'string') continue;
       
       // 检查猜测结果

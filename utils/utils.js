@@ -144,7 +144,10 @@ class WordleUtils {
     const letterStatus = new Map();
     for (const letter of alphabet)
       letterStatus.set(letter, 'unknown');
-    for (const guess of guesses) {
+    
+    // 确保guesses是数组
+    const guessArray = Array.isArray(guesses) ? guesses : [];
+    for (const guess of guessArray) {
       const result = this.checkGuess(guess, targetWord);
       for (let i = 0; i < guess.length; i++) {
         const letter = guess[i];
