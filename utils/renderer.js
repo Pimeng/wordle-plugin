@@ -111,7 +111,7 @@ class WordleRenderer {
           }
         }
       }
-      this.drawKeyboardHint(ctx, width, padding, height - keyboardHeight - versionInfoHeight - 10, gameData.guesses, gameData.targetWord, checkGuessFunc);
+      await this.drawKeyboardHint(ctx, width, height - keyboardHeight - versionInfoHeight - 10, gameData.guesses, gameData.targetWord);
       try {
         let pluginVersion = '5.1.4';
         const pluginPackagePath = path.join(process.cwd(), './plugins/wordle-plugin/package.json');
@@ -210,9 +210,55 @@ class WordleRenderer {
       ['Z', 'X', 'C', 'V', 'B', 'N', 'M']
     ];
     
-    // 使用utils模块的方法获取字母状态
-    const utils = (await import('./utils.js')).default;
-    const letterStatus = utils.getLetterStatus(guesses, targetWord);
+    // 获取字母状态
+    const alphabet = 'abcdefghijklmnopqrstuvwxyz';
+    const letterStatus = new Map();
+    for (const letter of alphabet)
+      letterStatus.set(letter, 'unknown');
+    
+    for (const guess of guesses) {
+      if (!guess || typeof guess !== 'string') continue;
+      
+      // 检查猜测结果
+      const result = [];
+      const targetLetters = targetWord.split('');
+      const guessLetters = guess.split('');
+      const length = targetWord.length;
+      
+      for (let i = 0; i < length; i++) {
+        if (guessLetters[i] === targetLetters[i]) {
+          result.push({ letter: guessLetters[i], status: 'correct' }); // 绿色
+          targetLetters[i] = null; // 标记为已使用
+        } else {
+          result.push({ letter: guessLetters[i], status: 'pending' });
+        }
+      }
+      
+      for (let i = 0; i < length; i++) {
+        if (result[i].status === 'pending') {
+          const index = targetLetters.indexOf(guessLetters[i]);
+          if (index !== -1) {
+            result[i].status = 'present';
+            targetLetters[index] = null;
+          } else {
+            result[i].status = 'absent';
+          }
+        }
+      }
+      
+      // 更新字母状态
+      for (let i = 0; i < guess.length; i++) {
+        const letter = guess[i];
+        const status = result[i].status;
+        
+        if (status === 'correct')
+          letterStatus.set(letter, 'correct');
+        else if (status === 'present' && letterStatus.get(letter) !== 'correct')
+          letterStatus.set(letter, 'present');
+        else if (status === 'absent' && letterStatus.get(letter) === 'unknown')
+          letterStatus.set(letter, 'absent');
+      }
+    }
     
     const keyWidth = 36;
     const keyHeight = 42;
