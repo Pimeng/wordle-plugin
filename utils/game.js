@@ -255,14 +255,12 @@ class WordleGame {
   async sendGameResultMessage(e, gameData, isWin, result) {
     if (result) {
       const resultMessage = await this.generateResultMessage(e, gameData, isWin);
-      // 将文本消息和图片一起发送
-      if (result == null) {
+      // 将文本消息和图片分开发送
+      if (resultMessage) {
         await e.reply(resultMessage);
-      } else if (Array.isArray(resultMessage)) {
-        resultMessage.push(result);
-        await e.reply(resultMessage);
-      } else {
-        await e.reply([resultMessage, result]);
+      }
+      if (result != null) {
+        await e.reply(result);
       }
     } else {
       // 如果result为null（这种情况现在应该不会发生，但保留以防万一）
