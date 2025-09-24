@@ -287,10 +287,13 @@ class WordleGame {
    * @returns {string} 结果消息
    */
   async generateResultMessage(e, gameData, isWin) {
+    const groupId = e.group_id;
+    const currentGame = await this.utils.db.getGameData(groupId);
+    const targetWord = currentGame.targetWord;
     if (isWin) {
       let message = `🎉 恭喜 ${e.sender.card} 猜中了！
 答案是 ${gameData.targetWord}`;
-      const definition = await this.utils.word.getWordDefinition(gameData.targetWord);
+      const definition = await this.utils.word.getWordDefinition(targetWord);
       if (definition) {
         message += `
 【释义】：
@@ -370,7 +373,7 @@ ${keyboardHint}`;
   async giveUpGame(e) {
     const groupId = e.group_id;
     const currentGame = await this.utils.db.getGameData(groupId);
-    if (!currentGame || currentGame.finished) {
+    if (!currentGame || currentGame.finished) {  
       await e.reply('当前群聊没有进行中的游戏哦qwq');
       return true;
     }
