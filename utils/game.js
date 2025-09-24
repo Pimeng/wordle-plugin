@@ -300,18 +300,6 @@ class WordleGame {
 ${definition}`;
       }
       
-      // 添加所有猜测结果的格式化表示（使用utils.formatResult方法）
-      if (gameData.guesses && gameData.guesses.length > 0) {
-        message += `
-【猜测记录】：`;
-        for (const guess of gameData.guesses) {
-          const result = this.utils.checkGuess(guess, gameData.targetWord);
-          const formattedResult = this.utils.formatResult(result);
-          message += `
-${guess.toUpperCase()} ${formattedResult}`;
-        }
-      }
-      
       message += `
 你用了 ${gameData.attempts} 次猜测。
 成绩不错，再来一局吧！`;
@@ -324,18 +312,6 @@ ${guess.toUpperCase()} ${formattedResult}`;
         message += `
 【释义】：
 ${definition}`;
-      }
-      
-      // 添加所有猜测结果的格式化表示（使用utils.formatResult方法）
-      if (gameData.guesses && gameData.guesses.length > 0) {
-        message += `
-【猜测记录】：`;
-        for (const guess of gameData.guesses) {
-          const result = this.utils.checkGuess(guess, gameData.targetWord);
-          const formattedResult = this.utils.formatResult(result);
-          message += `
-${guess.toUpperCase()} ${formattedResult}`;
-        }
       }
       
       // 添加键盘提示信息
@@ -387,18 +363,6 @@ ${keyboardHint}`;
       // 直接使用word-new.js中formatDefinition格式化后的释义，不再需要额外清理
       message += `
 【释义】：${definition}`;
-    }
-    
-    // 添加所有猜测结果的格式化表示（使用utils.formatResult方法）
-    if (currentGame.guesses && currentGame.guesses.length > 0) {
-      message += `
-【猜测记录】：`;
-      for (const guess of currentGame.guesses) {
-        const result = this.utils.checkGuess(guess, currentGame.targetWord);
-        const formattedResult = this.utils.formatResult(result);
-        message += `
-${guess.toUpperCase()} ${formattedResult}`;
-      }
     }
     
     // 添加键盘提示信息
