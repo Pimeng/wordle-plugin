@@ -256,7 +256,9 @@ class WordleGame {
     if (result) {
       const resultMessage = await this.generateResultMessage(e, gameData, isWin);
       // 将文本消息和图片一起发送
-      if (Array.isArray(resultMessage)) {
+      if (result == null) {
+        await e.reply(resultMessage);
+      } else if (Array.isArray(resultMessage)) {
         resultMessage.push(result);
         await e.reply(resultMessage);
       } else {
@@ -316,7 +318,7 @@ ${definition}`;
 别灰心，再来一局吧！`;
       return message;
     } else {
-      return `还剩${gameData.maxAttempts - gameData.attempts} 次机会`;
+      return ``;
     }
   }
   
