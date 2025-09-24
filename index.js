@@ -13,10 +13,8 @@ if (fs.existsSync(pkgPath)) {
   }
 }
 
-const __filename = new URL(import.meta.url).pathname;
-const __dirname = path.dirname(__filename).replace(/^\//, ''); // Windows 路径修复
-const files = fs.readdirSync(path.join(__dirname, 'apps')).filter(f => f.endsWith('.js'));
-const results = await Promise.allSettled(files.map(f => import(new URL(`file:///${path.join(__dirname, 'apps', f)}`).href)));
+const files = fs.readdirSync('./plugins/wordle-plugin/apps').filter(f => f.endsWith('.js'));
+const results = await Promise.allSettled(files.map(f => import(`./apps/${f}`)));
 
 const apps = {};
 files.forEach((f, i) => {
@@ -30,7 +28,6 @@ files.forEach((f, i) => {
   }
 });
 
-logger.mark(logger.green(`[Wordle] 载入成功！`));
-logger.mark(logger.green(`[Wordle] 当前版本：v${pluginVersion} Beta`));
+logger.mark(logger.green(`[Wordle] 载入成功！  当前版本：v${pluginVersion} Beta`));
 
 export { apps };
