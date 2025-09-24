@@ -296,7 +296,6 @@ class WordleGame {
       const definition = await this.utils.word.getWordDefinition(targetWord);
       if (definition) {
         message += `
-【释义】：
 ${definition}`;
       }
       
@@ -310,7 +309,6 @@ ${definition}`;
       const definition = await this.utils.word.getWordDefinition(gameData.targetWord);
       if (definition) {
         message += `
-【释义】：
 ${definition}`;
       }
       
@@ -343,8 +341,8 @@ ${definition}`;
     const definition = await this.utils.word.getWordDefinition(targetWord);
     if (definition) {
       // 直接使用word-new.js中formatDefinition格式化后的释义，不再需要额外清理
-      message += `
-【释义】：${definition}`;
+      message += `  
+${definition}`;
     }
     
     

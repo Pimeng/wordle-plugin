@@ -132,48 +132,6 @@ class WordleUtils {
     
     return letterStatus;
   }
-
-  /**
-   * 提取并清理单词释义
-   * @param {string} text - 包含词性和释义的文本
-   * @returns {string} - 清理后的释义文本
-   */
-  extractDefinition(text) {
-    const posPattern = /[a-zA-Z]+\./g;
-    const posMatches = text.match(posPattern) || [];
-    if (posMatches.length === 0) return text.trim();
-    if (posMatches.length === 1 && text.startsWith(posMatches[0]))
-      return text.substring(posMatches[0].length).trim();
-    
-    let result = '';
-    let currentDef = '';
-    let inDefinition = false;
-    for (let i = 0; i < text.length; i++) {
-      let foundPos = false;
-      for (const pos of posMatches) {
-        if (text.substr(i, pos.length) === pos) {
-          if (currentDef.trim()) {
-            if (result) result += '；';
-            result += currentDef.trim();
-            currentDef = '';
-          }
-          inDefinition = true;
-          i += pos.length - 1;
-          foundPos = true;
-          break;
-        }
-      }
-      if (!foundPos && inDefinition)
-        currentDef += text[i];
-    }
-    if (currentDef.trim()) {
-      if (result) result += '；';
-      result += currentDef.trim();
-    }
-    if (!result) result = text.replace(posPattern, '').trim();
-    result = result.replace(/\s+/g, ' ').replace(/；+/g, '；').trim();
-    return result;
-  }
 }
 
 export default new WordleUtils();
