@@ -7,8 +7,11 @@ Wordle 游戏帮助 🎮
 #wordle 帮助 - 显示帮助
 #wordle 词典 - 切换词典（循环切换）
 #wordle 词典 [名称] - 按名称切换词典
+#释义 [单词] - 查询单词释义
+
 🎯 提交猜测方式：
 • 使用前缀：#apple !apple
+
 📱 使用示例：
 #apple - 使用前缀猜测
 !apple - 通过前缀猜词
@@ -17,3 +20,5 @@ Wordle 游戏帮助 🎮
 #wordle 词典 - 循环切换词典
 #wordle 词典 四级 - 切换到四级词典
 #wordle 词典 六级 - 切换到六级词典
+#释义 access - 查询单词access的释义
+#释义 project - 查询单词project的释义

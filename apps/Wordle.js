@@ -14,6 +14,10 @@ export class Wordle extends plugin {
           fnc: 'wordle'
         },
         {
+          reg: /^#释义\s+([a-zA-Z]+)$/i,
+          fnc: 'getDefinition'
+        },
+        {
           reg: /^(?:#|!|！)?[a-zA-Z]+$/,
           fnc: 'listenMessages',
           log: false
@@ -43,4 +47,29 @@ export class Wordle extends plugin {
   async wordle(e) {
     return await this.game.wordle(e);
   }
+
+  /**
+   * 获取单词释义
+   * @param {*} e - 消息事件对象
+   * @returns {Promise<boolean>} - 处理结果
+   */
+  async getDefinition(e) {
+    const match = e.msg.match(/^#释义\s+([a-zA-Z]+)$/i);
+    if (!match) {
+      return false;
+    }
+    
+    const word = match[1].toLowerCase();
+    const definition = await this.utils.word.getWordDefinition(word);
+    
+    if (definition) {
+      await e.reply(`📖 单词：${word.toUpperCase()}
+${definition}`);
+      return true;
+    } else {
+      await e.reply(`❌ 未找到单词 "${word.toUpperCase()}" 的释义。\n该单词可能不在当前词库中。`);
+      return false;
+    }
+  }
+  
 }
