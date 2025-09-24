@@ -316,8 +316,7 @@ ${definition}`;
 别灰心，再来一局吧！`;
       return message;
     } else {
-      return `
-还剩 ${gameData.maxAttempts - gameData.attempts} 次机会`;
+      return `还剩${gameData.maxAttempts - gameData.attempts} 次机会`;
     }
   }
   
