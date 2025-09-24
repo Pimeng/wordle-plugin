@@ -302,7 +302,7 @@ ${definition}`;
       }
       
       message += `
-你用了 ${gameData.attempts} 次猜测。
+共猜了 ${gameData.attempts} 次
 成绩不错，再来一局吧！`;
       return message;
     } else if (gameData.finished) {
