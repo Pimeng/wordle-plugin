@@ -57,7 +57,7 @@ class WordleGame {
       const now = Date.now();
       if (lastGuess && (now - lastGuess) < this.cooldownTime) {
         const remainingTime = Math.ceil((this.cooldownTime - (now - lastGuess)) / 1000);
-        await e.reply(`我知道你很急，但你先别急，等 ${remainingTime} 秒！`, false, {recallMsg: 5});
+        await e.reply(`我知道你很急，但你先别急（冷却中，还剩${remainingTime} 秒）`, false, {recallMsg: 60});
         return true;
       }
       const currentGame = await this.utils.db.getGameData(groupId);
@@ -69,12 +69,12 @@ class WordleGame {
           return false;
         }
         if (!this.REGEX_ALPHA.test(message)) {
-          await e.reply('请输入纯英文单词', false, {recallMsg: 30});
+          await e.reply('请输入纯英文单词', false, {recallMsg: 60});
           return true;
         }
         const expectedLength = currentGame.letterCount || 5;
         if (message.length !== expectedLength) {
-          await e.reply(`请输入${expectedLength}个字母的单词，你输入了${message.length}个字母哦~`, false, {recallMsg: 30});
+          await e.reply(`请输入${expectedLength}个字母的单词，你输入了${message.length}个字母哦~`, false, {recallMsg: 60});
           return true;
         }
         this.userCooldowns.set(cooldownKey, now);
@@ -214,12 +214,12 @@ class WordleGame {
       return true;
     }
     if (currentGame.guesses.includes(guess)) {
-      await e.reply(`你已经猜过 "${guess}" 了！请尝试其他单词。`, false, {recallMsg: 5});
+      await e.reply(`你已经猜过 "${guess}" 了！请尝试其他单词。`, false, {recallMsg: 60});
       return true;
     }
     if (!(await this.utils.word.isValidWord(guess, currentGame.letterCount, groupId))) {
       await e.reply(`"${guess}" 不是有效的英文单词哦~
-请输入${currentGame.letterCount || 5}个字母的英文单词。`, false, {recallMsg: 30});
+请输入${currentGame.letterCount || 5}个字母的英文单词。`, false, {recallMsg: 60});
       return true;
     }
     currentGame.guesses.push(guess);
