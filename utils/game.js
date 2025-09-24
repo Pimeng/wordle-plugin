@@ -165,7 +165,6 @@ class WordleGame {
       startTime: Date.now(),
       letterCount: letterCount
     };
-    
     // 保存游戏数据
     await this.utils.db.saveGameData(groupId, gameData);
     
@@ -189,8 +188,9 @@ class WordleGame {
         img
       ];
       await e.reply(gameStartMessage);
-    } else {
-      await e.reply(`🎮 Wordle猜词游戏开始啦！\n请猜测一个${letterCount}字母单词\n当前词库：${wordbankName}\n你有${maxAttempts}次机会，请使用前缀#或!进行猜测\n例如：#apple 或 !apple\n🟩字母正确且位置正确\n🟨字母正确但位置错误\n⬜字母不存在`);
+    } else{
+      logger.error("游戏图片渲染失败")
+      throw new Error("游戏出现错误，请检查必要依赖是否安装，或反馈错误");
     }
     
     return true;
@@ -336,10 +336,9 @@ ${definition}`;
     currentGame.finished = true;
     await this.utils.db.saveGameData(groupId, currentGame);
     let message = `游戏结束了哦
-【单词】：${targetWord}`;
+【单词】${targetWord}`;
     const definition = await this.utils.word.getWordDefinition(targetWord);
     if (definition) {
-      // 直接使用word-new.js中formatDefinition格式化后的释义，不再需要额外清理
       message += `  
 ${definition}`;
     }
