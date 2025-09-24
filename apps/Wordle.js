@@ -21,10 +21,6 @@ export class Wordle extends plugin {
       ]
     });
     
-    // 保留必要的配置引用，方便其他模块访问
-    this.REGEX_WORDLE_CMD = /^#[Ww]ordle(.*)$/i;
-    this.REGEX_ALPHA = /^[a-zA-Z]+$/;
-    
     // 注入工具和游戏模块
     this.game = game;
     this.utils = utils;

@@ -9,7 +9,6 @@ class WordleGame {
     // 正则表达式定义
     this.REGEX_WORDLE_CMD = /^#[Ww]ordle(.*)$/i;
     this.REGEX_ALPHA = /^[a-zA-Z]+$/;
-    this.REGEX_NUMBER = /^\d+$/;
     
     // 配置
     this.cooldownTime = 10000; // 10秒冷却时间
@@ -74,10 +73,10 @@ class WordleGame {
           return true;
         }
         const expectedLength = currentGame.letterCount || 5;
-      if (message.length !== expectedLength) {
-        await e.reply(`请输入${expectedLength}个字母的单词，你输入了${message.length}个字母哦~`, false, {recallMsg: 30});
-        return true;
-      }
+        if (message.length !== expectedLength) {
+          await e.reply(`请输入${expectedLength}个字母的单词，你输入了${message.length}个字母哦~`, false, {recallMsg: 30});
+          return true;
+        }
         this.userCooldowns.set(cooldownKey, now);
         return await this.processGuess(e, message, groupId);
       }
@@ -226,13 +225,8 @@ class WordleGame {
     currentGame.guesses.push(guess);
     currentGame.attempts++;
     const result = this.utils.checkGuess(guess, currentGame.targetWord);
-    let isWin = false;
-    if (guess === currentGame.targetWord) {
-      isWin = true;
-      currentGame.finished = true;
-    } else if (currentGame.attempts >= currentGame.maxAttempts) {
-      currentGame.finished = true;
-    }
+    const isWin = guess === currentGame.targetWord;
+    currentGame.finished = isWin || currentGame.attempts >= currentGame.maxAttempts;
     await this.utils.db.saveGameData(groupId, currentGame);
     // 准备游戏状态数据
     const gameData = {
@@ -259,9 +253,15 @@ class WordleGame {
    * @param {*} result - 渲染结果或错误信息
    */
   async sendGameResultMessage(e, gameData, isWin, result) {
-    // 如果result存在，直接发送结果（可能是图片消息或错误信息）
     if (result) {
-      await e.reply(result);
+      const resultMessage = await this.generateResultMessage(e, gameData, isWin);
+      // 将文本消息和图片一起发送
+      if (Array.isArray(resultMessage)) {
+        resultMessage.push(result);
+        await e.reply(resultMessage);
+      } else {
+        await e.reply([resultMessage, result]);
+      }
     } else {
       // 如果result为null（这种情况现在应该不会发生，但保留以防万一）
       await e.reply('渲染失败，请稍后再试或联系开发者获取帮助');
@@ -273,13 +273,7 @@ class WordleGame {
         await this.utils.db.deleteGameData(groupId);
         // 只删除本群的canvasCache（如果是Map或对象）
         if (this.utils.renderer.canvasCache && typeof this.utils.renderer.canvasCache === 'object') {
-          if (typeof this.utils.renderer.canvasCache.delete === 'function') {
-            // Map结构
-            this.utils.renderer.canvasCache.delete(groupId);
-          } else {
-            // 普通对象结构
-            delete this.utils.renderer.canvasCache[groupId];
-          }
+          this.utils.renderer.canvasCache.delete(groupId);
         }
       }, 30000); // 30秒后清理
     }
@@ -303,21 +297,68 @@ class WordleGame {
 ${definition}`;
       }
       
-      message += `\n你用了 ${gameData.attempts} 次猜测。\n成绩不错，再来一局吧！`;
+      // 添加所有猜测结果的格式化表示（使用utils.formatResult方法）
+      if (gameData.guesses && gameData.guesses.length > 0) {
+        message += `
+【猜测记录】：`;
+        for (const guess of gameData.guesses) {
+          const result = this.utils.checkGuess(guess, gameData.targetWord);
+          const formattedResult = this.utils.formatResult(result);
+          message += `
+${guess.toUpperCase()} ${formattedResult}`;
+        }
+      }
+      
+      message += `
+你用了 ${gameData.attempts} 次猜测。
+成绩不错，再来一局吧！`;
       return message;
     } else if (gameData.finished) {
-      let message = `
-😔 很遗憾，你没有猜中。答案是 ${gameData.targetWord}`;
+      let message = `😔 很遗憾，你没有猜中。
+答案是 ${gameData.targetWord}`;
       const definition = await this.utils.word.getWordDefinition(gameData.targetWord);
       if (definition) {
         message += `
 【释义】：
 ${definition}`;
       }
-      message += `\n别灰心，再来一局吧！`;
+      
+      // 添加所有猜测结果的格式化表示（使用utils.formatResult方法）
+      if (gameData.guesses && gameData.guesses.length > 0) {
+        message += `
+【猜测记录】：`;
+        for (const guess of gameData.guesses) {
+          const result = this.utils.checkGuess(guess, gameData.targetWord);
+          const formattedResult = this.utils.formatResult(result);
+          message += `
+${guess.toUpperCase()} ${formattedResult}`;
+        }
+      }
+      
+      // 添加键盘提示信息
+      if (gameData.guesses && gameData.guesses.length > 0) {
+        const keyboardHint = this.utils.generateKeyboardHint(gameData.guesses, gameData.targetWord);
+        message += `
+
+${keyboardHint}`;
+      }
+      
+      message += `
+别灰心，再来一局吧！`;
       return message;
     } else {
-      return `\n还剩 ${gameData.maxAttempts - gameData.attempts} 次机会，再接再厉！\n直接发送${gameData.letterCount || 5}字母单词继续猜测，或发送 #wordle 答案 或 "#wordle ans" 结束当前游戏`;
+      // 添加键盘提示信息
+      if (gameData.guesses && gameData.guesses.length > 0) {
+        const keyboardHint = this.utils.generateKeyboardHint(gameData.guesses, gameData.targetWord);
+        return `
+还剩 ${gameData.maxAttempts - gameData.attempts} 次机会，再接再厉！
+直接发送${gameData.letterCount || 5}字母单词继续猜测，或发送 #wordle 答案 或 "#wordle ans" 结束当前游戏
+
+${keyboardHint}`;
+      }
+      return `
+还剩 ${gameData.maxAttempts - gameData.attempts} 次机会，再接再厉！
+直接发送${gameData.letterCount || 5}字母单词继续猜测，或发送 #wordle 答案 或 "#wordle ans" 结束当前游戏`;
     }
   }
   
@@ -340,9 +381,31 @@ ${definition}`;
 【单词】：${targetWord}`;
     const definition = await this.utils.word.getWordDefinition(targetWord);
     if (definition) {
+      // 直接使用word-new.js中formatDefinition格式化后的释义，不再需要额外清理
       message += `
 【释义】：${definition}`;
     }
+    
+    // 添加所有猜测结果的格式化表示（使用utils.formatResult方法）
+    if (currentGame.guesses && currentGame.guesses.length > 0) {
+      message += `
+【猜测记录】：`;
+      for (const guess of currentGame.guesses) {
+        const result = this.utils.checkGuess(guess, currentGame.targetWord);
+        const formattedResult = this.utils.formatResult(result);
+        message += `
+${guess.toUpperCase()} ${formattedResult}`;
+      }
+    }
+    
+    // 添加键盘提示信息
+    if (currentGame.guesses && currentGame.guesses.length > 0) {
+      const keyboardHint = this.utils.generateKeyboardHint(currentGame.guesses, currentGame.targetWord);
+      message += `
+
+${keyboardHint}`;
+    }
+    
     await e.reply(message);
     // 30秒后清理游戏数据，仅清理本群
     setTimeout(async () => {

@@ -127,12 +127,10 @@ class WordleWordNew {
     
     if (!this.lengthStats) {
       const dictionaries = await this.loadAllDictionaries();
-      this.lengthStats = new Set();
-      for (const dictName in dictionaries) {
-        for (const word of dictionaries[dictName].wordList) {
-          this.lengthStats.add(word.length);
-        }
-      }
+      this.lengthStats = new Set(
+        Object.values(dictionaries)
+          .flatMap(dict => dict.wordList.map(word => word.length))
+      );
     }
     
     if (!this.lengthStats.has(length)) {

@@ -21,7 +21,7 @@ export class WordleUpdate extends plugin {
         {
           reg: '^(#|/)?(wordle|猜词)(强制)?更新$',
           fnc: 'wordleUpdate',
-          Permission: 'master'
+          permission: 'master'
         }
       ]
     });

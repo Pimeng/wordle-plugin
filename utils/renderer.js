@@ -150,29 +150,18 @@ class WordleRenderer {
         filename: `wordle-${Date.now()}.png`
       };
       
-      if (gameData.gameState === 'win') {
-        const messages = [`🎉 恭喜 ${e.sender.card} 猜中了！\n答案是 ${gameData.targetWord}`, imageSegment];
-        messages.push(`\n ${gameData.attempts} 次就猜出来了\n成绩不错，再来一局吧！`);
-        return messages;
-      } else if (gameData.gameState === 'lose') {
-        const messages = [];
-        messages.push(`😔 很遗憾，正确答案是 ${gameData.targetWord}`);
-        messages.push(imageSegment);
-        return messages;
-      } else {
-        return [`你还有 ${gameData.maxAttempts - gameData.attempts} 次机会`, imageSegment];
-      }
+      return imageSegment;
     } catch (err) {
       const errMsg = err.toString();
       logger.error(`[Wordle] 渲染错误 [群:${e.group_id}]`, err);
       
       // 构建错误信息数组
       const errorMessages = [];
-      errorMessages.push(`🚨 渲染错误！请尝试安装canvas依赖或更新插件`);
-      errorMessages.push(`错误详情：${errMsg}`);
-      errorMessages.push(`请将以下完整错误日志提供给开发者以便修复问题：`);
-      errorMessages.push(`[Wordle] 渲染错误 [群:${e.group_id}] ${errMsg}`);
-      errorMessages.push(`Node.js版本：${process.version}`);
+      errorMessages.push(`🚨 渲染错误！请尝试安装canvas依赖或更新插件\n`);
+      errorMessages.push(`错误详情：${errMsg}\n`);
+      errorMessages.push(`请将以下完整错误日志提供给开发者以便修复问题：\n`);
+      errorMessages.push(`[Wordle] 渲染错误 [群:${e.group_id}] ${errMsg}\n`);
+      errorMessages.push(`Node.js版本：${process.version}\n`);
       
       try {
         // 尝试导入common模块来制作转发消息
@@ -204,6 +193,68 @@ class WordleRenderer {
    * @param {string} targetWord - 目标单词
    */
   async drawKeyboardHint(ctx, width, startY, guesses, targetWord) {
+    const keyboardLayout = [
+      ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
+      ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
+      ['Z', 'X', 'C', 'V', 'B', 'N', 'M']
+    ];
+    
+    // 导入utils模块以使用getLetterStatus方法，避免重复代码
+    let utils;
+    try {
+      utils = (await import('./utils.js')).default;
+    } catch (error) {
+      logger.error('导入utils模块失败:', error);
+      // 如果导入失败，使用备用逻辑
+      return this._drawKeyboardHintFallback(ctx, width, startY, guesses, targetWord);
+    }
+    
+    // 使用utils模块中的getLetterStatus方法获取字母状态
+    const letterStatus = utils.getLetterStatus(guesses, targetWord);
+    
+    const keyWidth = 36;
+    const keyHeight = 42;
+    const keyGap = 5;
+    const rowGap = 8;
+    for (let rowIndex = 0; rowIndex < keyboardLayout.length; rowIndex++) {
+      const row = keyboardLayout[rowIndex];
+      const rowWidth = row.length * keyWidth + (row.length - 1) * keyGap;
+      const startX = (width - rowWidth) / 2;
+      for (let colIndex = 0; colIndex < row.length; colIndex++) {
+        const letter = row[colIndex];
+        const status = letterStatus.get(letter.toLowerCase());
+        const x = startX + colIndex * (keyWidth + keyGap);
+        const y = startY + rowIndex * (keyHeight + rowGap);
+        let bgColor = '#d3d6da';
+        switch (status) {
+          case 'correct':
+            bgColor = '#6aaa64';
+            break;
+          case 'present':
+            bgColor = '#c9b458';
+            break;
+          case 'absent':
+            bgColor = '#787c7e';
+            break;
+        }
+        ctx.fillStyle = bgColor;
+        ctx.beginPath();
+        ctx.roundRect(x, y, keyWidth, keyHeight, 6);
+        ctx.fill();
+        ctx.fillStyle = bgColor === '#d3d6da' ? '#1a1a1b' : '#ffffff';
+        ctx.font = 'bold 18px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(letter, x + keyWidth / 2, y + keyHeight / 2);
+      }
+    }
+  }
+  
+  /**
+   * 备用的键盘提示绘制方法，当utils模块不可用时使用
+   */
+  _drawKeyboardHintFallback(ctx, width, startY, guesses, targetWord) {
+    // 原有逻辑，仅在utils模块不可用时使用
     const keyboardLayout = [
       ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
       ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],

@@ -3,18 +3,20 @@ import path from 'path'
 
 logger.mark(logger.yellow("[Wordle] 载入中"));
 
-if (!global.segment) global.segment = (await import("oicq")).segment;
-
 let pluginVersion = "5.1.4";
 const pkgPath = path.join(process.cwd(), './plugins/wordle-plugin/package.json');
 if (fs.existsSync(pkgPath)) {
   try {
     pluginVersion = JSON.parse(fs.readFileSync(pkgPath, 'utf8')).version || pluginVersion;
-  } catch {}
+  } catch (error) {
+    logger.debug(`[Wordle] 读取package.json版本失败: ${error.message}`);
+  }
 }
 
-const files = fs.readdirSync('./plugins/wordle-plugin/apps').filter(f => f.endsWith('.js'));
-const results = await Promise.allSettled(files.map(f => import(`./apps/${f}`)));
+const __filename = new URL(import.meta.url).pathname;
+const __dirname = path.dirname(__filename).replace(/^\//, ''); // Windows 路径修复
+const files = fs.readdirSync(path.join(__dirname, 'apps')).filter(f => f.endsWith('.js'));
+const results = await Promise.allSettled(files.map(f => import(new URL(`file:///${path.join(__dirname, 'apps', f)}`).href)));
 
 const apps = {};
 files.forEach((f, i) => {
@@ -28,6 +30,7 @@ files.forEach((f, i) => {
   }
 });
 
-logger.mark(logger.green(`[Wordle] 载入成功！  当前版本：v${pluginVersion} Beta`));
+logger.mark(logger.green(`[Wordle] 载入成功！`));
+logger.mark(logger.green(`[Wordle] 当前版本：v${pluginVersion} Beta`));
 
 export { apps };
