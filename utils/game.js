@@ -314,30 +314,12 @@ ${definition}`;
 ${definition}`;
       }
       
-      // 添加键盘提示信息
-      if (gameData.guesses && gameData.guesses.length > 0) {
-        const keyboardHint = this.utils.generateKeyboardHint(gameData.guesses, gameData.targetWord);
-        message += `
-
-${keyboardHint}`;
-      }
-      
       message += `
 别灰心，再来一局吧！`;
       return message;
     } else {
-      // 添加键盘提示信息
-      if (gameData.guesses && gameData.guesses.length > 0) {
-        const keyboardHint = this.utils.generateKeyboardHint(gameData.guesses, gameData.targetWord);
-        return `
-还剩 ${gameData.maxAttempts - gameData.attempts} 次机会，再接再厉！
-直接发送${gameData.letterCount || 5}字母单词继续猜测，或发送 #wordle 答案 或 "#wordle ans" 结束当前游戏
-
-${keyboardHint}`;
-      }
       return `
-还剩 ${gameData.maxAttempts - gameData.attempts} 次机会，再接再厉！
-直接发送${gameData.letterCount || 5}字母单词继续猜测，或发送 #wordle 答案 或 "#wordle ans" 结束当前游戏`;
+还剩 ${gameData.maxAttempts - gameData.attempts} 次机会`;
     }
   }
   
@@ -365,13 +347,6 @@ ${keyboardHint}`;
 【释义】：${definition}`;
     }
     
-    // 添加键盘提示信息
-    if (currentGame.guesses && currentGame.guesses.length > 0) {
-      const keyboardHint = this.utils.generateKeyboardHint(currentGame.guesses, currentGame.targetWord);
-      message += `
-
-${keyboardHint}`;
-    }
     
     await e.reply(message);
     // 30秒后清理游戏数据，仅清理本群

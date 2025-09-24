@@ -80,38 +80,6 @@ class WordleUtils {
     }
     return formatted;
   }
-
-  /**
-   * 生成键盘提示
-   * @param {Array<string>} guesses - 已猜测的单词数组
-   * @param {string} targetWord - 目标单词
-   * @returns {string} 键盘提示字符串
-   */
-  generateKeyboardHint(guesses, targetWord) {
-    const keyboardLayout = [
-      ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
-      ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
-      ['Z', 'X', 'C', 'V', 'B', 'N', 'M']
-    ];
-    const letterStatus = this.getLetterStatus(guesses, targetWord);
-    let hint = '⌨️ 键盘提示：\n';
-    for (const letter of keyboardLayout[0]) {
-      const status = letterStatus.get(letter.toLowerCase());
-      hint += this.getLetterSymbol(letter, status) + '  ';
-    }
-    hint += '\n  ';
-    for (const letter of keyboardLayout[1]) {
-      const status = letterStatus.get(letter.toLowerCase());
-      hint += this.getLetterSymbol(letter, status) + '  ';
-    }
-    hint += '\n    ';
-    for (const letter of keyboardLayout[2]) {
-      const status = letterStatus.get(letter.toLowerCase());
-      hint += this.getLetterSymbol(letter, status) + '  ';
-    }
-    
-    return hint;
-  }
   
   /**
    * 根据字母状态返回对应的显示符号
