@@ -275,7 +275,7 @@ class WordleGame {
         if (this.utils.renderer.canvasCache && typeof this.utils.renderer.canvasCache === 'object') {
           this.utils.renderer.canvasCache.delete(groupId);
         }
-      }, 30000); // 30秒后清理
+      }, 100); // 0.1秒后清理
     }
   }
   
