@@ -345,7 +345,7 @@ ${definition}`;
     
     
     await e.reply(message);
-    // 30秒后清理游戏数据，仅清理本群
+    // 0.1秒后清理游戏数据，仅清理本群
     setTimeout(async () => {
       await this.utils.db.deleteGameData(groupId);
       if (this.utils.renderer.canvasCache && typeof this.utils.renderer.canvasCache === 'object') {
@@ -355,7 +355,7 @@ ${definition}`;
           delete this.utils.renderer.canvasCache[groupId];
         }
       }
-    }, 30000);
+    }, 100);
     return true;
   }
   

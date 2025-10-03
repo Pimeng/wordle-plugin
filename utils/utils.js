@@ -31,32 +31,38 @@ class WordleUtils {
    * @returns {Array} 猜测结果数组
    */
   checkGuess(guess, target) {
-    const result = [];
-    const targetLetters = target.split('');
-    const guessLetters = guess.split('');
-    const length = target.length;
-    for (let i = 0; i < length; i++) {
-      if (guessLetters[i] === targetLetters[i]) {
-        result.push({ letter: guessLetters[i], status: 'correct' }); // 绿色
-        targetLetters[i] = null; // 标记为已使用
-      } else {
-        result.push({ letter: guessLetters[i], status: 'pending' });
-      }
-    }
-    for (let i = 0; i < length; i++) {
-      if (result[i].status === 'pending') {
-        const index = targetLetters.indexOf(guessLetters[i]);
-        if (index !== -1) {
-          result[i].status = 'present';
-          targetLetters[index] = null;
+      guess = guess.toLowerCase();
+      target = target.toLowerCase();
+    
+      const result = [];
+      const targetLetters = target.split('');
+      const guessLetters = guess.split('');
+      const length = target.length;
+    
+      for (let i = 0; i < length; i++) {
+        if (guessLetters[i] === targetLetters[i]) {
+          result.push({ letter: guessLetters[i], status: 'correct' }); // 绿色
+          targetLetters[i] = null; // 标记为已使用
         } else {
-          result[i].status = 'absent';
+          result.push({ letter: guessLetters[i], status: 'pending' });
         }
       }
-    }
     
-    return result;
-  }
+      for (let i = 0; i < length; i++) {
+        if (result[i].status === 'pending') {
+          const index = targetLetters.indexOf(guessLetters[i]);
+          if (index !== -1) {
+            result[i].status = 'present';
+            targetLetters[index] = null;
+          } else {
+            result[i].status = 'absent';
+          }
+        }
+      }
+    
+      return result;
+    }
+
 
   /**
    * 格式化结果显示
