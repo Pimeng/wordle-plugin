@@ -2,6 +2,8 @@ import fs from 'fs';
 import path from 'node:path';
 import { createCanvas } from 'canvas';
 
+let utils = (await import('./utils.js')).default;
+
 /**
  * Wordle游戏渲染模块
  * 负责游戏界面的Canvas绘制
@@ -119,7 +121,7 @@ class WordleRenderer {
           const pluginPackage = JSON.parse(fs.readFileSync(pluginPackagePath, 'utf8'));
           pluginVersion = pluginPackage.version || pluginVersion;
         }
-        let yunzaiName = '未知Yunzai';
+        let yunzaiName = 'Yunzai';
         let yunzaiVersion = '1.1.4';
         try {
           const yunzaiPackagePath = path.join(process.cwd(), './package.json');
@@ -165,7 +167,7 @@ class WordleRenderer {
       
       try {
         // 尝试导入common模块来制作转发消息
-        const common = (await import('../../lib/common/common.js')).default;
+        const common = (await import('../../../lib/common/common.js')).default;
         return await common.makeForwardMsg(
           e,
           errorMessages,
@@ -198,20 +200,7 @@ class WordleRenderer {
       ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
       ['Z', 'X', 'C', 'V', 'B', 'N', 'M']
     ];
-    
-    // 导入utils模块以使用getLetterStatus方法，避免重复代码
-    let utils;
-    try {
-      utils = (await import('./utils.js')).default;
-    } catch (error) {
-      logger.error('导入utils模块失败:', error);
-      // 如果导入失败，使用备用逻辑
-      return this._drawKeyboardHintFallback(ctx, width, startY, guesses, targetWord);
-    }
-    
-    // 使用utils模块中的getLetterStatus方法获取字母状态
     const letterStatus = utils.getLetterStatus(guesses, targetWord);
-    
     const keyWidth = 36;
     const keyHeight = 42;
     const keyGap = 5;
@@ -247,117 +236,6 @@ class WordleRenderer {
         ctx.textBaseline = 'middle';
         ctx.fillText(letter, x + keyWidth / 2, y + keyHeight / 2);
       }
-    }
-  }
-  
-  /**
-   * 备用的键盘提示绘制方法，当utils模块不可用时使用
-   */
-  _drawKeyboardHintFallback(ctx, width, startY, guesses, targetWord) {
-    // 原有逻辑，仅在utils模块不可用时使用
-    const keyboardLayout = [
-      ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
-      ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
-      ['Z', 'X', 'C', 'V', 'B', 'N', 'M']
-    ];
-    
-    // 获取字母状态
-    const alphabet = 'abcdefghijklmnopqrstuvwxyz';
-    const letterStatus = new Map();
-    for (const letter of alphabet)
-      letterStatus.set(letter, 'unknown');
-    
-    // 确保guesses是数组
-    const guessArray = Array.isArray(guesses) ? guesses : [];
-    for (const guess of guessArray) {
-      if (!guess || typeof guess !== 'string') continue;
-      
-      // 检查猜测结果
-      const result = [];
-      const targetLetters = targetWord.split('');
-      const guessLetters = guess.split('');
-      const length = targetWord.length;
-      
-      for (let i = 0; i < length; i++) {
-        if (guessLetters[i] === targetLetters[i]) {
-          result.push({ letter: guessLetters[i], status: 'correct' }); // 绿色
-          targetLetters[i] = null; // 标记为已使用
-        } else {
-          result.push({ letter: guessLetters[i], status: 'pending' });
-        }
-      }
-      
-      for (let i = 0; i < length; i++) {
-        if (result[i].status === 'pending') {
-          const index = targetLetters.indexOf(guessLetters[i]);
-          if (index !== -1) {
-            result[i].status = 'present';
-            targetLetters[index] = null;
-          } else {
-            result[i].status = 'absent';
-          }
-        }
-      }
-      
-      // 更新字母状态
-      for (let i = 0; i < guess.length; i++) {
-        const letter = guess[i];
-        const status = result[i].status;
-        
-        if (status === 'correct')
-          letterStatus.set(letter, 'correct');
-        else if (status === 'present' && letterStatus.get(letter) !== 'correct')
-          letterStatus.set(letter, 'present');
-        else if (status === 'absent' && letterStatus.get(letter) === 'unknown')
-          letterStatus.set(letter, 'absent');
-      }
-    }
-    
-    const keyWidth = 36;
-    const keyHeight = 42;
-    const keyGap = 5;
-    const rowGap = 8;
-    for (let rowIndex = 0; rowIndex < keyboardLayout.length; rowIndex++) {
-      const row = keyboardLayout[rowIndex];
-      const rowWidth = row.length * keyWidth + (row.length - 1) * keyGap;
-      const startX = (width - rowWidth) / 2;
-      for (let colIndex = 0; colIndex < row.length; colIndex++) {
-        const letter = row[colIndex];
-        const status = letterStatus.get(letter.toLowerCase());
-        const x = startX + colIndex * (keyWidth + keyGap);
-        const y = startY + rowIndex * (keyHeight + rowGap);
-        let bgColor = '#d3d6da';
-        switch (status) {
-          case 'correct':
-            bgColor = '#6aaa64';
-            break;
-          case 'present':
-            bgColor = '#c9b458';
-            break;
-          case 'absent':
-            bgColor = '#787c7e';
-            break;
-        }
-        ctx.fillStyle = bgColor;
-        ctx.beginPath();
-        ctx.roundRect(x, y, keyWidth, keyHeight, 6);
-        ctx.fill();
-        ctx.fillStyle = bgColor === '#d3d6da' ? '#1a1a1b' : '#ffffff';
-        ctx.font = 'bold 18px Arial';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(letter, x + keyWidth / 2, y + keyHeight / 2);
-      }
-    }
-  }
-
-  /**
-   * 清理Canvas缓存
-   * @param {string} groupId - 群组ID
-   */
-  clearCanvasCache(groupId) {
-    if (this.canvasCache && this.canvasCache.has(groupId)) {
-      this.canvasCache.delete(groupId);
     }
   }
 }

@@ -11,18 +11,22 @@ class WordleGame {
     this.REGEX_ALPHA = /^[a-zA-Z]+$/;
     
     // 配置
-    this.cooldownTime = 10000; // 10秒冷却时间
+    this.groupcooldownTime = 3000; // 3秒群冷却时间
+    this.personcooldownTime = 10000; // 10秒个人冷却时间
     this.adaptiveAttempts = {
       3: 5,
       4: 6,
       5: 8,
       6: 8,
       7: 10,
-      8: 12
+      8: 12,
+      9: 13,
+      10: 15
     };
     
     // 状态管理
     this.userCooldowns = new Map();
+    this.groupCooldowns = new Map();
     
     // 注入工具模块
     this.utils = utils;
@@ -55,9 +59,15 @@ class WordleGame {
       const cooldownKey = `${groupId}_${userId}`;
       const lastGuess = this.userCooldowns.get(cooldownKey);
       const now = Date.now();
-      if (lastGuess && (now - lastGuess) < this.cooldownTime) {
-        const remainingTime = Math.ceil((this.cooldownTime - (now - lastGuess)) / 1000);
-        await e.reply(`我知道你很急，但你先别急（冷却中，还剩${remainingTime} 秒）`, false, {recallMsg: 60});
+      const lastGroupGuess = this.groupCooldowns.get(groupId);
+      if (lastGroupGuess && (now - lastGroupGuess) < this.groupcooldownTime) {
+        const remainingTime = Math.ceil((this.groupcooldownTime - (now - lastGroupGuess)) / 1000);
+        await e.reply(`停停停，你俩什么默契，别同时猜了\n（冷却中，还剩${remainingTime} 秒）`, false, {recallMsg: 60});
+        return true;
+      }
+      if (lastGuess && (now - lastGuess) < this.personcooldownTime) {
+        const remainingTime = Math.ceil((this.personcooldownTime - (now - lastGuess)) / 1000);
+        await e.reply(`我知道你很急，但你先别急\n（冷却中，还剩${remainingTime} 秒）`, false, {recallMsg: 60});
         return true;
       }
       const currentGame = await this.utils.db.getGameData(groupId);
@@ -78,6 +88,7 @@ class WordleGame {
           return true;
         }
         this.userCooldowns.set(cooldownKey, now);
+        this.groupCooldowns.set(groupId, now);
         return await this.processGuess(e, message, groupId);
       }
     }
@@ -110,10 +121,10 @@ class WordleGame {
     const numberMatch = input.match(/^\d+$/);
     if (numberMatch) {
       const letterCount = parseInt(numberMatch[0]);
-      if (letterCount >= 3 && letterCount <= 8) {
+      if (letterCount >= 3 && letterCount <= 10) {
         return await this.startNewGame(e, letterCount);
       } else {
-        await e.reply('请输入3-8之间的字母数！');
+        await e.reply('请输入3-10之间的字母数！');
         return true;
       }
     }
@@ -214,12 +225,11 @@ class WordleGame {
       return true;
     }
     if (currentGame.guesses.includes(guess)) {
-      await e.reply(`你已经猜过 "${guess}" 了！请尝试其他单词。`, false, {recallMsg: 60});
+      await e.reply(`已经有人猜过 "${guess}" 了哦～`, false, {recallMsg: 60});
       return true;
     }
     if (!(await this.utils.word.isValidWord(guess, currentGame.letterCount, groupId))) {
-      await e.reply(`"${guess}" 不是有效的英文单词哦~
-请输入${currentGame.letterCount || 5}个字母的英文单词。`, false, {recallMsg: 60});
+      await e.reply(`我们在词汇表里面找不到"${guess}" \n请检查你输入的单词是否正确~`, false, {recallMsg: 60});
       return true;
     }
     currentGame.guesses.push(guess);
