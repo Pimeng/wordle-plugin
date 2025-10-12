@@ -1,5 +1,12 @@
-import game from '../utils/game.js';
-import utils from '../utils/utils.js';
+const game = await import('../utils/game.js').then(m => m.default || m);
+
+let utils;
+(async () => {
+  utils = await import('../utils/utils.js').then(m => m.default || m);
+})();
+
+//import game from '../utils/game.js';
+//import utils from '../utils/utils.js';
 
 export class Wordle extends plugin {
   constructor() {
@@ -71,5 +78,4 @@ ${definition}`);
       return false;
     }
   }
-  
 }

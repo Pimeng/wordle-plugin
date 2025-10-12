@@ -2,7 +2,14 @@ import fs from 'fs';
 import path from 'node:path';
 import { createCanvas } from 'canvas';
 
-let utils = (await import('./utils.js')).default;
+let utils;
+(async () => {
+  try {
+    utils = await import('./utils.js').then(m => m.default || m);
+  } catch (e) {
+    console.error('[renderer.js] 动态加载 utils 失败', e);
+  }
+})();
 
 /**
  * Wordle游戏渲染模块

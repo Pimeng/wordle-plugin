@@ -1,5 +1,13 @@
 import fs from 'node:fs';
-import utils from './utils.js';
+
+let utils;
+(async () => {
+  try {
+    utils = await import('./utils.js').then(m => m.default || m);
+  } catch (e) {
+    logger.error('[game.js] 动态加载 utils 失败', e);
+  }
+})();
 
 /**
  * Wordle游戏核心逻辑模块
@@ -27,9 +35,10 @@ class WordleGame {
     // 状态管理
     this.userCooldowns = new Map();
     this.groupCooldowns = new Map();
-    
-    // 注入工具模块
-    this.utils = utils;
+  }
+  
+  get utils(){
+    return utils;
   }
   
   /**
