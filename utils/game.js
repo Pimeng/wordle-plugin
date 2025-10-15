@@ -71,12 +71,12 @@ class WordleGame {
       const lastGroupGuess = this.groupCooldowns.get(groupId);
       if (lastGroupGuess && (now - lastGroupGuess) < this.groupcooldownTime) {
         const remainingTime = Math.ceil((this.groupcooldownTime - (now - lastGroupGuess)) / 1000);
-        await e.reply(`停停停，你俩什么默契，别同时猜了\n（冷却中，还剩${remainingTime} 秒）`, false, {recallMsg: 60});
+        await e.reply(`停停停，你俩什么默契，别同时猜了\n（冷却中，还剩 ${remainingTime} 秒）`, false, {recallMsg: 60});
         return true;
       }
       if (lastGuess && (now - lastGuess) < this.personcooldownTime) {
         const remainingTime = Math.ceil((this.personcooldownTime - (now - lastGuess)) / 1000);
-        await e.reply(`我知道你很急，但你先别急\n（冷却中，还剩${remainingTime} 秒）`, false, {recallMsg: 60});
+        await e.reply(`我知道你很急，但你先别急\n（冷却中，还剩 ${remainingTime} 秒）`, false, {recallMsg: 60});
         return true;
       }
       const currentGame = await this.utils.db.getGameData(groupId);
