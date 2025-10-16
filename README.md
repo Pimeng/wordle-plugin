@@ -15,7 +15,7 @@
 git clone --depth=1 https://github.com/Pimeng/wordle-plugin.git ./plugins/wordle-plugin
 ```
 
-### gitee源（国内用户推荐，更新可能延迟）
+### gitee源（国内用户推荐）
 
 ```console
 git clone --depth=1 https://gitee.com/Pimeng/wordle-plugin.git ./plugins/wordle-plugin
