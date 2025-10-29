@@ -25,44 +25,46 @@ class WordleUtils {
   }
 
   /**
-   * 检查猜测结果
+   * 检查猜测结果（性能优化版：两遍扫描 + 频次表）
    * @param {string} guess - 用户猜测的单词
    * @param {string} target - 目标单词
    * @returns {Array} 猜测结果数组
    */
   checkGuess(guess, target) {
-      guess = guess.toLowerCase();
-      target = target.toLowerCase();
-    
-      const result = [];
-      const targetLetters = target.split('');
-      const guessLetters = guess.split('');
-      const length = target.length;
-    
-      for (let i = 0; i < length; i++) {
-        if (guessLetters[i] === targetLetters[i]) {
-          result.push({ letter: guessLetters[i], status: 'correct' }); // 绿色
-          targetLetters[i] = null; // 标记为已使用
-        } else {
-          result.push({ letter: guessLetters[i], status: 'pending' });
-        }
+    guess = guess.toLowerCase();
+    target = target.toLowerCase();
+
+    const length = target.length;
+    const result = new Array(length);
+    const freq = Object.create(null);
+
+    // 第一次遍历：标记正确位置，并统计剩余字母频次
+    for (let i = 0; i < length; i++) {
+      const g = guess[i];
+      const t = target[i];
+      if (g === t) {
+        result[i] = { letter: g, status: 'correct' };
+      } else {
+        result[i] = { letter: g, status: 'pending' };
+        freq[t] = (freq[t] || 0) + 1;
       }
-    
-      for (let i = 0; i < length; i++) {
-        if (result[i].status === 'pending') {
-          const index = targetLetters.indexOf(guessLetters[i]);
-          if (index !== -1) {
-            result[i].status = 'present';
-            targetLetters[index] = null;
-          } else {
-            result[i].status = 'absent';
-          }
-        }
-      }
-    
-      return result;
     }
 
+    // 第二次遍历：为非正确位置分配 present/absent
+    for (let i = 0; i < length; i++) {
+      if (result[i].status === 'pending') {
+        const g = guess[i];
+        if (freq[g] > 0) {
+          result[i].status = 'present';
+          freq[g] -= 1;
+        } else {
+          result[i].status = 'absent';
+        }
+      }
+    }
+
+    return result;
+  }
 
   /**
    * 格式化结果显示
@@ -108,7 +110,7 @@ class WordleUtils {
   }
 
   /**
-   * 获取每个字母的状态
+   * 获取每个字母的状态（基于猜测与目标词）
    * @param {Array<string>} guesses - 已猜测的单词数组
    * @param {string} targetWord - 目标单词
    * @returns {Map<string, string>} 字母状态映射
@@ -116,26 +118,50 @@ class WordleUtils {
   getLetterStatus(guesses, targetWord) {
     const alphabet = 'abcdefghijklmnopqrstuvwxyz';
     const letterStatus = new Map();
-    for (const letter of alphabet)
-      letterStatus.set(letter, 'unknown');
-    
-    // 确保guesses是数组
+    for (const letter of alphabet) letterStatus.set(letter, 'unknown');
+
     const guessArray = Array.isArray(guesses) ? guesses : [];
     for (const guess of guessArray) {
       const result = this.checkGuess(guess, targetWord);
       for (let i = 0; i < guess.length; i++) {
         const letter = guess[i];
         const status = result[i].status;
-        
-        if (status === 'correct')
-          letterStatus.set(letter, 'correct');
-        else if (status === 'present' && letterStatus.get(letter) !== 'correct')
-          letterStatus.set(letter, 'present');
-        else if (status === 'absent' && letterStatus.get(letter) === 'unknown')
-          letterStatus.set(letter, 'absent');
+
+        if (status === 'correct') letterStatus.set(letter, 'correct');
+        else if (status === 'present' && letterStatus.get(letter) !== 'correct') letterStatus.set(letter, 'present');
+        else if (status === 'absent' && letterStatus.get(letter) === 'unknown') letterStatus.set(letter, 'absent');
       }
     }
-    
+
+    return letterStatus;
+  }
+
+  /**
+   * 获取每个字母的状态（基于已计算的结果，避免重复计算）
+   * @param {Array<string>} guesses - 已猜测的单词数组
+   * @param {Array<Array<{letter:string,status:string}>>} results - 与每次猜测对应的结果
+   * @returns {Map<string, string>} 字母状态映射
+   */
+  getLetterStatusFromResults(guesses, results) {
+    const alphabet = 'abcdefghijklmnopqrstuvwxyz';
+    const letterStatus = new Map();
+    for (const letter of alphabet) letterStatus.set(letter, 'unknown');
+
+    const guessArray = Array.isArray(guesses) ? guesses : [];
+    const resultsArray = Array.isArray(results) ? results : [];
+
+    for (let gi = 0; gi < guessArray.length; gi++) {
+      const guess = guessArray[gi];
+      const res = resultsArray[gi] || [];
+      for (let i = 0; i < guess.length; i++) {
+        const letter = guess[i];
+        const status = res[i]?.status || 'unknown';
+        if (status === 'correct') letterStatus.set(letter, 'correct');
+        else if (status === 'present' && letterStatus.get(letter) !== 'correct') letterStatus.set(letter, 'present');
+        else if (status === 'absent' && letterStatus.get(letter) === 'unknown') letterStatus.set(letter, 'absent');
+      }
+    }
+
     return letterStatus;
   }
 }

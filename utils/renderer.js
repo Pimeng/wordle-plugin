@@ -11,6 +11,7 @@ class WordleRenderer {
     this.canvasCache = new Map();
     this.maxCacheSize = 200; // 最大缓存数量
     this.utils = null;
+    this.versionInfoCache = null; // 版本信息缓存
     this.initUtils();
   }
 
@@ -23,10 +24,11 @@ class WordleRenderer {
   }
 
   /**
-   * 获取版本信息
+   * 获取版本信息（带缓存）
    * @returns {Object} 包含版本信息的对象
    */
   async getVersionInfo() {
+    if (this.versionInfoCache) return this.versionInfoCache;
     try {
       let pluginVersion = '5.1.4';
       let yunzaiName = 'Yunzai';
@@ -53,18 +55,20 @@ class WordleRenderer {
         logger.debug('无法读取云崽package.json:', error.message);
       }
 
-      return {
+      this.versionInfoCache = {
         pluginVersion,
         yunzaiName,
         yunzaiVersion
       };
+      return this.versionInfoCache;
     } catch (error) {
       logger.error('获取版本信息时出错:', error);
-      return {
+      this.versionInfoCache = {
         pluginVersion: '5.1.4',
         yunzaiName: 'Yunzai',
         yunzaiVersion: '1.1.4'
       };
+      return this.versionInfoCache;
     }
   }
 
@@ -88,19 +92,26 @@ class WordleRenderer {
    * 使用Canvas渲染游戏界面
    * @param {Object} e - 消息事件对象
    * @param {Object} gameData - 游戏数据
-   * @param {Function} checkGuessFunc - 检查猜测结果的函数
    * @returns {Promise<*>} - 渲染结果
    */
   async renderGame(e, gameData, checkGuessFunc) {
     const startTime = Date.now();
     try {
       const guesses = Array.isArray(gameData.guesses) ? gameData.guesses : [];
-      const results = [];
+      // 优先使用预计算结果，否则使用传入函数或utils进行计算
+      let results = Array.isArray(gameData.results) ? gameData.results : null;
       const letterCount = gameData.targetWord ? gameData.targetWord.length : 5;
-      for (let i = 0; i < guesses.length; i++) {
-        const result = checkGuessFunc(guesses[i], gameData.targetWord);
-        results.push(result);
+
+      if (!results) {
+        const checker = typeof checkGuessFunc === 'function' ? checkGuessFunc : (this.utils?.checkGuess?.bind(this.utils));
+        results = [];
+        if (checker) {
+          for (let i = 0; i < guesses.length; i++) {
+            results.push(checker(guesses[i], gameData.targetWord));
+          }
+        }
       }
+
       const maxAttempts = gameData.maxAttempts || 6;
       const boxSize = 60;
       const gap = 8;
@@ -156,7 +167,7 @@ class WordleRenderer {
           let letter = '';
           if (row < guesses.length && typeof guesses[row] === 'string' && col < guesses[row].length) {
             letter = guesses[row][col];
-            if (results[row] && results[row][col]) {
+            if (results && results[row] && results[row][col]) {
               const status = results[row][col].status;
               switch (status) {
                 case 'correct':
@@ -188,12 +199,13 @@ class WordleRenderer {
           }
         }
       }
-      await this.drawKeyboardHint(ctx, width, height - keyboardHeight - versionInfoHeight - 10, gameData.guesses, gameData.targetWord);
-      
-      // 确保 utils 已加载
+
+      // 确保 utils 已加载（在需要使用前）
       if (!this.utils) {
         await this.initUtils();
       }
+
+      await this.drawKeyboardHint(ctx, width, height - keyboardHeight - versionInfoHeight - 10, guesses, results);
       
       // 使用优化后的版本信息获取方法
       const versionInfo = await this.getVersionInfo();
@@ -265,15 +277,15 @@ class WordleRenderer {
    * @param {number} width - 画布宽度
    * @param {number} startY - 起始Y坐标
    * @param {Array<string>} guesses - 已猜测的单词数组
-   * @param {string} targetWord - 目标单词
+   * @param {Array<Array<{letter:string,status:string}>>} results - 与每次猜测对应的结果
    */
-  async drawKeyboardHint(ctx, width, startY, guesses, targetWord) {
+  async drawKeyboardHint(ctx, width, startY, guesses, results) {
     const keyboardLayout = [
       ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
       ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
       ['Z', 'X', 'C', 'V', 'B', 'N', 'M']
     ];
-    const letterStatus = this.utils.getLetterStatus(guesses, targetWord);
+    const letterStatus = this.utils.getLetterStatusFromResults(guesses, results);
     const keyWidth = 36;
     const keyHeight = 42;
     const keyGap = 5;

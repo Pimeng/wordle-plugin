@@ -35,6 +35,9 @@ class WordleGame {
     // 状态管理
     this.userCooldowns = new Map();
     this.groupCooldowns = new Map();
+
+    // 缓存
+    this._helpTextCache = null;
   }
   
   get utils(){
@@ -55,7 +58,7 @@ class WordleGame {
         return false;
       }
       let message = e.msg.trim();
-      const prefixes = ['#','!'];
+      const prefixes = ['#','!','！'];
       let prefix = '';
       for (const p of prefixes) {
         if (message.startsWith(p)) {
@@ -233,10 +236,13 @@ class WordleGame {
     }
     currentGame.guesses.push(guess);
     currentGame.attempts++;
-    const result = this.utils.checkGuess(guess, currentGame.targetWord);
     const isWin = guess === currentGame.targetWord;
     currentGame.finished = isWin || currentGame.attempts >= currentGame.maxAttempts;
     await this.utils.db.saveGameData(groupId, currentGame);
+
+    // 预计算所有轮次的结果，避免在渲染阶段重复计算
+    const results = (currentGame.guesses || []).map(g => this.utils.checkGuess(g, currentGame.targetWord));
+
     // 准备游戏状态数据
     const gameData = {
       targetWord: currentGame.targetWord,
@@ -245,11 +251,11 @@ class WordleGame {
       maxAttempts: currentGame.maxAttempts,
       finished: currentGame.finished,
       gameState: isWin ? 'win' : (currentGame.finished ? 'lose' : 'playing'),
-      result: result
+      results
     };
     
     // 调用渲染方法获取结果（可能是图片或错误信息）
-    const renderResult = await this.utils.renderer.renderGame(e, gameData, this.utils.checkGuess);
+    const renderResult = await this.utils.renderer.renderGame(e, gameData);
     await this.sendGameResultMessage(e, gameData, isWin, renderResult);
     return true;
   }
@@ -293,12 +299,10 @@ class WordleGame {
    * @returns {string} 结果消息
    */
   async generateResultMessage(e, gameData, isWin) {
-    const groupId = e.group_id;
-    const currentGame = await this.utils.db.getGameData(groupId);
-    const targetWord = currentGame.targetWord;
+    const targetWord = gameData?.targetWord;
     if (isWin) {
       let message = `🎉 恭喜 ${e.sender.card} 猜中了！
-答案是 ${gameData.targetWord}`;
+答案是 ${targetWord}`;
       const definition = await this.utils.word.getWordDefinition(targetWord);
       if (definition) {
         message += `
@@ -311,8 +315,8 @@ ${definition}`;
       return message;
     } else if (gameData.finished) {
       let message = `😔 很遗憾，没有人猜中
-答案是 ${gameData.targetWord}`;
-      const definition = await this.utils.word.getWordDefinition(gameData.targetWord);
+答案是 ${targetWord}`;
+      const definition = await this.utils.word.getWordDefinition(targetWord);
       if (definition) {
         message += `
 ${definition}`;
@@ -369,9 +373,18 @@ ${definition}`;
    */
   async showHelp(e) {
     const helpPath = './plugins/wordle-plugin/resources/help.txt';
-    if (fs.existsSync(helpPath)) {
-      const helpText = fs.readFileSync(helpPath, 'utf-8');
-      await e.reply(helpText);
+    if (!this._helpTextCache) {
+      if (fs.existsSync(helpPath)) {
+        try {
+          this._helpTextCache = fs.readFileSync(helpPath, 'utf-8');
+        } catch (err) {
+          logger.debug('[Wordle] 读取帮助文件失败:', err.message);
+        }
+      }
+    }
+
+    if (this._helpTextCache) {
+      await e.reply(this._helpTextCache);
     } else {
       await e.reply(`Wordle 游戏帮助
 
