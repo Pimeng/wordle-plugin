@@ -1,27 +1,25 @@
-> [!warning]
-> 目前仍在 Beta 版，有任何使用问题欢迎提 issue
-
 # Wordle 游戏插件
 
-基于原Wordle网页版的云崽Bot改版，为云崽Bot提供更智能、更友好的游戏体验。
+基于原Wordle网页版的云崽Bot改版，原网页参考 https://wordle.org
 
-## 食用方法
+## 安装方法
 
 ### 1. 下载插件
 
-### github源
-
-```console
-git clone --depth=1 https://github.com/Pimeng/wordle-plugin.git ./plugins/wordle-plugin
-```
-
-### gitee源（国内用户推荐）
+#### gitee源（国内用户推荐）
 
 ```console
 git clone --depth=1 https://gitee.com/Pimeng/wordle-plugin.git ./plugins/wordle-plugin
 ```
 
-### github代理加速（速度可能不稳定）
+#### github源
+
+```console
+git clone --depth=1 https://github.com/Pimeng/wordle-plugin.git ./plugins/wordle-plugin
+```
+
+
+#### github代理加速（速度可能不稳定）
 
 ```console
 git clone --depth=1 https://gh-proxy.com/https://github.com/Pimeng/wordle-plugin.git ./plugins/wordle-plugin
@@ -45,11 +43,13 @@ sudo yum install -y gcc-c++ cairo-devel pango-devel libjpeg-turbo-devel giflib-d
 ```
 
 ##### II. 编译安装canvas
+
 ```console
 cd plugins/wordle-plugin
 npm i
 npm install canvas --build-from-source
 ```
+
 #### Windows & Other
 
 ```console
@@ -72,71 +72,27 @@ pnpm i canvas
 pnpm approve-builds
 ```
 
-canvas还是有问题那就自己问AI自求多福吧……
-
-## ✨ 特性
-
-### 1. 重复单词检测 🔍
-- 自动检测用户输入的重复单词
-- 提示"已猜过"并不计入猜测次数
-- 避免浪费宝贵的猜测机会
-
-### 2. 冷却时间机制 ⏰
-- 每次猜测后设置3秒冷却时间
-- 防止刷屏和一次性多次回答
-- 提升群聊环境的友好度
-
-### 3. 多前缀支持 🎯
-- 支持 `#apple` `!apple` 两种前缀格式
-- 避免因为插件优先级被抢了导致不能正常进行游戏
-
-### 4. 大小写兼容 🔤
-- 完全支持大小写混合输入
-- Apple、APPLE、apple 都能正确识别
-- 提升用户体验
-
-### 5. 词典释义功能 📖
-- 支持查询单词释义
-- 提供中英文双语解释
-- 显示释义来源词典
-- 使用命令：`#释义 [单词]`
+canvas还是有问题那就自己问AI自求多福吧……因为我也被canvas折磨好久才装上的……
 
 ## 🚀 使用方法
 
 ### 基本命令
 ```
-#wordle                     # 开始5字母游戏
-#wordle 7                   # 开始7字母游戏
-#wordle apple               # 使用前缀猜测
-!apple                      # 通过前缀猜词
-#wordle 答案                 # 结束游戏
-#wordle 帮助                 # 查看帮助
-#wordle 词典                 # 切换词典
-#释义 access                 # 查询单词释义
+#wordle            # 开始常规游戏
+#wordle 7          # 开始7字母游戏
+#apple             # 使用前缀猜测
+!apple             # 通过前缀猜词
+#wordle 答案       # 结束游戏
+#wordle 帮助       # 查看帮助
+#wordle 词典       # 切换词典
+#释义 access       # 查询单词释义
 ```
 
-### 前缀支持
-- `#apple` - 使用#前缀
-- `!apple` - 使用!前缀
+## 🎉 正在使用本插件的Bot
 
-## 🎮 游戏界面
+- 云露露 [官方群](https://qm.qq.com/q/rGR21aiSSA)
+- 依涵
 
-游戏开始时会显示：
-- 游戏规则说明
-- 当前尝试次数
-- 彩色游戏板
-
-每次猜测后显示：
-- 猜测结果（彩色方块）
-- 剩余机会
-- 单词释义（游戏结束时）
-
-## 🔧 技术特性
-
-- **Node.js Canvas渲染**：高质量游戏界面
-- **内存缓存**：快速单词验证
-- **正则匹配**：精准命令识别
-- **错误处理**：完善的异常捕获
 
 ## 插件效果预览
 
@@ -145,54 +101,6 @@ canvas还是有问题那就自己问AI自求多福吧……
 ## 📝 更新日志
 
 > 具体更新日志请查看 Commits
-
-### v0.1 (当前版本)
-
-- 新增词典释义查询功能：支持 `#释义 [单词]` 命令查询单词中英文释义
-- 尝试修复当其他群聊猜词结束之后导致所有群聊进度丢失的问题
-- 词典切换功能优化，支持指定词典而不是一个一个切换
-- 切换更佳的词典，并且搬运一些词典（来自[nonebot-plugin-wordle](https://github.com/noneplugin/nonebot-plugin-wordle/)）
-- 删除大量废弃代码，保持代码整洁性
-- 移除翻译功能，使用词典内置释义
-- 优化数据库储存策略
-- 优化释义解析
-
-### v0.0.6
-
-- 没错，还是重构大量代码（其实是石山模块化（确信
-- 新增百度翻译的选项
-
-### v0.0.5
-
-- 重构大量代码
-- 改用Redis储存游戏数据
-- 文本提示进一步优化
-
-### v0.0.4
-
-- 新增词典切换功能
-
-### v0.0.3
-
-- 新增重复单词检测
-- 新增冷却时间机制
-- 新增多前缀支持
-- 新增自适应尝试次数
-- 新增大小写兼容
-- 新增键盘提示功能
-- 优化帮助文档
-- 提升用户体验
-
-### v0.0.2 (初版)
-
-- 基础Wordle游戏功能
-- 5字母单词猜测
-- 6次尝试机会
-- 基础命令支持
-
-### v0.0.1
-
-被我吃了（bushi
 
 ## 🤝 贡献
 
@@ -207,7 +115,3 @@ canvas还是有问题那就自己问AI自求多福吧……
 https://github.com/Pimeng#%E8%81%94%E7%B3%BB%E6%96%B9%E5%BC%8F
 
 > 本插件大量代码均由AI编写
-
----
-
-**享受游戏，快乐猜词！** 🎉
