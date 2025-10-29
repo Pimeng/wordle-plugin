@@ -10,16 +10,13 @@ Wordle 游戏帮助
 #释义 [单词] - 查询单词释义
 
 🎯 提交猜测方式：
-• 使用前缀：#apple !apple
+• 使用前缀：#apple !apple !apple
 
 📱 使用示例：
 #apple - 使用前缀猜测
 !apple - 通过前缀猜词
 #wordle 7 - 开始7字母游戏
-#apple - 使用前缀猜测
-#wordle 词典 - 循环切换词典
 #wordle 词典 四级 - 切换到四级词典
-#wordle 词典 六级 - 切换到六级词典
 #wordle 排行榜 - 查看群排行榜
 #wordle 总排行榜 - 查看全局排行榜
 #wordle 排行榜 胜率 - 查看胜率排行榜
