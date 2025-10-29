@@ -185,7 +185,8 @@ class WordleGame {
       maxAttempts: maxAttempts,
       finished: false,
       startTime: Date.now(),
-      letterCount: letterCount
+      letterCount: letterCount,
+      participants: {}
     };
     // 保存游戏数据
     await this.utils.db.saveGameData(groupId, gameData);
@@ -234,6 +235,19 @@ class WordleGame {
     if (!(await this.utils.word.isValidWord(guess, currentGame.letterCount, groupId))) {
       return true;
     }
+    
+    const userId = this._getUserId(e);
+    const nickname = this._getDisplayName(e);
+    
+    if (!currentGame.participants || typeof currentGame.participants !== 'object') {
+      currentGame.participants = {};
+    }
+    if (userId) {
+      currentGame.participants[userId] = {
+        nickname
+      };
+    }
+    
     currentGame.guesses.push(guess);
     currentGame.attempts++;
     const isWin = guess === currentGame.targetWord;
@@ -257,6 +271,9 @@ class WordleGame {
     // 调用渲染方法获取结果（可能是图片或错误信息）
     const renderResult = await this.utils.renderer.renderGame(e, gameData);
     await this.sendGameResultMessage(e, gameData, isWin, renderResult);
+    if (gameData.finished) {
+      await this._updateLeaderboardStats(e, currentGame, isWin ? userId : null);
+    }
     return true;
   }
   
@@ -353,6 +370,7 @@ ${definition}`;
 ${definition}`;
     }
     await e.reply(message);
+    await this._updateLeaderboardStats(e, currentGame, null);
     setTimeout(async () => {
       await this.utils.db.deleteGameData(groupId);
       if (this.utils.renderer.canvasCache && typeof this.utils.renderer.canvasCache === 'object') {
@@ -468,6 +486,58 @@ ${definition}`;
       await e.reply(`词典已切换：${currentDictInfo.name} → ${nextDictInfo.name}\n当前词典信息：\n- 包含 ${nextDictInfo.wordCount} 个单词\n- 使用 #wordle 开始新游戏生效`);
       return true;
     }
+  }
+
+  _getUserId(e) {
+    if (e?.user_id != null) return String(e.user_id);
+    if (e?.sender?.user_id != null) return String(e.sender.user_id);
+    return null;
+  }
+
+  _getDisplayName(e) {
+    const card = e?.sender?.card;
+    const nickname = e?.sender?.nickname;
+    const userId = this._getUserId(e);
+    if (card && typeof card === 'string' && card.trim().length > 0) {
+      return card.trim();
+    }
+    if (nickname && typeof nickname === 'string' && nickname.trim().length > 0) {
+      return nickname.trim();
+    }
+    return userId != null ? `玩家${userId}` : '未知玩家';
+  }
+
+  async _updateLeaderboardStats(e, gameData, winnerId = null) {
+    const groupId = e?.group_id;
+    if (!groupId || !gameData || !this.utils?.leaderboard) return;
+
+    const participants = gameData.participants || {};
+    const participantsArray = Object.entries(participants).map(([userId, data]) => {
+      if (typeof data === 'string') {
+        return { userId, nickname: data };
+      }
+      if (data && typeof data === 'object') {
+        return { userId, nickname: data.nickname || `玩家${userId}` };
+      }
+      return { userId, nickname: `玩家${userId}` };
+    });
+
+    const resolvedWinnerId = winnerId != null ? String(winnerId) : null;
+    let winnerName = '';
+    if (resolvedWinnerId) {
+      const winnerData = participants[resolvedWinnerId];
+      if (typeof winnerData === 'string') {
+        winnerName = winnerData;
+      } else if (winnerData && typeof winnerData === 'object' && winnerData.nickname) {
+        winnerName = winnerData.nickname;
+      } else {
+        winnerName = this._getDisplayName(e);
+      }
+    }
+
+    if (!participantsArray.length && !resolvedWinnerId) return;
+
+    await this.utils.leaderboard.recordGameResult(groupId, participantsArray, resolvedWinnerId, winnerName);
   }
 }
 

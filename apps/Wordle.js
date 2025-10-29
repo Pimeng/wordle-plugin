@@ -17,6 +17,10 @@ export class Wordle extends plugin {
       priority: 5000,
       rule: [
         {
+          reg: /^#[Ww]ordle\s*(排行榜|榜|leaderboard|rank)\s*(胜场|胜率|参与|wins?|rate?|games?)?$/i,
+          fnc: 'showLeaderboard'
+        },
+        {
           reg: /^#[Ww]ordle(.*)$/i,
           fnc: 'wordle'
         },
@@ -67,7 +71,9 @@ export class Wordle extends plugin {
     }
     
     const word = match[1].toLowerCase();
-    const definition = await this.utils.word.getWordDefinition(word);
+    const utilsModule = this.utils || utils;
+    this.utils = utilsModule;
+    const definition = await utilsModule.word.getWordDefinition(word);
     
     if (definition) {
       await e.reply(`📖 单词：${word.toUpperCase()}
@@ -77,5 +83,75 @@ ${definition}`);
       await e.reply(`❌ 未找到单词 "${word.toUpperCase()}" 的释义。\n该单词可能不在当前词库中。`);
       return false;
     }
+  }
+
+  async showLeaderboard(e) {
+    const groupId = e.group_id;
+    if (!groupId) {
+      await e.reply('排行榜功能仅支持群聊使用。');
+      return true;
+    }
+
+    const utilsModule = this.utils || utils;
+    this.utils = utilsModule;
+    if (!utilsModule?.leaderboard) {
+      await e.reply('排行榜功能尚未加载完成，请稍后再试。');
+      return true;
+    }
+
+    const msgLower = (e.msg || '').toLowerCase();
+    let focus = 'wins';
+    if (msgLower.includes('胜率') || msgLower.includes('rate')) {
+      focus = 'rate';
+    } else if (msgLower.includes('参') || msgLower.includes('game')) {
+      focus = 'games';
+    }
+
+    const winsTop = utilsModule.leaderboard.getLeaderboard(groupId, 'wins', 10);
+    const gamesTop = utilsModule.leaderboard.getLeaderboard(groupId, 'games', 10);
+    const rateTop = utilsModule.leaderboard.getLeaderboard(groupId, 'rate', 10);
+
+    if (!winsTop.length && !gamesTop.length && !rateTop.length) {
+      await e.reply('当前群聊还没有任何 Wordle 战绩，快来开一局吧！');
+      return true;
+    }
+
+    const getMedal = (index) => {
+      if (index === 0) return '🥇';
+      if (index === 1) return '🥈';
+      if (index === 2) return '🥉';
+      return `${index + 1}.`;
+    };
+
+    const formatList = (list) => list.map((player, index) => {
+      const medal = getMedal(index);
+      const name = player.nickname || `玩家${player.userId}`;
+      const wins = typeof player.wins === 'number' ? player.wins : 0;
+      const games = typeof player.gamesPlayed === 'number' ? player.gamesPlayed : 0;
+      const winRateNumber = typeof player.winRate === 'number' ? player.winRate : 0;
+      const safeWinRate = games > 0 && Number.isFinite(winRateNumber) ? winRateNumber : 0;
+      const winRateText = safeWinRate.toFixed(2);
+      return `${medal} ${name} - ${wins}胜 / ${games}局 (胜率${winRateText}%)`;
+    }).join('\n');
+
+    const sections = [
+      { key: 'wins', title: '🏆 胜场榜', data: winsTop, empty: '暂无胜场数据' },
+      { key: 'games', title: '👥 参与榜', data: gamesTop, empty: '暂无参与数据' },
+      { key: 'rate', title: '🎯 胜率榜（至少3局）', data: rateTop, empty: '暂无胜率数据' }
+    ];
+
+    const messageParts = ['📊 Wordle 群排行榜'];
+    for (const section of sections) {
+      const title = section.key === focus ? `⭐ ${section.title}` : section.title;
+      messageParts.push('', title);
+      if (section.data.length) {
+        messageParts.push(formatList(section.data));
+      } else {
+        messageParts.push(section.empty);
+      }
+    }
+
+    await e.reply(messageParts.join('\n'));
+    return true;
   }
 }

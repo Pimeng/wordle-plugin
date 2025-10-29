@@ -89,6 +89,7 @@ canvas还是有问题那就自己问AI自求多福吧……因为我也被canvas
 #wordle 答案       # 结束游戏
 #wordle 帮助       # 查看帮助
 #wordle 词典       # 切换词典
+#wordle 排行榜     # 查看群排行榜（可选：胜场/参与/胜率）
 #释义 access       # 查询单词释义
 ```
 

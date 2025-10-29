@@ -1,6 +1,7 @@
 import word from './word-new.js';
 import renderer from './renderer.js';
 import db from './db.js';
+import leaderboard from './leaderboard.js';
 
 /**
  * Wordle工具整合模块
@@ -11,6 +12,7 @@ class WordleUtils {
     this.db = db;
     this.word = word;
     this.renderer = renderer;
+    this.leaderboard = leaderboard;
     
     // 注入必要的方法依赖
     this._injectDependencies();
