@@ -19,8 +19,8 @@ class WordleGame {
     this.REGEX_ALPHA = /^[a-zA-Z]+$/;
     
     // 配置
-    this.groupcooldownTime = 3000; // 3秒群冷却时间
-    this.personcooldownTime = 10000; // 10秒个人冷却时间
+    this.groupcooldownTime = 1000;
+    this.personcooldownTime = 4000;
     this.adaptiveAttempts = {
       3: 5,
       4: 6,
