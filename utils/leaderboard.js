@@ -199,6 +199,98 @@ class LeaderboardManager {
   }
 
   /**
+   * 获取所有群组的排行榜文件列表
+   * @returns {Array<string>} 群组ID列表
+   */
+  _getAllGroupIds() {
+    try {
+      if (!fs.existsSync(this.dataDir)) {
+        return [];
+      }
+      const files = fs.readdirSync(this.dataDir);
+      return files
+        .filter(file => file.startsWith('leaderboard_') && file.endsWith('.json'))
+        .map(file => file.replace('leaderboard_', '').replace('.json', ''))
+        .filter(id => id !== 'global');
+    } catch (error) {
+      logger.error('[Wordle] 读取群组列表失败:', error);
+      return [];
+    }
+  }
+
+  /**
+   * 获取全局排行榜（汇总所有群组数据）
+   * @param {('wins'|'games'|'rate')} sortBy - 排序方式
+   * @param {number} limit - 返回的最大人数
+   * @returns {Array} 排序后的全局玩家数据
+   */
+  getGlobalLeaderboard(sortBy = 'wins', limit = 10) {
+    const groupIds = this._getAllGroupIds();
+    const globalStats = new Map();
+
+    for (const groupId of groupIds) {
+      const leaderboard = this._readLeaderboard(groupId);
+      for (const [userId, data] of Object.entries(leaderboard)) {
+        if (!globalStats.has(userId)) {
+          globalStats.set(userId, {
+            nickname: data.nickname,
+            wins: 0,
+            gamesPlayed: 0
+          });
+        }
+        const stats = globalStats.get(userId);
+        stats.wins += Number(data.wins) || 0;
+        stats.gamesPlayed += Number(data.gamesPlayed) || 0;
+        if (data.nickname) {
+          stats.nickname = data.nickname;
+        }
+      }
+    }
+
+    const players = Array.from(globalStats.entries()).map(([userId, data]) => {
+      const games = Number(data.gamesPlayed) || 0;
+      const wins = Number(data.wins) || 0;
+      return {
+        userId,
+        nickname: data.nickname,
+        wins,
+        gamesPlayed: games,
+        winRate: this._calculateWinRate(wins, games)
+      };
+    });
+
+    let sorted;
+    switch (sortBy) {
+      case 'games':
+        sorted = players.sort((a, b) => {
+          if (b.gamesPlayed !== a.gamesPlayed) return b.gamesPlayed - a.gamesPlayed;
+          if (b.wins !== a.wins) return b.wins - a.wins;
+          return a.userId.localeCompare(b.userId, 'zh-Hans-CN');
+        });
+        break;
+      case 'rate':
+        sorted = players
+          .filter(player => player.gamesPlayed >= 3)
+          .sort((a, b) => {
+            if (b.winRate !== a.winRate) return b.winRate - a.winRate;
+            if (b.gamesPlayed !== a.gamesPlayed) return b.gamesPlayed - a.gamesPlayed;
+            return a.userId.localeCompare(b.userId, 'zh-Hans-CN');
+          });
+        break;
+      case 'wins':
+      default:
+        sorted = players.sort((a, b) => {
+          if (b.wins !== a.wins) return b.wins - a.wins;
+          if (b.gamesPlayed !== a.gamesPlayed) return b.gamesPlayed - a.gamesPlayed;
+          return a.userId.localeCompare(b.userId, 'zh-Hans-CN');
+        });
+        break;
+    }
+
+    return sorted.slice(0, limit);
+  }
+
+  /**
    * 标准化昵称
    * @param {string} nickname - 原始昵称
    * @param {string} fallback - 备用值

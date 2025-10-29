@@ -17,7 +17,7 @@ export class Wordle extends plugin {
       priority: 5000,
       rule: [
         {
-          reg: /^#[Ww]ordle\s*(排行榜|榜|leaderboard|rank)\s*(胜场|胜率|参与|wins?|rate?|games?)?$/i,
+          reg: /^#[Ww]ordle.*(排行榜|榜|leaderboard|rank).*$/i,
           fnc: 'showLeaderboard'
         },
         {
@@ -87,19 +87,22 @@ ${definition}`);
 
   async showLeaderboard(e) {
     const groupId = e.group_id;
-    if (!groupId) {
-      await e.reply('排行榜功能仅支持群聊使用。');
-      return true;
-    }
-
     const utilsModule = this.utils || utils;
     this.utils = utilsModule;
+    
     if (!utilsModule?.leaderboard) {
       await e.reply('排行榜功能尚未加载完成，请稍后再试。');
       return true;
     }
 
     const msgLower = (e.msg || '').toLowerCase();
+    const isGlobal = msgLower.includes('总') || msgLower.includes('全局') || msgLower.includes('global');
+
+    if (!isGlobal && !groupId) {
+      await e.reply('群排行榜功能仅支持群聊使用，请使用"#wordle总排行榜"查看全局排行榜。');
+      return true;
+    }
+
     let focus = 'wins';
     if (msgLower.includes('胜率') || msgLower.includes('rate')) {
       focus = 'rate';
@@ -107,12 +110,22 @@ ${definition}`);
       focus = 'games';
     }
 
-    const winsTop = utilsModule.leaderboard.getLeaderboard(groupId, 'wins', 10);
-    const gamesTop = utilsModule.leaderboard.getLeaderboard(groupId, 'games', 10);
-    const rateTop = utilsModule.leaderboard.getLeaderboard(groupId, 'rate', 10);
+    let winsTop, gamesTop, rateTop;
+    if (isGlobal) {
+      winsTop = utilsModule.leaderboard.getGlobalLeaderboard('wins', 10);
+      gamesTop = utilsModule.leaderboard.getGlobalLeaderboard('games', 10);
+      rateTop = utilsModule.leaderboard.getGlobalLeaderboard('rate', 10);
+    } else {
+      winsTop = utilsModule.leaderboard.getLeaderboard(groupId, 'wins', 10);
+      gamesTop = utilsModule.leaderboard.getLeaderboard(groupId, 'games', 10);
+      rateTop = utilsModule.leaderboard.getLeaderboard(groupId, 'rate', 10);
+    }
 
     if (!winsTop.length && !gamesTop.length && !rateTop.length) {
-      await e.reply('当前群聊还没有任何 Wordle 战绩，快来开一局吧！');
+      const emptyMsg = isGlobal 
+        ? '全局还没有任何 Wordle 战绩，快来开一局吧！'
+        : '当前群聊还没有任何 Wordle 战绩，快来开一局吧！';
+      await e.reply(emptyMsg);
       return true;
     }
 
@@ -140,10 +153,11 @@ ${definition}`);
       { key: 'rate', title: '🎯 胜率榜（至少3局）', data: rateTop, empty: '暂无胜率数据' }
     ];
 
-    const messageParts = ['📊 Wordle 群排行榜'];
+    const title = isGlobal ? '🌍 Wordle 全局排行榜' : '📊 Wordle 群排行榜';
+    const messageParts = [title];
     for (const section of sections) {
-      const title = section.key === focus ? `⭐ ${section.title}` : section.title;
-      messageParts.push('', title);
+      const sectionTitle = section.key === focus ? `⭐ ${section.title}` : section.title;
+      messageParts.push('', sectionTitle);
       if (section.data.length) {
         messageParts.push(formatList(section.data));
       } else {
