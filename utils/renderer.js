@@ -2,15 +2,6 @@ import fs from 'fs';
 import path from 'node:path';
 import { createCanvas } from 'canvas';
 
-let utils;
-(async () => {
-  try {
-    utils = await import('./utils.js').then(m => m.default || m);
-  } catch (e) {
-    console.error('[renderer.js] 动态加载 utils 失败', e);
-  }
-})();
-
 /**
  * Wordle游戏渲染模块
  * 负责游戏界面的Canvas绘制
@@ -18,6 +9,79 @@ let utils;
 class WordleRenderer {
   constructor() {
     this.canvasCache = new Map();
+    this.maxCacheSize = 200; // 最大缓存数量
+    this.utils = null;
+    this.initUtils();
+  }
+
+  async initUtils() {
+    try {
+      this.utils = await import('./utils.js').then(m => m.default || m);
+    } catch (e) {
+      console.error('[renderer.js] 动态加载 utils 失败', e);
+    }
+  }
+
+  /**
+   * 获取版本信息
+   * @returns {Object} 包含版本信息的对象
+   */
+  async getVersionInfo() {
+    try {
+      let pluginVersion = '5.1.4';
+      let yunzaiName = 'Yunzai';
+      let yunzaiVersion = '1.1.4';
+
+      const pluginPackagePath = path.join(process.cwd(), './plugins/wordle-plugin/package.json');
+      if (fs.existsSync(pluginPackagePath)) {
+        const pluginPackage = JSON.parse(fs.readFileSync(pluginPackagePath, 'utf8'));
+        pluginVersion = pluginPackage.version || pluginVersion;
+      }
+
+      try {
+        const yunzaiPackagePath = path.join(process.cwd(), './package.json');
+        if (fs.existsSync(yunzaiPackagePath)) {
+          const yunzaiPackage = JSON.parse(fs.readFileSync(yunzaiPackagePath, 'utf8'));
+          if (yunzaiPackage.name) {
+            yunzaiName = yunzaiPackage.name.replace(/(^\w|-\w)/g, s => s.toUpperCase());
+          }
+          if (yunzaiPackage.version) {
+            yunzaiVersion = yunzaiPackage.version;
+          }
+        }
+      } catch (error) {
+        logger.debug('无法读取云崽package.json:', error.message);
+      }
+
+      return {
+        pluginVersion,
+        yunzaiName,
+        yunzaiVersion
+      };
+    } catch (error) {
+      logger.error('获取版本信息时出错:', error);
+      return {
+        pluginVersion: '5.1.4',
+        yunzaiName: 'Yunzai',
+        yunzaiVersion: '1.1.4'
+      };
+    }
+  }
+
+  /**
+   * 清理过期的canvas缓存
+   * @private
+   */
+  _cleanCache() {
+    if (this.canvasCache.size > this.maxCacheSize) {
+      const entriesToDelete = [...this.canvasCache.entries()]
+        .sort((a, b) => a[1].lastUsed - b[1].lastUsed)
+        .slice(0, Math.floor(this.maxCacheSize * 0.2)); // 删除20%最旧的缓存
+
+      for (const [key] of entriesToDelete) {
+        this.canvasCache.delete(key);
+      }
+    }
   }
 
   /**
@@ -60,12 +124,15 @@ class WordleRenderer {
       const groupId = e.group_id;
       let canvas, ctx;
       if (this.canvasCache.has(groupId)) {
-        canvas = this.canvasCache.get(groupId);
+        const cacheItem = this.canvasCache.get(groupId);
+        canvas = cacheItem.canvas;
         ctx = canvas.getContext('2d');
+        cacheItem.lastUsed = Date.now();
+        
         if (canvas.width !== width || canvas.height !== height) {
           canvas = createCanvas(width, height);
           ctx = canvas.getContext('2d');
-          this.canvasCache.set(groupId, canvas);
+          this.canvasCache.set(groupId, { canvas, lastUsed: Date.now() });
         } else {
           ctx.fillStyle = '#f8f8f8';
           ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -73,7 +140,8 @@ class WordleRenderer {
       } else {
         canvas = createCanvas(width, height);
         ctx = canvas.getContext('2d');
-        this.canvasCache.set(groupId, canvas);
+        this.canvasCache.set(groupId, { canvas, lastUsed: Date.now() });
+        this._cleanCache();
       }
       ctx.fillStyle = '#f8f8f8';
       ctx.fillRect(0, 0, width, height);
@@ -121,35 +189,23 @@ class WordleRenderer {
         }
       }
       await this.drawKeyboardHint(ctx, width, height - keyboardHeight - versionInfoHeight - 10, gameData.guesses, gameData.targetWord);
-      try {
-        let pluginVersion = '5.1.4';
-        const pluginPackagePath = path.join(process.cwd(), './plugins/wordle-plugin/package.json');
-        if (fs.existsSync(pluginPackagePath)) {
-          const pluginPackage = JSON.parse(fs.readFileSync(pluginPackagePath, 'utf8'));
-          pluginVersion = pluginPackage.version || pluginVersion;
-        }
-        let yunzaiName = 'Yunzai';
-        let yunzaiVersion = '1.1.4';
-        try {
-          const yunzaiPackagePath = path.join(process.cwd(), './package.json');
-          if (fs.existsSync(yunzaiPackagePath)) {
-            const yunzaiPackage = JSON.parse(fs.readFileSync(yunzaiPackagePath, 'utf8'));
-            if (yunzaiPackage.name)
-              yunzaiName = yunzaiPackage.name.replace(/(^\w|-\w)/g, s => s.toUpperCase());
-            if (yunzaiPackage.version)
-              yunzaiVersion = yunzaiPackage.version;
-          }
-        } catch (error) {
-          logger.debug('无法读取云崽package.json:', error.message);
-        }
-        ctx.fillStyle = '#787c7e';
-        ctx.font = '12px Arial';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(`${yunzaiName} v${yunzaiVersion} & Wordle-Plugin ${pluginVersion} Beta`, width / 2, height - versionInfoHeight / 2);
-      } catch (error) {
-        logger.error('绘制版本信息时出错:', error);
+      
+      // 确保 utils 已加载
+      if (!this.utils) {
+        await this.initUtils();
       }
+      
+      // 使用优化后的版本信息获取方法
+      const versionInfo = await this.getVersionInfo();
+      ctx.fillStyle = '#787c7e';
+      ctx.font = '12px Arial';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(
+        `${versionInfo.yunzaiName} v${versionInfo.yunzaiVersion} & Wordle-Plugin ${versionInfo.pluginVersion} Beta`,
+        width / 2,
+        height - versionInfoHeight / 2
+      );
       
       const buffer = canvas.toBuffer('image/png');
       const imageSegment = {
@@ -161,35 +217,45 @@ class WordleRenderer {
       
       return imageSegment;
     } catch (err) {
-      const errMsg = err.toString();
-      logger.error(`[Wordle] 渲染错误 [群:${e.group_id}]`, err);
-      
-      // 构建错误信息数组
-      const errorMessages = [];
-      errorMessages.push(`🚨 渲染错误！请尝试安装canvas依赖或更新插件\n`);
-      errorMessages.push(`错误详情：${errMsg}\n`);
-      errorMessages.push(`请将以下完整错误日志提供给开发者以便修复问题：\n`);
-      errorMessages.push(`[Wordle] 渲染错误 [群:${e.group_id}] ${errMsg}\n`);
-      errorMessages.push(`Node.js版本：${process.version}\n`);
-      
-      try {
-        // 尝试导入common模块来制作转发消息
-        const common = (await import('../../../lib/common/common.js')).default;
-        return await common.makeForwardMsg(
-          e,
-          errorMessages,
-          'Wordle渲染错误日志'
-        );
-      } catch (importErr) {
-        // 如果导入common模块失败，直接返回错误信息数组
-        logger.error(`导入common模块失败：`, importErr);
-        return errorMessages;
-      }
+      return this.handleRenderError(e, err);
     } finally {
-      const renderTime = Date.now() - startTime;
-      if (renderTime > 1000) {
-        logger.warn(`[Wordle] 渲染性能警告 [群:${e.group_id}] 耗时:${renderTime}ms`);
-      }
+      this.logPerformanceWarning(e, startTime);
+    }
+  }
+
+  /**
+   * 处理渲染错误
+   * @private
+   */
+  async handleRenderError(e, err) {
+    const errMsg = err.toString();
+    logger.error(`[Wordle] 渲染错误 [群:${e.group_id}]`, err);
+    
+    const errorMessages = [
+      `🚨 渲染错误！请尝试安装canvas依赖或更新插件\n`,
+      `错误详情：${errMsg}\n`,
+      `请将以下完整错误日志提供给开发者以便修复问题：\n`,
+      `[Wordle] 渲染错误 [群:${e.group_id}] ${errMsg}\n`,
+      `Node.js版本：${process.version}\n`
+    ];
+    
+    try {
+      const common = (await import('../../../lib/common/common.js')).default;
+      return await common.makeForwardMsg(e, errorMessages, 'Wordle渲染错误日志');
+    } catch (importErr) {
+      logger.error(`导入common模块失败：`, importErr);
+      return errorMessages;
+    }
+  }
+
+  /**
+   * 记录性能警告日志
+   * @private
+   */
+  logPerformanceWarning(e, startTime) {
+    const renderTime = Date.now() - startTime;
+    if (renderTime > 1500) {
+      logger.warn(`[Wordle] 渲染性能警告 [群:${e.group_id}] 耗时:${renderTime}ms`);
     }
   }
   
@@ -207,7 +273,7 @@ class WordleRenderer {
       ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
       ['Z', 'X', 'C', 'V', 'B', 'N', 'M']
     ];
-    const letterStatus = utils.getLetterStatus(guesses, targetWord);
+    const letterStatus = this.utils.getLetterStatus(guesses, targetWord);
     const keyWidth = 36;
     const keyHeight = 42;
     const keyGap = 5;

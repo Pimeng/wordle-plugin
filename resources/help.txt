@@ -1,11 +1,9 @@
-Wordle 游戏帮助 🎮
+Wordle 游戏帮助
 
 📋 基本命令：
 #wordle - 开始新游戏（默认5字母）
 #wordle [数字] - 开始指定字母数量的游戏
-#wordle (答案|ans) - 结束游戏
-#wordle 帮助 - 显示帮助
-#wordle 词典 - 切换词典（循环切换）
+#wordle ans - 结束游戏
 #wordle 词典 [名称] - 按名称切换词典
 #释义 [单词] - 查询单词释义
 
@@ -21,4 +19,3 @@ Wordle 游戏帮助 🎮
 #wordle 词典 四级 - 切换到四级词典
 #wordle 词典 六级 - 切换到六级词典
 #释义 access - 查询单词access的释义
-#释义 project - 查询单词project的释义

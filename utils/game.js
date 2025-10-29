@@ -71,12 +71,12 @@ class WordleGame {
       const lastGroupGuess = this.groupCooldowns.get(groupId);
       if (lastGroupGuess && (now - lastGroupGuess) < this.groupcooldownTime) {
         const remainingTime = Math.ceil((this.groupcooldownTime - (now - lastGroupGuess)) / 1000);
-        await e.reply(`停停停，你俩什么默契，别同时猜了\n（冷却中，还剩 ${remainingTime} 秒）`, false, {recallMsg: 60});
+        await e.reply(`停停停，你俩什么默契\n（群冷却中，还剩 ${remainingTime} 秒）`, false, {recallMsg: 60});
         return true;
       }
       if (lastGuess && (now - lastGuess) < this.personcooldownTime) {
         const remainingTime = Math.ceil((this.personcooldownTime - (now - lastGuess)) / 1000);
-        await e.reply(`我知道你很急，但你先别急\n（冷却中，还剩 ${remainingTime} 秒）`, false, {recallMsg: 60});
+        await e.reply(`我知道你很急，但你先别急\n（个人冷却中，还剩 ${remainingTime} 秒）`, false, {recallMsg: 60});
         return true;
       }
       const currentGame = await this.utils.db.getGameData(groupId);
@@ -93,7 +93,6 @@ class WordleGame {
         }
         const expectedLength = currentGame.letterCount || 5;
         if (message.length !== expectedLength) {
-          await e.reply(`请输入${expectedLength}个字母的单词，你输入了${message.length}个字母哦~`, false, {recallMsg: 60});
           return true;
         }
         this.userCooldowns.set(cooldownKey, now);
@@ -113,7 +112,7 @@ class WordleGame {
   async wordle(e) {
     const originalMsg = e.msg.toLowerCase();
     const groupId = e.group_id;
-    if (originalMsg.includes('wordle 答案') || originalMsg.includes('wordle ans') || originalMsg.includes('wordle 放弃')) {
+    if (originalMsg.includes('答案') || originalMsg.includes('ans') || originalMsg.includes('放弃')) {
       return await this.giveUpGame(e);
     }
     const match = e.msg.match(this.REGEX_WORDLE_CMD);
@@ -201,7 +200,7 @@ class WordleGame {
     const img = await this.utils.renderer.renderGame(e, renderData);
     if (img) {
       const gameStartMessage = [
-        `🎮 Wordle猜词游戏开始啦！
+        `Wordle猜词游戏开始啦！
 `,
         `当前词库：${wordbankName}
 `,
@@ -229,16 +228,7 @@ class WordleGame {
       await e.reply('当前群聊没有进行中的游戏！请先发送 "#wordle" 开始游戏。');
       return true;
     }
-    if (currentGame.attempts >= currentGame.maxAttempts) {
-      await e.reply('已经用完了所有猜测机会！');
-      return true;
-    }
-    if (currentGame.guesses.includes(guess)) {
-      await e.reply(`已经有人猜过 "${guess}" 了哦～`, false, {recallMsg: 60});
-      return true;
-    }
     if (!(await this.utils.word.isValidWord(guess, currentGame.letterCount, groupId))) {
-      await e.reply(`我们在词汇表里面找不到"${guess}" \n请检查你输入的单词是否正确~`, false, {recallMsg: 60});
       return true;
     }
     currentGame.guesses.push(guess);
@@ -282,19 +272,16 @@ class WordleGame {
         await e.reply(result);
       }
     } else {
-      // 如果result为null（这种情况现在应该不会发生，但保留以防万一）
       await e.reply('渲染失败，请稍后再试或联系开发者获取帮助');
     }
     if (gameData.finished) {
       const groupId = e.group_id;
-      // 仅清理本群的游戏数据和缓存，避免影响其他群
       setTimeout(async () => {
         await this.utils.db.deleteGameData(groupId);
-        // 只删除本群的canvasCache（如果是Map或对象）
         if (this.utils.renderer.canvasCache && typeof this.utils.renderer.canvasCache === 'object') {
           this.utils.renderer.canvasCache.delete(groupId);
         }
-      }, 100); // 0.1秒后清理
+      }, 100);
     }
   }
   
@@ -323,7 +310,7 @@ ${definition}`;
 成绩不错，再来一局吧！`;
       return message;
     } else if (gameData.finished) {
-      let message = `😔 很遗憾，你没有猜中。
+      let message = `😔 很遗憾，没有人猜中
 答案是 ${gameData.targetWord}`;
       const definition = await this.utils.word.getWordDefinition(gameData.targetWord);
       if (definition) {
@@ -361,10 +348,7 @@ ${definition}`;
       message += `  
 ${definition}`;
     }
-    
-    
     await e.reply(message);
-    // 0.1秒后清理游戏数据，仅清理本群
     setTimeout(async () => {
       await this.utils.db.deleteGameData(groupId);
       if (this.utils.renderer.canvasCache && typeof this.utils.renderer.canvasCache === 'object') {
@@ -391,20 +375,25 @@ ${definition}`;
     } else {
       await e.reply(`Wordle 游戏帮助
 
-基本命令：
+📋 基本命令：
 #wordle - 开始新游戏（默认5字母）
 #wordle [数字] - 开始指定字母数量的游戏
-![单词] - 提交猜测
-#wordle (答案|ans) - 结束游戏
-#wordle 帮助 - 显示帮助
-#wordle 词库 - 切换词库
+#wordle ans - 结束游戏
+#wordle 词典 [名称] - 按名称切换词典
+#释义 [单词] - 查询单词释义
 
-使用示例：
+🎯 提交猜测方式：
+• 使用前缀：#apple !apple
+
+📱 使用示例：
 #apple - 使用前缀猜测
 !apple - 通过前缀猜词
 #wordle 7 - 开始7字母游戏
 #apple - 使用前缀猜测
-#wordle 词库- 切换词库（按群保存）
+#wordle 词典 - 循环切换词典
+#wordle 词典 四级 - 切换到四级词典
+#wordle 词典 六级 - 切换到六级词典
+#释义 access - 查询单词access的释义
 `);
     }
     return true;
@@ -419,10 +408,7 @@ ${definition}`;
     const groupId = e.group_id;
     const input = e.msg.trim().toLowerCase();
     
-    // 获取所有可用的词典
     const availableDicts = await this.utils.word.getAvailableDictionaries();
-    
-    // 检查是否指定了词典名称
     const dictNameMatch = input.match(/#wordle\s+(?:词库|词典|wordbank)\s+(.+)/);
     
     if (dictNameMatch && dictNameMatch[1]) {
