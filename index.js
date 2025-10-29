@@ -29,6 +29,6 @@ files.forEach((f, i) => {
 });
 
 logger.mark(logger.green(`[Wordle] 载入成功！`));
-logger.mark(logger.green(`[Wordle] 当前版本：v${pluginVersion} Beta`));
+logger.info(logger.green(`[Wordle] 当前版本：v${pluginVersion}`));
 
 export { apps };

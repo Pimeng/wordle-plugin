@@ -1,25 +1,29 @@
-# Wordle 游戏插件
+# <img width="25px" src="resources/wordle.png"> Wordle 游戏插件 
 
 基于原Wordle网页版的云崽Bot改版，原网页参考 https://wordle.org
+
+由于当时是真的闲得慌，所以就用AI写了这个插件，第一次写大插件如有不足之处还请多多包涵哈
+
+如果插件使用有问题请反馈！关于 `canvas` 问题的可以看[这里](#常见问题)
 
 ## 安装方法
 
 ### 1. 下载插件
 
-#### gitee源（国内用户推荐）
+#### <img width="15px" src="https://gitee.com/favicon.ico"> Gitee源（国内用户推荐）
 
 ```console
 git clone --depth=1 https://gitee.com/Pimeng/wordle-plugin.git ./plugins/wordle-plugin
 ```
 
-#### github源
+#### <img width="15px" src="https://github.com/favicon.ico"> GitHub源
 
 ```console
 git clone --depth=1 https://github.com/Pimeng/wordle-plugin.git ./plugins/wordle-plugin
 ```
 
 
-#### github代理加速（速度可能不稳定）
+#### <img width="15px" src="https://github.com/favicon.ico"> GitHub代理加速
 
 ```console
 git clone --depth=1 https://gh-proxy.com/https://github.com/Pimeng/wordle-plugin.git ./plugins/wordle-plugin
@@ -60,7 +64,7 @@ pnpm approve-builds
 
 ### 3. 重启云崽之后就可以食用啦
 
-### 常见问题
+## 📚 常见问题
 
 如果渲染报错，请尝试使用pnpm安装canvas依赖
 ```console
@@ -77,7 +81,7 @@ canvas还是有问题那就自己问AI自求多福吧……因为我也被canvas
 ## 🚀 使用方法
 
 ### 基本命令
-```
+```log
 #wordle            # 开始常规游戏
 #wordle 7          # 开始7字母游戏
 #apple             # 使用前缀猜测
@@ -94,7 +98,7 @@ canvas还是有问题那就自己问AI自求多福吧……因为我也被canvas
 - 依涵
 
 
-## 插件效果预览
+## 👀 插件效果预览
 
 <img src="https://gitee.com/pimeng/wordle-plugin/raw/main/resources/game-preview.png" width="60%" />
 
