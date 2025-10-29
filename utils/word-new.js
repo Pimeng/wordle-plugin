@@ -10,6 +10,9 @@ class WordleWordNew {
   constructor() {
     this.wordsCache = null;
     this.lengthStats = null;
+    this.globalWordSet = null;        // 全部单词集合（小写）
+    this.definitionIndex = null;      // 单词 -> 释义与来源词典
+
     this.__filename = fileURLToPath(import.meta.url);
     this.__dirname = path.dirname(this.__filename);
     this.dictionariesPath = path.resolve(this.__dirname, '../resources/words');
@@ -54,10 +57,11 @@ class WordleWordNew {
           
           // 提取词典名称（不带.json后缀）
           const dictName = dictFile.replace('.json', '');
+          const wordList = Object.keys(dictionary);
           allDictionaries[dictName] = {
             name: this.dictionaryNames[dictFile] || dictName,
             words: dictionary,
-            wordList: Object.keys(dictionary)
+            wordList
           };
         }
       }
@@ -66,11 +70,45 @@ class WordleWordNew {
         data: allDictionaries,
         timestamp: Date.now()
       };
+
+      // 同步构建加速索引
+      this._buildIndexes(allDictionaries);
       
       return allDictionaries;
     } catch (error) {
       logger.error('加载词典数据时出错:', error);
       return {};
+    }
+  }
+
+  /**
+   * 构建全局索引以加速校验与释义查询
+   * @param {Object} dictionaries
+   * @private
+   */
+  _buildIndexes(dictionaries) {
+    try {
+      const lengths = new Set();
+      const allWords = new Set();
+      const defIndex = new Map();
+
+      for (const dictName in dictionaries) {
+        const dict = dictionaries[dictName];
+        for (const w of dict.wordList) {
+          const lw = w.toLowerCase();
+          lengths.add(lw.length);
+          allWords.add(lw);
+          if (!defIndex.has(lw)) {
+            defIndex.set(lw, { definition: dict.words[lw], dictName: dict.name });
+          }
+        }
+      }
+
+      this.lengthStats = lengths;
+      this.globalWordSet = allWords;
+      this.definitionIndex = defIndex;
+    } catch (e) {
+      logger.error('构建词典索引失败:', e);
     }
   }
 
@@ -116,58 +154,39 @@ class WordleWordNew {
   }
 
   /**
-   * 验证单词是否在词汇列表中
+   * 验证单词是否在词汇列表中（性能优化：O(1) 查询）
    * @param {string} word - 要验证的单词
    * @param {number} wordLength - 单词长度（可选，默认为单词实际长度）
    * @returns {Promise<boolean>} - 单词是否有效
    */
   async isValidWord(word, wordLength = null) {
-    const targetWord = word.toLowerCase();
+    const targetWord = (word || '').toLowerCase();
     const length = wordLength || targetWord.length;
-    
-    if (!this.lengthStats) {
-      const dictionaries = await this.loadAllDictionaries();
-      this.lengthStats = new Set(
-        Object.values(dictionaries)
-          .flatMap(dict => dict.wordList.map(word => word.length))
-      );
+
+    const dictionaries = await this.loadAllDictionaries(); // 确保索引已构建
+
+    if (!this.lengthStats || !this.globalWordSet) {
+      this._buildIndexes(dictionaries);
     }
-    
-    if (!this.lengthStats.has(length)) {
-      return false;
-    }
-    
-    const dictionaries = await this.loadAllDictionaries();
-    
-    // 在所有词典中查找单词
-    for (const dictName in dictionaries) {
-      const found = dictionaries[dictName].wordList.some(w => w.length === length && w === targetWord);
-      if (found) {
-        return true;
-      }
-    }
-    
-    return false;
+
+    if (!this.lengthStats.has(length)) return false;
+    return this.globalWordSet.has(targetWord);
   }
 
   /**
-   * 获取单词释义
+   * 获取单词释义（性能优化：使用索引）
    * @param {string} word - 要查询的单词
    * @returns {Promise<string>} - 单词释义
    */
   async getWordDefinition(word) {
-    const dictionaries = await this.loadAllDictionaries();
-    const targetWord = word.toLowerCase();
-    
-    // 在所有词典中查找单词释义
-    for (const dictName in dictionaries) {
-      const dict = dictionaries[dictName];
-      if (dict.words[targetWord]) {
-        const definition = dict.words[targetWord];
-        return this.formatDefinition(definition, dict.name);
-      }
+    const dictionaries = await this.loadAllDictionaries(); // 确保索引已构建
+    if (!this.definitionIndex) this._buildIndexes(dictionaries);
+
+    const targetWord = (word || '').toLowerCase();
+    const hit = this.definitionIndex?.get(targetWord);
+    if (hit && hit.definition) {
+      return this.formatDefinition(hit.definition, hit.dictName);
     }
-    
     return '';
   }
 
