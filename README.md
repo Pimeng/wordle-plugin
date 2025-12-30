@@ -1,20 +1,16 @@
 # <img width="25px" src="resources/wordle.png"> Wordle 游戏插件 
 
-基于原Wordle网页版的云崽Bot改版，原网页参考 https://wordle.org
+基于原Wordle网页版的云崽Bot改版，参考的 https://wordle.org
 
 由于当时是真的闲得慌，所以就用AI写了这个插件，第一次写大插件如有不足之处还请多多包涵哈
 
-如果插件使用有问题请反馈！关于 `canvas` 问题的可以看[这里](#-常见问题)
+如果插件使用有问题请反馈！关于 `canvas` 问题的可以看[这里](#2-安装依赖by-千奈千祁)
+
+> 这个仓库我也不知道为什么搬到 Gitee 会被封库，有知道的可以提 issue
 
 ## 安装方法
 
 ### 1. 下载插件
-
-#### <img width="15px" src="https://gitee.com/favicon.ico"> Gitee源（国内用户推荐）
-
-```console
-git clone --depth=1 https://gitee.com/Pimeng/wordle-plugin.git ./plugins/wordle-plugin
-```
 
 #### <img width="15px" src="https://github.com/favicon.ico"> GitHub源
 
@@ -27,6 +23,14 @@ git clone --depth=1 https://github.com/Pimeng/wordle-plugin.git ./plugins/wordle
 
 ```console
 git clone --depth=1 https://gh-proxy.com/https://github.com/Pimeng/wordle-plugin.git ./plugins/wordle-plugin
+```
+
+#### <img width="15px" src="https://gitee.com/favicon.ico"> Gitee源
+
+##### 被封库了，请勿使用
+
+```console
+git clone --depth=1 https://gitee.com/Pimeng/wordle-plugin.git ./plugins/wordle-plugin
 ```
 
 ### 2. 安装依赖（By 千奈千祁）
@@ -120,4 +124,4 @@ canvas还是有问题那就自己问AI自求多福吧……因为我也被canvas
 
 https://github.com/Pimeng#%E8%81%94%E7%B3%BB%E6%96%B9%E5%BC%8F
 
-> 本插件大量代码均由AI编写
+> 本插件大量代码均由 Kimi-K2 & Gemini 3 Pro & GPT-5 & Claude 4.5 编写
