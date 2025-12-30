@@ -106,7 +106,7 @@ canvas还是有问题那就自己问AI自求多福吧……因为我也被canvas
 
 ## 👀 插件效果预览
 
-<img src="https://gitee.com/pimeng/wordle-plugin/raw/main/resources/game-preview.png" width="60%" />
+<img src="https://raw.githubusercontent.com/Pimeng/wordle-plugin/main/resources/game-preview.png" width="60%" />
 
 ## 📝 更新日志
 
