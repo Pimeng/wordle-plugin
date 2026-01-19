@@ -1,13 +1,21 @@
 import fs from 'node:fs';
 
 let utils;
-(async () => {
+let utilsPromise;
+
+async function loadUtils() {
+  if (utils) return utils;
+  if (!utilsPromise) {
+    utilsPromise = import('./utils.js').then(m => m.default || m);
+  }
   try {
-    utils = await import('./utils.js').then(m => m.default || m);
+    utils = await utilsPromise;
+    return utils;
   } catch (e) {
     logger.error('[game.js] 动态加载 utils 失败', e);
+    throw e;
   }
-})();
+}
 
 /**
  * Wordle游戏核心逻辑模块
@@ -35,6 +43,7 @@ class WordleGame {
     // 状态管理
     this.userCooldowns = new Map();
     this.groupCooldowns = new Map();
+    this._groupLocks = new Map();
 
     // 缓存
     this._helpTextCache = null;
@@ -43,6 +52,24 @@ class WordleGame {
   get utils(){
     return utils;
   }
+
+  async _ensureUtils() {
+    return await loadUtils();
+  }
+
+  async _withGroupLock(groupId, fn) {
+    const key = String(groupId);
+    const previous = this._groupLocks.get(key) || Promise.resolve();
+    const next = previous.then(fn, fn);
+    this._groupLocks.set(key, next);
+    try {
+      return await next;
+    } finally {
+      if (this._groupLocks.get(key) === next) {
+        this._groupLocks.delete(key);
+      }
+    }
+  }
   
   /**
    * 监听所有消息，用于游戏进行中的直接猜测
@@ -50,6 +77,7 @@ class WordleGame {
    * @returns {Promise<boolean>} - 处理结果
    */
   async listenMessages(e) {
+    await this._ensureUtils();
     // 仅群聊
     if (e.group_id) {
       const groupId = e.group_id;
@@ -113,12 +141,18 @@ class WordleGame {
    * @returns {Promise<boolean>} - 处理结果
    */
   async wordle(e) {
-    const originalMsg = e.msg.toLowerCase();
-    const groupId = e.group_id;
+    await this._ensureUtils();
+    const msg = typeof e?.msg === 'string' ? e.msg : '';
+    const groupId = e?.group_id;
+    if (!groupId) {
+      await e.reply('Wordle 仅支持群聊使用');
+      return true;
+    }
+    const originalMsg = msg.toLowerCase();
     if (originalMsg.includes('答案') || originalMsg.includes('ans') || originalMsg.includes('放弃')) {
       return await this.giveUpGame(e);
     }
-    const match = e.msg.match(this.REGEX_WORDLE_CMD);
+    const match = msg.match(this.REGEX_WORDLE_CMD);
     let input = match && match[1] ? match[1].trim().toLowerCase() : '';
     if (input.includes('帮助') || input.includes('help')) {
       return await this.showHelp(e);
@@ -160,63 +194,67 @@ class WordleGame {
    * @returns {Promise<boolean>} - 处理结果
    */
   async startNewGame(e, letterCount = 5) {
-    const groupId = e.group_id;
-    const existingGame = await this.utils.db.getGameData(groupId);
-    if (existingGame && !existingGame.finished) {
-      await e.reply('当前群聊已经有一个进行中的游戏了哦！请先完成当前游戏或使用 "#wordle 答案" 或 "#wordle ans" 结束游戏。');
+    await this._ensureUtils();
+    const groupId = e?.group_id;
+    if (!groupId) {
+      await e.reply('Wordle 仅支持群聊使用');
       return true;
     }
-    const targetWord = await this.utils.word.getRandomWord(letterCount, groupId);
-    if (!targetWord) {
-      await e.reply(`词汇表中没有${letterCount}个字母的单词！请尝试其他字母数量。`);
+    return await this._withGroupLock(groupId, async () => {
+      const existingGame = await this.utils.db.getGameData(groupId);
+      if (existingGame && !existingGame.finished) {
+        await e.reply('当前群聊已经有一个进行中的游戏了哦！请先完成当前游戏或使用 "#wordle 答案" 或 "#wordle ans" 结束游戏。');
+        return true;
+      }
+      const targetWord = await this.utils.word.getRandomWord(letterCount, groupId);
+      if (!targetWord) {
+        await e.reply(`词汇表中没有${letterCount}个字母的单词！请尝试其他字母数量。`);
+        return true;
+      }
+      const maxAttempts = this.adaptiveAttempts[letterCount] || 6;
+      const currentDict = await this.utils.db.getWordbankSelection(groupId);
+      const availableDicts = await this.utils.word.getAvailableDictionaries();
+      const currentDictInfo = availableDicts.find(dict => dict.id === currentDict) || availableDicts[0];
+      const wordbankName = currentDictInfo.name;
+      
+      const gameData = {
+        targetWord: targetWord,
+        guesses: [],
+        attempts: 0,
+        maxAttempts: maxAttempts,
+        finished: false,
+        startTime: Date.now(),
+        letterCount: letterCount,
+        participants: {}
+      };
+      await this.utils.db.saveGameData(groupId, gameData);
+      
+      const renderData = {
+        targetWord: targetWord,
+        guesses: [],
+        attempts: 0,
+        maxAttempts: maxAttempts,
+        finished: false,
+        gameState: 'playing'
+      };
+      
+      const img = await this.utils.renderer.renderGame(e, renderData);
+      if (img) {
+        const gameStartMessage = [
+          `Wordle猜词游戏开始啦！
+`,
+          `当前词库：${wordbankName}
+`,
+          img
+        ];
+        await e.reply(gameStartMessage);
+      } else{
+        logger.error("游戏图片渲染失败")
+        throw new Error("游戏出现错误，请检查必要依赖是否安装，或反馈错误");
+      }
+      
       return true;
-    }
-    const maxAttempts = this.adaptiveAttempts[letterCount] || 6;
-    const currentDict = await this.utils.db.getWordbankSelection(groupId);
-    const availableDicts = await this.utils.word.getAvailableDictionaries();
-    const currentDictInfo = availableDicts.find(dict => dict.id === currentDict) || availableDicts[0];
-    const wordbankName = currentDictInfo.name;
-    
-    // 初始化游戏数据
-    const gameData = {
-      targetWord: targetWord,
-      guesses: [],
-      attempts: 0,
-      maxAttempts: maxAttempts,
-      finished: false,
-      startTime: Date.now(),
-      letterCount: letterCount,
-      participants: {}
-    };
-    // 保存游戏数据
-    await this.utils.db.saveGameData(groupId, gameData);
-    
-    // 使用渲染器渲染游戏界面
-    const renderData = {
-      targetWord: targetWord,
-      guesses: [],
-      attempts: 0,
-      maxAttempts: maxAttempts,
-      finished: false,
-      gameState: 'playing'
-    };
-    
-    const img = await this.utils.renderer.renderGame(e, renderData);
-    if (img) {
-      const gameStartMessage = [
-        `Wordle猜词游戏开始啦！
-`,
-        `当前词库：${wordbankName}
-`,
-        img
-      ];
-      await e.reply(gameStartMessage);
-    } else{
-      logger.error("游戏图片渲染失败")
-      throw new Error("游戏出现错误，请检查必要依赖是否安装，或反馈错误");
-    }
-    
-    return true;
+    });
   }
   
   /**
@@ -227,54 +265,60 @@ class WordleGame {
    * @returns {Promise<boolean>} - 处理结果
    */
   async processGuess(e, guess, groupId) {
-    let currentGame = await this.utils.db.getGameData(groupId);
-    if (!currentGame || currentGame.finished) {
-      await e.reply('当前群聊没有进行中的游戏！请先发送 "#wordle" 开始游戏。');
+    await this._ensureUtils();
+    const resolvedGroupId = groupId ?? e?.group_id;
+    if (!resolvedGroupId) {
+      await e.reply('Wordle 仅支持群聊使用');
       return true;
     }
-    if (!(await this.utils.word.isValidWord(guess, currentGame.letterCount, groupId))) {
-      return true;
-    }
-    
-    const userId = this._getUserId(e);
-    const nickname = this._getDisplayName(e);
-    
-    if (!currentGame.participants || typeof currentGame.participants !== 'object') {
-      currentGame.participants = {};
-    }
-    if (userId) {
-      currentGame.participants[userId] = {
-        nickname
+    return await this._withGroupLock(resolvedGroupId, async () => {
+      let currentGame = await this.utils.db.getGameData(resolvedGroupId);
+      if (!currentGame || currentGame.finished) {
+        await e.reply('当前群聊没有进行中的游戏！请先发送 "#wordle" 开始游戏。');
+        return true;
+      }
+      if (!(await this.utils.word.isValidWord(guess, currentGame.letterCount, resolvedGroupId))) {
+        return true;
+      }
+      
+      const userId = this._getUserId(e);
+      const nickname = this._getDisplayName(e);
+      
+      if (!currentGame.participants || typeof currentGame.participants !== 'object') {
+        currentGame.participants = {};
+      }
+      if (userId) {
+        currentGame.participants[userId] = {
+          nickname
+        };
+      }
+      
+      currentGame.guesses.push(guess);
+      currentGame.attempts++;
+      const isWin = guess === currentGame.targetWord;
+      currentGame.finished = isWin || currentGame.attempts >= currentGame.maxAttempts;
+      await this.utils.db.saveGameData(resolvedGroupId, currentGame);
+  
+      const results = (currentGame.guesses || []).map(g => this.utils.checkGuess(g, currentGame.targetWord));
+  
+      const gameData = {
+        targetWord: currentGame.targetWord,
+        guesses: currentGame.guesses,
+        attempts: currentGame.attempts,
+        maxAttempts: currentGame.maxAttempts,
+        finished: currentGame.finished,
+        startTime: currentGame.startTime,
+        gameState: isWin ? 'win' : (currentGame.finished ? 'lose' : 'playing'),
+        results
       };
-    }
-    
-    currentGame.guesses.push(guess);
-    currentGame.attempts++;
-    const isWin = guess === currentGame.targetWord;
-    currentGame.finished = isWin || currentGame.attempts >= currentGame.maxAttempts;
-    await this.utils.db.saveGameData(groupId, currentGame);
-
-    // 预计算所有轮次的结果，避免在渲染阶段重复计算
-    const results = (currentGame.guesses || []).map(g => this.utils.checkGuess(g, currentGame.targetWord));
-
-    // 准备游戏状态数据
-    const gameData = {
-      targetWord: currentGame.targetWord,
-      guesses: currentGame.guesses,
-      attempts: currentGame.attempts,
-      maxAttempts: currentGame.maxAttempts,
-      finished: currentGame.finished,
-      gameState: isWin ? 'win' : (currentGame.finished ? 'lose' : 'playing'),
-      results
-    };
-    
-    // 调用渲染方法获取结果（可能是图片或错误信息）
-    const renderResult = await this.utils.renderer.renderGame(e, gameData);
-    await this.sendGameResultMessage(e, gameData, isWin, renderResult);
-    if (gameData.finished) {
-      await this._updateLeaderboardStats(e, currentGame, isWin ? userId : null);
-    }
-    return true;
+      
+      const renderResult = await this.utils.renderer.renderGame(e, gameData);
+      await this.sendGameResultMessage(e, gameData, isWin, renderResult);
+      if (gameData.finished) {
+        await this._updateLeaderboardStats(e, currentGame, isWin ? userId : null);
+      }
+      return true;
+    });
   }
   
   /**
@@ -285,6 +329,7 @@ class WordleGame {
    * @param {*} result - 渲染结果或错误信息
    */
   async sendGameResultMessage(e, gameData, isWin, result) {
+    await this._ensureUtils();
     if (result) {
       const resultMessage = await this.generateResultMessage(e, gameData, isWin);
       // 将文本消息和图片分开发送
@@ -298,8 +343,14 @@ class WordleGame {
       await e.reply('渲染失败，请稍后再试或联系开发者获取帮助');
     }
     if (gameData.finished) {
-      const groupId = e.group_id;
+      const groupId = e?.group_id;
+      if (!groupId) return;
+      const finishedStartTime = gameData?.startTime;
       setTimeout(async () => {
+        if (finishedStartTime != null) {
+          const current = await this.utils.db.getGameData(groupId);
+          if (current?.startTime != null && current.startTime !== finishedStartTime) return;
+        }
         await this.utils.db.deleteGameData(groupId);
         if (this.utils.renderer.canvasCache && typeof this.utils.renderer.canvasCache === 'object') {
           this.utils.renderer.canvasCache.delete(groupId);
@@ -316,9 +367,11 @@ class WordleGame {
    * @returns {string} 结果消息
    */
   async generateResultMessage(e, gameData, isWin) {
+    await this._ensureUtils();
     const targetWord = gameData?.targetWord;
     if (isWin) {
-      let message = `🎉 恭喜 ${e.sender.card} 猜中了！
+      const playerName = this._getDisplayName(e);
+      let message = `🎉 恭喜 ${playerName} 猜中了！
 答案是 ${targetWord}`;
       const definition = await this.utils.word.getWordDefinition(targetWord);
       if (definition) {
@@ -353,35 +406,47 @@ ${definition}`;
    * @returns {Promise<boolean>} - 处理结果
    */
   async giveUpGame(e) {
-    const groupId = e.group_id;
-    const currentGame = await this.utils.db.getGameData(groupId);
-    if (!currentGame || currentGame.finished) {  
-      await e.reply('当前群聊没有进行中的游戏哦qwq');
+    await this._ensureUtils();
+    const groupId = e?.group_id;
+    if (!groupId) {
+      await e.reply('Wordle 仅支持群聊使用');
       return true;
     }
-    const targetWord = currentGame.targetWord;
-    currentGame.finished = true;
-    await this.utils.db.saveGameData(groupId, currentGame);
-    let message = `游戏结束了哦
-【单词】${targetWord}`;
-    const definition = await this.utils.word.getWordDefinition(targetWord);
-    if (definition) {
-      message += `  
-${definition}`;
-    }
-    await e.reply(message);
-    await this._updateLeaderboardStats(e, currentGame, null);
-    setTimeout(async () => {
-      await this.utils.db.deleteGameData(groupId);
-      if (this.utils.renderer.canvasCache && typeof this.utils.renderer.canvasCache === 'object') {
-        if (typeof this.utils.renderer.canvasCache.delete === 'function') {
-          this.utils.renderer.canvasCache.delete(groupId);
-        } else {
-          delete this.utils.renderer.canvasCache[groupId];
-        }
+    return await this._withGroupLock(groupId, async () => {
+      const currentGame = await this.utils.db.getGameData(groupId);
+      if (!currentGame || currentGame.finished) {  
+        await e.reply('当前群聊没有进行中的游戏哦qwq');
+        return true;
       }
-    }, 100);
-    return true;
+      const targetWord = currentGame.targetWord;
+      currentGame.finished = true;
+      await this.utils.db.saveGameData(groupId, currentGame);
+      let message = `游戏结束了哦
+【单词】${targetWord}`;
+      const definition = await this.utils.word.getWordDefinition(targetWord);
+      if (definition) {
+        message += `  
+${definition}`;
+      }
+      await e.reply(message);
+      await this._updateLeaderboardStats(e, currentGame, null);
+      const finishedStartTime = currentGame?.startTime;
+      setTimeout(async () => {
+        if (finishedStartTime != null) {
+          const current = await this.utils.db.getGameData(groupId);
+          if (current?.startTime != null && current.startTime !== finishedStartTime) return;
+        }
+        await this.utils.db.deleteGameData(groupId);
+        if (this.utils.renderer.canvasCache && typeof this.utils.renderer.canvasCache === 'object') {
+          if (typeof this.utils.renderer.canvasCache.delete === 'function') {
+            this.utils.renderer.canvasCache.delete(groupId);
+          } else {
+            delete this.utils.renderer.canvasCache[groupId];
+          }
+        }
+      }, 100);
+      return true;
+    });
   }
   
   /**
@@ -436,8 +501,13 @@ ${definition}`;
    * @returns {Promise<boolean>} - 处理结果
    */
   async selectWordbank(e) {
-    const groupId = e.group_id;
-    const input = e.msg.trim().toLowerCase();
+    await this._ensureUtils();
+    const groupId = e?.group_id;
+    if (!groupId) {
+      await e.reply('Wordle 仅支持群聊使用');
+      return true;
+    }
+    const input = (typeof e?.msg === 'string' ? e.msg : '').trim().toLowerCase();
     
     const availableDicts = await this.utils.word.getAvailableDictionaries();
     const dictNameMatch = input.match(/#wordle\s+(?:词库|词典|wordbank)\s+(.+)/);
@@ -508,6 +578,7 @@ ${definition}`;
   }
 
   async _updateLeaderboardStats(e, gameData, winnerId = null) {
+    await this._ensureUtils();
     const groupId = e?.group_id;
     if (!groupId || !gameData || !this.utils?.leaderboard) return;
 

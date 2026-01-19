@@ -45,7 +45,8 @@ export class WordleUpdate extends plugin {
       let command = 'git pull --no-rebase';
       
       // 如果是强制更新，先重置本地修改
-      if (e.msg.includes('强制')) {
+      const msg = typeof e?.msg === 'string' ? e.msg : '';
+      if (msg.includes('强制')) {
         await e.reply('[Wordle更新] 正在执行强制更新操作，请稍等');
         command = `git checkout . && ${command}`;
       } else {

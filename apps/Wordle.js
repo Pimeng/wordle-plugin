@@ -1,9 +1,12 @@
 const game = await import('../utils/game.js').then(m => m.default || m);
 
-let utils;
-(async () => {
-  utils = await import('../utils/utils.js').then(m => m.default || m);
-})();
+let utilsPromise;
+async function ensureUtils() {
+  if (!utilsPromise) {
+    utilsPromise = import('../utils/utils.js').then(m => m.default || m);
+  }
+  return await utilsPromise;
+}
 
 //import game from '../utils/game.js';
 //import utils from '../utils/utils.js';
@@ -71,7 +74,7 @@ export class Wordle extends plugin {
     }
     
     const word = match[1].toLowerCase();
-    const utilsModule = this.utils || utils;
+    const utilsModule = this.utils || await ensureUtils();
     this.utils = utilsModule;
     const definition = await utilsModule.word.getWordDefinition(word);
     
@@ -87,7 +90,7 @@ ${definition}`);
 
   async showLeaderboard(e) {
     const groupId = e.group_id;
-    const utilsModule = this.utils || utils;
+    const utilsModule = this.utils || await ensureUtils();
     this.utils = utilsModule;
     
     if (!utilsModule?.leaderboard) {
