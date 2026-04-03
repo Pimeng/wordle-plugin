@@ -25,12 +25,10 @@ git clone --depth=1 https://github.com/Pimeng/wordle-plugin.git ./plugins/wordle
 git clone --depth=1 https://gh-proxy.com/https://github.com/Pimeng/wordle-plugin.git ./plugins/wordle-plugin
 ```
 
-#### <img width="15px" src="https://gitee.com/favicon.ico"> Gitee源
-
-##### 被封库了，请勿使用
+#### <img width="15px" src="https://cdn-static.gitcode.com/static/images/logo-favicon.png"> Gitcode源(更新可能不及时)
 
 ```console
-git clone --depth=1 https://gitee.com/Pimeng/wordle-plugin.git ./plugins/wordle-plugin
+git clone --depth=1 https://gitcode.com/Mirror-Yunzai/wordle-plugin.git ./plugins/wordle-plugin
 ```
 
 ### 2. 安装依赖（By 千奈千祁）
