@@ -95,9 +95,15 @@
       display: none;
     }
 
-    /* 白底素材：整图铺满画布，原图不裁切 */
+    /* 白底素材：原图完整显示，右对齐，左侧留白 */
     .bg-white .bg-layer {
       display: block;
+      inset: 0 0 auto auto;
+      top: 50%;
+      width: auto;
+      height: 100%;
+      object-fit: contain;
+      transform: translateY(-50%);
     }
 
     /* 普通背景图：原画保持清晰，只在内容列后方做局部磨砂 */
@@ -191,7 +197,7 @@
       z-index: 1;
       width: 1280px;
       min-height: 1080px;
-      padding: 42px 0 34px 64px;
+      padding: 32px 0 22px 64px;
       box-sizing: border-box;
       display: flex;
       flex-direction: column;
@@ -202,7 +208,7 @@
       display: flex;
       align-items: center;
       gap: 19px;
-      padding-bottom: 24px;
+      padding-bottom: 16px;
       border-bottom: 2px solid var(--border);
     }
 
@@ -222,10 +228,10 @@
 
     .sections {
       flex: none;
-      margin-top: 18px;
+      margin-top: 12px;
       display: flex;
       flex-direction: column;
-      gap: 14px;
+      gap: 10px;
     }
 
     .section-title {
@@ -233,13 +239,14 @@
       font-weight: 700;
       letter-spacing: 0.1em;
       color: var(--accent);
-      margin-bottom: 8px;
+      margin-bottom: 4px;
+      line-height: 1.2;
     }
 
     .items {
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 6px;
     }
 
     /* 每行：圆点标记 + 固定宽度指令列 + 说明，说明因此左对齐成一列 */
@@ -265,7 +272,7 @@
       font-size: 36px;
       font-weight: 700;
       color: var(--text);
-      line-height: 1.3;
+      line-height: 1.25;
       word-break: keep-all;
       overflow-wrap: break-word;
     }
@@ -281,7 +288,7 @@
     .footer {
       flex: none;
       margin-top: auto;
-      padding-top: 17px;
+      padding-top: 10px;
       border-top: 1px solid var(--border);
       display: flex;
       align-items: center;

@@ -55,6 +55,18 @@ function readYaml(file) {
   }
 }
 
+/** default.yaml 专用说明，迁移到 config.yaml 时应删除 */
+const DEFAULT_ONLY_COMMENT = /^#\s*请勿直接修改本文件[^\r\n]*\r?\n/m;
+
+/**
+ * 删除 default.yaml 专用的“请勿直接修改本文件”说明
+ * @param {string} content - 配置文件内容
+ * @returns {string} 处理后的内容
+ */
+function stripDefaultOnlyComment(content) {
+  return content.replace(DEFAULT_ONLY_COMMENT, '');
+}
+
 /**
  * Wordle 插件配置
  * 默认值 default.yaml + 用户配置 config.yaml 合并，支持热重载
@@ -73,7 +85,15 @@ class WordleConfig {
     try {
       fs.mkdirSync(path.dirname(configFile), { recursive: true });
       if (!fs.existsSync(configFile) && fs.existsSync(defaultFile)) {
-        fs.copyFileSync(defaultFile, configFile);
+        const content = stripDefaultOnlyComment(fs.readFileSync(defaultFile, 'utf8'));
+        fs.writeFileSync(configFile, content, 'utf8');
+        return;
+      }
+      // 清理历史版本迁移时带过来的“请勿直接修改本文件”说明
+      if (fs.existsSync(configFile)) {
+        const content = fs.readFileSync(configFile, 'utf8');
+        const cleaned = stripDefaultOnlyComment(content);
+        if (cleaned !== content) fs.writeFileSync(configFile, cleaned, 'utf8');
       }
     } catch (err) {
       global.logger?.warn?.(`[Wordle] 配置文件创建失败：${err?.message ?? err}`);
