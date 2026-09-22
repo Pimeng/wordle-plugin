@@ -444,7 +444,9 @@ ${definition}`;
 #wordle - 开始新游戏（默认5字母）
 #wordle [数字] - 开始指定字母数量的游戏
 #wordle ans - 结束游戏
-#wordle 词典 [名称] - 按名称切换词典
+#wordle 词典 - 循环切换词典
+#wordle 词典 [序号|名称] - 切换词典（如 4、四级、全部）
+#wordle 词典 列表 - 查看当前词库与全部可用词库
 #释义 [单词] - 查询单词释义
 
 🎯 提交猜测方式：
@@ -454,10 +456,10 @@ ${definition}`;
 #apple - 使用前缀猜测
 !apple - 通过前缀猜词
 #wordle 7 - 开始7字母游戏
-#apple - 使用前缀猜测
 #wordle 词典 - 循环切换词典
 #wordle 词典 四级 - 切换到四级词典
-#wordle 词典 六级 - 切换到六级词典
+#wordle 词典 全部 - 使用全部词库（随机范围最大）
+#wordle 词典 列表 - 查看全部词库并附带序号
 #释义 access - 查询单词access的释义
 `);
     }
@@ -478,38 +480,61 @@ ${definition}`;
     const input = (typeof e?.msg === 'string' ? e.msg : '').trim().toLowerCase();
 
     const availableDicts = await this.utils.word.getAvailableDictionaries();
-    const dictNameMatch = input.match(/#wordle\s+(?:词库|词典|wordbank)\s+(.+)/);
+    const currentDict = await this.utils.db.getWordbankSelection(groupId);
+    const currentDictInfo = availableDicts.find(dict => dict.id === currentDict) || availableDicts[0];
 
-    if (dictNameMatch && dictNameMatch[1]) {
-      // 按名称切换词典
-      const targetDictName = dictNameMatch[1].trim();
-      const targetDict = availableDicts.find(dict =>
-        dict.name.toLowerCase().includes(targetDictName.toLowerCase()) ||
-        dict.id.toLowerCase().includes(targetDictName.toLowerCase())
-      );
+    const dictNameMatch = input.match(/#wordle\s*(?:词库|词典|wordbank)\s*(.*)/);
+    const targetName = dictNameMatch ? dictNameMatch[1].trim() : '';
 
-      if (!targetDict) {
-        // 列出所有可用的词典
-        const dictList = availableDicts.map(dict => `- ${dict.name} (${dict.wordCount}个单词)`).join('\n');
-        await e.reply(`未找到名为"${targetDictName}"的词典\n\n可用词典列表：\n${dictList}\n\n请使用正确的词典名称，例如：#wordle 词典 四级`);
+    // 无参数时循环切换，带“列表”时展示全部词库
+    if (!targetName || targetName === '列表' || targetName === 'list') {
+      if (!targetName) {
+        const currentIndex = availableDicts.findIndex(dict => dict.id === currentDict);
+        const nextIndex = ((currentIndex === -1 ? 0 : currentIndex) + 1) % availableDicts.length;
+        await this._switchWordbank(e, currentDictInfo, availableDicts[nextIndex]);
         return true;
       }
-
-      const currentDict = await this.utils.db.getWordbankSelection(groupId);
-      const currentDictInfo = availableDicts.find(dict => dict.id === currentDict) || availableDicts[0];
-      await this._switchWordbank(e, currentDictInfo, targetDict);
+      await e.reply(this._formatWordbankList(availableDicts, currentDictInfo));
       return true;
     }
 
-    // 循环切换词典
-    const currentDict = await this.utils.db.getWordbankSelection(groupId);
-    let currentIndex = availableDicts.findIndex(dict => dict.id === currentDict);
-    if (currentIndex === -1) currentIndex = 0;
+    // 按序号或名称切换
+    let targetDict;
+    if (/^\d+$/.test(targetName)) {
+      const index = parseInt(targetName, 10);
+      if (index < 1 || index > availableDicts.length) {
+        await e.reply(`序号超出范围，请输入 1-${availableDicts.length} 之间的序号\n\n${this._formatWordbankList(availableDicts, currentDictInfo)}`);
+        return true;
+      }
+      targetDict = availableDicts[index - 1];
+    } else {
+      targetDict = availableDicts.find(dict =>
+        dict.name.toLowerCase().includes(targetName) ||
+        dict.id.toLowerCase().includes(targetName)
+      );
+    }
 
-    // 计算下一个词典的索引（循环选择）
-    const nextIndex = (currentIndex + 1) % availableDicts.length;
-    await this._switchWordbank(e, availableDicts[currentIndex], availableDicts[nextIndex]);
+    if (!targetDict) {
+      await e.reply(`未找到名为"${targetName}"的词典\n\n${this._formatWordbankList(availableDicts, currentDictInfo)}`);
+      return true;
+    }
+
+    await this._switchWordbank(e, currentDictInfo, targetDict);
     return true;
+  }
+
+  /**
+   * 格式化词库列表（含当前词库标记与序号）
+   * @param {Array} availableDicts - 可用词库列表
+   * @param {Object} currentDictInfo - 当前词库信息
+   * @returns {string} 词库列表文本
+   */
+  _formatWordbankList(availableDicts, currentDictInfo) {
+    const lines = availableDicts.map((dict, index) => {
+      const mark = currentDictInfo && dict.id === currentDictInfo.id ? ' ← 当前' : '';
+      return `${index + 1}. ${dict.name}（${dict.wordCount} 个单词）${mark}`;
+    });
+    return `📚 当前词库：${currentDictInfo.name}（${currentDictInfo.wordCount} 个单词）\n\n可用词库：\n${lines.join('\n')}\n\n发送 #wordle 词典 <序号|名称> 切换，发送 #wordle 词典 可循环切换`;
   }
 
   /**

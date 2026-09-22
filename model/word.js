@@ -2,6 +2,11 @@ import fs from 'fs';
 import path from 'node:path';
 import { fileURLToPath } from 'url';
 
+/** 全部词库伪词典ID */
+const ALL_WORDBANK_ID = 'ALL';
+/** 全部词库伪词典名称 */
+const ALL_WORDBANK_NAME = '全部词库';
+
 /**
  * Wordle单词管理模块（JSON词典版本）
  * 负责从JSON词典文件加载单词、释义、验证等操作
@@ -111,13 +116,22 @@ class WordleWordNew {
       const lengths = new Set();
       const allWords = new Set();
       const defIndex = new Map();
+      const allByLength = new Map();
 
       for (const dictName in dictionaries) {
         const dict = dictionaries[dictName];
         for (const w of dict.wordList) {
           const lw = w.toLowerCase();
           lengths.add(lw.length);
-          allWords.add(lw);
+          if (!allWords.has(lw)) {
+            allWords.add(lw);
+            let pool = allByLength.get(lw.length);
+            if (!pool) {
+              pool = [];
+              allByLength.set(lw.length, pool);
+            }
+            pool.push(lw);
+          }
           if (!defIndex.has(lw)) {
             defIndex.set(lw, { definition: dict.words[lw], dictName: dict.name });
           }
@@ -127,6 +141,7 @@ class WordleWordNew {
       this.lengthStats = lengths;
       this.globalWordSet = allWords;
       this.definitionIndex = defIndex;
+      this.allWordsByLength = allByLength;
     } catch (e) {
       logger.error('构建词典索引失败:', e);
     }
@@ -142,31 +157,36 @@ class WordleWordNew {
     const dictionaries = await this.loadAllDictionaries();
     
     // 根据词典选择状态决定使用哪个词典
-    let selectedDict;
+    let selectedDictName = 'CET4';
     if (groupId) {
       if (typeof this.getWordbankSelection !== 'function') {
         logger.warn('getWordbankSelection方法未注入，使用四级词库');
-        selectedDict = dictionaries['CET4'];
       } else {
-        const selectedDictName = await this.getWordbankSelection(groupId);
-        selectedDict = dictionaries[selectedDictName] || dictionaries['CET4'];
+        selectedDictName = await this.getWordbankSelection(groupId);
       }
-    } else {
-      selectedDict = dictionaries['CET4'];
-    }
-    
-    if (!selectedDict) {
-      logger.error('未找到选择的词典');
-      return null;
     }
     
     // 过滤指定长度的单词（带缓存）
-    const filteredWords = this._getWordsOfLength(selectedDict, letterCount);
+    let filteredWords;
+    let wordbankName;
+    if (selectedDictName === ALL_WORDBANK_ID) {
+      if (!this.allWordsByLength) this._buildIndexes(dictionaries);
+      filteredWords = this.allWordsByLength?.get(letterCount) || [];
+      wordbankName = ALL_WORDBANK_NAME;
+    } else {
+      const selectedDict = dictionaries[selectedDictName] || dictionaries['CET4'];
+      if (!selectedDict) {
+        logger.error('未找到选择的词典');
+        return null;
+      }
+      filteredWords = this._getWordsOfLength(selectedDict, letterCount);
+      wordbankName = selectedDict.name;
+    }
     
     if (filteredWords.length > 0) {
       const randomIndex = Math.floor(Math.random() * filteredWords.length);
       const selectedWord = filteredWords[randomIndex];
-      logger.mark("[Wordle] 单词：" + selectedWord + "（来自：" + selectedDict.name + "）");
+      logger.mark("[Wordle] 单词：" + selectedWord + "（来自：" + wordbankName + "）");
       return selectedWord;
     }
     
@@ -270,7 +290,20 @@ class WordleWordNew {
       });
     }
     
-    return result.sort((a, b) => a.name.localeCompare(b.name));
+    result.sort((a, b) => a.name.localeCompare(b.name));
+
+    // 全部词库放在首位，词数为去重后的总量
+    let totalWords = this.globalWordSet?.size;
+    if (!totalWords) {
+      totalWords = result.reduce((sum, dict) => sum + dict.wordCount, 0);
+    }
+    result.unshift({
+      id: ALL_WORDBANK_ID,
+      name: ALL_WORDBANK_NAME,
+      wordCount: totalWords
+    });
+
+    return result;
   }
 
   /**
