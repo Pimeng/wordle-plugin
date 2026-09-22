@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'node:path';
 import { createCanvas } from 'canvas';
+import { checkGuess, getLetterStatusFromResults } from './checker.js';
 
 /**
  * Wordle游戏渲染模块
@@ -10,17 +11,7 @@ class WordleRenderer {
   constructor() {
     this.canvasCache = new Map();
     this.maxCacheSize = 200; // 最大缓存数量
-    this.utils = null;
     this.versionInfoCache = null; // 版本信息缓存
-    this.initUtils();
-  }
-
-  async initUtils() {
-    try {
-      this.utils = await import('./utils.js').then(m => m.default || m);
-    } catch (e) {
-      console.error('[renderer.js] 动态加载 utils 失败', e);
-    }
   }
 
   /**
@@ -103,7 +94,7 @@ class WordleRenderer {
       const letterCount = gameData.targetWord ? gameData.targetWord.length : 5;
 
       if (!results) {
-        const checker = typeof checkGuessFunc === 'function' ? checkGuessFunc : (this.utils?.checkGuess?.bind(this.utils));
+        const checker = typeof checkGuessFunc === 'function' ? checkGuessFunc : checkGuess;
         results = [];
         if (checker) {
           for (let i = 0; i < guesses.length; i++) {
@@ -200,11 +191,6 @@ class WordleRenderer {
         }
       }
 
-      // 确保 utils 已加载（在需要使用前）
-      if (!this.utils) {
-        await this.initUtils();
-      }
-
       await this.drawKeyboardHint(ctx, width, height - keyboardHeight - versionInfoHeight - 10, guesses, results);
       
       // 使用优化后的版本信息获取方法
@@ -285,7 +271,7 @@ class WordleRenderer {
       ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
       ['Z', 'X', 'C', 'V', 'B', 'N', 'M']
     ];
-    const letterStatus = this.utils.getLetterStatusFromResults(guesses, results);
+    const letterStatus = getLetterStatusFromResults(guesses, results);
     const keyWidth = 36;
     const keyHeight = 42;
     const keyGap = 5;

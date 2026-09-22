@@ -1,22 +1,11 @@
-const game = await import('../utils/game.js').then(m => m.default || m);
-
-let utilsPromise;
-async function ensureUtils() {
-  if (!utilsPromise) {
-    utilsPromise = import('../utils/utils.js').then(m => m.default || m);
-  }
-  return await utilsPromise;
-}
-
-//import game from '../utils/game.js';
-//import utils from '../utils/utils.js';
+import { game, utils } from '../model/index.js';
 
 export class Wordle extends plugin {
   constructor() {
     super({
       name: 'Wordle',
       dsc: '猜单词游戏',
-      event: 'message', 
+      event: 'message',
       priority: 5000,
       rule: [
         {
@@ -38,12 +27,12 @@ export class Wordle extends plugin {
         }
       ]
     });
-    
+
     // 注入工具和游戏模块
     this.game = game;
     this.utils = utils;
   }
-  
+
   /**
    * 监听所有消息，用于游戏进行中的直接猜测
    * @param {*} e - 消息事件对象
@@ -52,7 +41,7 @@ export class Wordle extends plugin {
   async listenMessages(e) {
     return await this.game.listenMessages(e);
   }
-  
+
   /**
    * Wordle主函数
    * @param {*} e - 消息事件对象
@@ -72,12 +61,10 @@ export class Wordle extends plugin {
     if (!match) {
       return false;
     }
-    
+
     const word = match[1].toLowerCase();
-    const utilsModule = this.utils || await ensureUtils();
-    this.utils = utilsModule;
-    const definition = await utilsModule.word.getWordDefinition(word);
-    
+    const definition = await this.utils.word.getWordDefinition(word);
+
     if (definition) {
       await e.reply(`📖 单词：${word.toUpperCase()}
 ${definition}`);
@@ -90,10 +77,8 @@ ${definition}`);
 
   async showLeaderboard(e) {
     const groupId = e.group_id;
-    const utilsModule = this.utils || await ensureUtils();
-    this.utils = utilsModule;
-    
-    if (!utilsModule?.leaderboard) {
+
+    if (!this.utils?.leaderboard) {
       await e.reply('排行榜功能尚未加载完成，请稍后再试。');
       return true;
     }
@@ -115,17 +100,17 @@ ${definition}`);
 
     let winsTop, gamesTop, rateTop;
     if (isGlobal) {
-      winsTop = utilsModule.leaderboard.getGlobalLeaderboard('wins', 10);
-      gamesTop = utilsModule.leaderboard.getGlobalLeaderboard('games', 10);
-      rateTop = utilsModule.leaderboard.getGlobalLeaderboard('rate', 10);
+      winsTop = this.utils.leaderboard.getGlobalLeaderboard('wins', 10);
+      gamesTop = this.utils.leaderboard.getGlobalLeaderboard('games', 10);
+      rateTop = this.utils.leaderboard.getGlobalLeaderboard('rate', 10);
     } else {
-      winsTop = utilsModule.leaderboard.getLeaderboard(groupId, 'wins', 10);
-      gamesTop = utilsModule.leaderboard.getLeaderboard(groupId, 'games', 10);
-      rateTop = utilsModule.leaderboard.getLeaderboard(groupId, 'rate', 10);
+      winsTop = this.utils.leaderboard.getLeaderboard(groupId, 'wins', 10);
+      gamesTop = this.utils.leaderboard.getLeaderboard(groupId, 'games', 10);
+      rateTop = this.utils.leaderboard.getLeaderboard(groupId, 'rate', 10);
     }
 
     if (!winsTop.length && !gamesTop.length && !rateTop.length) {
-      const emptyMsg = isGlobal 
+      const emptyMsg = isGlobal
         ? '全局还没有任何 Wordle 战绩，快来开一局吧！'
         : '当前群聊还没有任何 Wordle 战绩，快来开一局吧！';
       await e.reply(emptyMsg);

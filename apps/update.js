@@ -1,7 +1,4 @@
-import { createRequire } from "module";
-const require = createRequire(import.meta.url);
-const { exec } = require("child_process");
-import fs from 'fs';
+import { exec } from 'node:child_process';
 import path from 'node:path';
 
 // 更新状态标志

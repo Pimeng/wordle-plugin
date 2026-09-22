@@ -1,27 +1,14 @@
 import fs from 'node:fs';
-
-let utils;
-let utilsPromise;
-
-async function loadUtils() {
-  if (utils) return utils;
-  if (!utilsPromise) {
-    utilsPromise = import('./utils.js').then(m => m.default || m);
-  }
-  try {
-    utils = await utilsPromise;
-    return utils;
-  } catch (e) {
-    logger.error('[game.js] 动态加载 utils 失败', e);
-    throw e;
-  }
-}
+import utils from './utils.js';
 
 /**
  * Wordle游戏核心逻辑模块
  */
 class WordleGame {
   constructor() {
+    // 工具模块
+    this.utils = utils;
+
     // 正则表达式定义
     this.REGEX_WORDLE_CMD = /^#[Ww]ordle(.*)$/i;
     this.REGEX_ALPHA = /^[a-zA-Z]+$/;
@@ -49,14 +36,6 @@ class WordleGame {
     this._helpTextCache = null;
   }
   
-  get utils(){
-    return utils;
-  }
-
-  async _ensureUtils() {
-    return await loadUtils();
-  }
-
   async _withGroupLock(groupId, fn) {
     const key = String(groupId);
     const previous = this._groupLocks.get(key) || Promise.resolve();
@@ -77,7 +56,6 @@ class WordleGame {
    * @returns {Promise<boolean>} - 处理结果
    */
   async listenMessages(e) {
-    await this._ensureUtils();
     // 仅群聊
     if (e.group_id) {
       const groupId = e.group_id;
@@ -141,7 +119,6 @@ class WordleGame {
    * @returns {Promise<boolean>} - 处理结果
    */
   async wordle(e) {
-    await this._ensureUtils();
     const msg = typeof e?.msg === 'string' ? e.msg : '';
     const groupId = e?.group_id;
     if (!groupId) {
@@ -194,7 +171,6 @@ class WordleGame {
    * @returns {Promise<boolean>} - 处理结果
    */
   async startNewGame(e, letterCount = 5) {
-    await this._ensureUtils();
     const groupId = e?.group_id;
     if (!groupId) {
       await e.reply('Wordle 仅支持群聊使用');
@@ -265,7 +241,6 @@ class WordleGame {
    * @returns {Promise<boolean>} - 处理结果
    */
   async processGuess(e, guess, groupId) {
-    await this._ensureUtils();
     const resolvedGroupId = groupId ?? e?.group_id;
     if (!resolvedGroupId) {
       await e.reply('Wordle 仅支持群聊使用');
@@ -329,7 +304,6 @@ class WordleGame {
    * @param {*} result - 渲染结果或错误信息
    */
   async sendGameResultMessage(e, gameData, isWin, result) {
-    await this._ensureUtils();
     if (result) {
       const resultMessage = await this.generateResultMessage(e, gameData, isWin);
       // 将文本消息和图片分开发送
@@ -367,7 +341,6 @@ class WordleGame {
    * @returns {string} 结果消息
    */
   async generateResultMessage(e, gameData, isWin) {
-    await this._ensureUtils();
     const targetWord = gameData?.targetWord;
     if (isWin) {
       const playerName = this._getDisplayName(e);
@@ -406,7 +379,6 @@ ${definition}`;
    * @returns {Promise<boolean>} - 处理结果
    */
   async giveUpGame(e) {
-    await this._ensureUtils();
     const groupId = e?.group_id;
     if (!groupId) {
       await e.reply('Wordle 仅支持群聊使用');
@@ -501,7 +473,6 @@ ${definition}`;
    * @returns {Promise<boolean>} - 处理结果
    */
   async selectWordbank(e) {
-    await this._ensureUtils();
     const groupId = e?.group_id;
     if (!groupId) {
       await e.reply('Wordle 仅支持群聊使用');
@@ -578,7 +549,6 @@ ${definition}`;
   }
 
   async _updateLeaderboardStats(e, gameData, winnerId = null) {
-    await this._ensureUtils();
     const groupId = e?.group_id;
     if (!groupId || !gameData || !this.utils?.leaderboard) return;
 
