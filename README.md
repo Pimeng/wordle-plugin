@@ -88,17 +88,21 @@ node node_modules/puppeteer/install.js
 
 ```yaml
 render:
-  # 帮助图样式：white = 白底；blur = 背景图模糊
+  # 帮助图样式：
+  #   white = 白底立绘（内置 https://t.alcy.cc/bd）
+  #   blur  = 竖图模糊羽化（内置 https://t.alcy.cc/moemp）
   preset: blur
-  # 自定义背景图地址；留空时 blur 样式使用内置随机图接口
+  # 自定义背景图地址；留空时使用预置的内置地址
   background: ""
-  # 背景模糊度（px），仅 blur 样式生效
+  # 背景模糊度（px），仅模糊相关版式生效
   backgroundBlur: 16
   # 背景图缓存时间（秒），避免频繁请求随机图接口；为 0 表示不缓存
   backgroundCache: 60
+  # 版式模式；留空时跟随预置，也可填写 white / photo / portrait
+  backgroundMode: ""
 ```
 
-> `blur` 样式需要联网获取背景图，获取失败时会自动回退为白底。
+> 帮助图使用云崽根目录 `resources/font` 下的 Google Sans / MiSans 字体；`blur` 样式需要联网获取背景图，获取失败时会自动回退为纯白底。
 
 ### 内置词库
 

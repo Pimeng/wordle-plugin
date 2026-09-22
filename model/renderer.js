@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import puppeteer from '../../../lib/puppeteer/puppeteer.js';
 import { checkGuess, getLetterStatusFromResults } from './checker.js';
 import { Config, BACKGROUND_FAIL_TTL } from './config.js';
@@ -12,6 +13,25 @@ const KEYBOARD_LAYOUT = [
 
 /** 帮助图背景请求超时（ms） */
 const HELP_BG_TIMEOUT = 6000;
+
+/**
+ * 帮助图字体：Google Sans 优先，MiSans 作为中文回退。
+ * 模板会被写入 temp/html 再以 file:// 打开，因此这里转成绝对 file:// 地址，
+ * 避免相对路径依赖当前工作目录。缺失时返回空串，模板自动退回系统字体。
+ */
+const pluginRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const FONT_DIR = path.resolve(pluginRoot, '../../resources/font');
+
+function resolveFontUrl(file) {
+  try {
+    return fs.existsSync(file) ? pathToFileURL(file).href : '';
+  } catch {
+    return '';
+  }
+}
+
+const GOOGLE_SANS_URL = resolveFontUrl(path.join(FONT_DIR, 'GoogleSans.ttf'));
+const MI_SANS_URL = resolveFontUrl(path.join(FONT_DIR, 'MiSans-Regular.ttf'));
 
 /**
  * Wordle游戏渲染模块
@@ -206,11 +226,14 @@ class WordleRenderer {
     const startTime = Date.now();
     try {
       const versionInfo = await this.getVersionInfo();
-      let mode = 'white';
+      let mode = 'plain';
       let background = '';
-      if (Config.renderPreset === 'blur') {
-        background = await this._fetchHelpBackground(Config.background, Config.backgroundCache);
-        if (background) mode = 'blur';
+      const backgroundUrl = Config.background;
+      if (backgroundUrl) {
+        background = await this._fetchHelpBackground(backgroundUrl, Config.backgroundCache);
+        if (background) {
+          mode = Config.backgroundMode || (Config.renderPreset === 'white' ? 'white' : 'portrait');
+        }
       }
 
       const viewData = {
@@ -218,7 +241,8 @@ class WordleRenderer {
         mode,
         background,
         backgroundBlur: Config.backgroundBlur,
-        version: versionInfo.pluginVersion,
+        googleSansFont: GOOGLE_SANS_URL,
+        miSansFont: MI_SANS_URL,
         footer: `${versionInfo.yunzaiName} v${versionInfo.yunzaiVersion} & Wordle-Plugin ${versionInfo.pluginVersion}`
       };
 

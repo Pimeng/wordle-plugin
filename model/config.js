@@ -13,8 +13,14 @@ const WATCH_FILES = new Set([path.basename(defaultFile), path.basename(configFil
 /** 一次保存常触发多个文件事件，合并到一次重载 */
 const WATCH_DEBOUNCE_MS = 250;
 
-/** 内置帮助图背景地址（blur 样式） */
-const HELP_BACKGROUND = 'https://t.alcy.cc/fj';
+/** 内置帮助图背景地址：white = 白底立绘；blur = 竖图模糊羽化 */
+const PRESET_BACKGROUNDS = {
+  white: 'https://t.alcy.cc/bd',
+  blur: 'https://t.alcy.cc/moemp'
+};
+
+/** 可选版式：白底整图 / 横向照片 / 右侧竖图 */
+const BACKGROUND_MODES = ['white', 'photo', 'portrait'];
 
 /** 背景获取失败的负缓存时长（ms） */
 const BACKGROUND_FAIL_TTL = 30 * 1000;
@@ -24,7 +30,8 @@ const FALLBACK = {
     preset: 'blur',
     background: '',
     backgroundBlur: 16,
-    backgroundCache: 60
+    backgroundCache: 60,
+    backgroundMode: ''
   }
 };
 
@@ -126,12 +133,19 @@ class WordleConfig {
   }
 
   /**
-   * 帮助图背景地址。自定义地址优先，白底样式不请求背景。
+   * 帮助图背景地址。自定义地址优先，留空时使用当前预置的内置地址。
    */
   get background() {
-    if (this.renderPreset !== 'blur') return '';
     const custom = String(this.data.render?.background || '').trim();
-    return custom || HELP_BACKGROUND;
+    return custom || PRESET_BACKGROUNDS[this.renderPreset];
+  }
+
+  /**
+   * 版式模式。显式配置优先，留空则跟随当前预置。
+   */
+  get backgroundMode() {
+    const value = String(this.data.render?.backgroundMode || '').toLowerCase();
+    return BACKGROUND_MODES.includes(value) ? value : '';
   }
 
   /**
@@ -152,4 +166,4 @@ class WordleConfig {
 }
 
 export const Config = new WordleConfig();
-export { HELP_BACKGROUND, BACKGROUND_FAIL_TTL, configFile, defaultFile };
+export { PRESET_BACKGROUNDS, BACKGROUND_MODES, BACKGROUND_FAIL_TTL, configFile, defaultFile };
