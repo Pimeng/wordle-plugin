@@ -1,2 +1,5 @@
 node_modules
 data/
+
+# 用户配置（首次运行自动从 default.yaml 生成）
+/config/config.yaml

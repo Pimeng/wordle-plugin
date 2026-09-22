@@ -71,7 +71,7 @@ node node_modules/puppeteer/install.js
 #apple             # 使用前缀猜测
 !apple             # 通过前缀猜词
 #wordle 答案       # 结束游戏
-#wordle 帮助       # 查看帮助
+#wordle 帮助       # 查看帮助图片（样式由配置决定）
 #wordle 词典       # 循环切换词典
 #wordle 词典 列表  # 查看当前词库与全部可用词库
 #wordle 词典 4     # 按序号切换词库
@@ -81,6 +81,24 @@ node node_modules/puppeteer/install.js
 #wordle 总排行榜   # 查看全局排行榜（可选：胜场/参与/胜率）
 #释义 access       # 查询单词释义
 ```
+
+### 帮助图配置
+
+首次运行会自动生成 `config/config.yaml`（默认值见 `config/default.yaml`），修改后热重载、无需重启：
+
+```yaml
+render:
+  # 帮助图样式：white = 白底；blur = 背景图模糊
+  preset: blur
+  # 自定义背景图地址；留空时 blur 样式使用内置随机图接口
+  background: ""
+  # 背景模糊度（px），仅 blur 样式生效
+  backgroundBlur: 16
+  # 背景图缓存时间（秒），避免频繁请求随机图接口；为 0 表示不缓存
+  backgroundCache: 60
+```
+
+> `blur` 样式需要联网获取背景图，获取失败时会自动回退为白底。
 
 ## 🎉 正在使用本插件的Bot
 

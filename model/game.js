@@ -1,5 +1,5 @@
-import fs from 'node:fs';
 import utils from './utils.js';
+import { HELP_SECTIONS, HELP_TEXT } from './help.js';
 
 /**
  * Wordle游戏核心逻辑模块
@@ -31,9 +31,6 @@ class WordleGame {
     this.userCooldowns = new Map();
     this.groupCooldowns = new Map();
     this._groupLocks = new Map();
-
-    // 缓存
-    this._helpTextCache = null;
   }
   
   async _withGroupLock(groupId, fn) {
@@ -411,50 +408,14 @@ ${definition}`;
   }
   
   /**
-   * 显示帮助
+   * 显示帮助（优先渲染帮助图，失败时回退文字版）
+   * 帮助图样式由 config/config.yaml 的 render.preset 配置
    * @param {*} e - 消息事件对象
    * @returns {Promise<boolean>} - 处理结果
    */
   async showHelp(e) {
-    const helpPath = './plugins/wordle-plugin/resources/help.txt';
-    if (!this._helpTextCache) {
-      if (fs.existsSync(helpPath)) {
-        try {
-          this._helpTextCache = fs.readFileSync(helpPath, 'utf-8');
-        } catch (err) {
-          logger.debug('[Wordle] 读取帮助文件失败:', err.message);
-        }
-      }
-    }
-
-    if (this._helpTextCache) {
-      await e.reply(this._helpTextCache);
-    } else {
-      await e.reply(`Wordle 游戏帮助
-
-📋 基本命令：
-#wordle - 开始新游戏（默认5字母）
-#wordle [数字] - 开始指定字母数量的游戏
-#wordle ans - 结束游戏
-#wordle 词典 - 循环切换词典
-#wordle 词典 [序号|名称] - 切换词典（如 4、四级、全部）
-#wordle 词典 列表 - 查看当前词库与全部可用词库
-#释义 [单词] - 查询单词释义
-
-🎯 提交猜测方式：
-• 使用前缀：#apple !apple
-
-📱 使用示例：
-#apple - 使用前缀猜测
-!apple - 通过前缀猜词
-#wordle 7 - 开始7字母游戏
-#wordle 词典 - 循环切换词典
-#wordle 词典 四级 - 切换到四级词典
-#wordle 词典 全部 - 使用全部词库（随机范围最大）
-#wordle 词典 列表 - 查看全部词库并附带序号
-#释义 access - 查询单词access的释义
-`);
-    }
+    const img = await this.utils.renderer.renderHelp(e, { sections: HELP_SECTIONS });
+    await e.reply(img || HELP_TEXT);
     return true;
   }
   

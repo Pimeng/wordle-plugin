@@ -2,12 +2,16 @@ import fs from 'fs';
 import path from 'node:path';
 import puppeteer from '../../../lib/puppeteer/puppeteer.js';
 import { checkGuess, getLetterStatusFromResults } from './checker.js';
+import { Config, BACKGROUND_FAIL_TTL } from './config.js';
 
 const KEYBOARD_LAYOUT = [
   ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
   ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
   ['Z', 'X', 'C', 'V', 'B', 'N', 'M']
 ];
+
+/** 帮助图背景请求超时（ms） */
+const HELP_BG_TIMEOUT = 6000;
 
 /**
  * Wordle游戏渲染模块
@@ -16,6 +20,7 @@ const KEYBOARD_LAYOUT = [
 class WordleRenderer {
   constructor() {
     this.versionInfoCache = null; // 版本信息缓存
+    this.helpBackgroundCache = new Map(); // 帮助图背景缓存
   }
 
   /**
@@ -147,6 +152,92 @@ class WordleRenderer {
       return img;
     } catch (err) {
       return this.handleRenderError(e, err);
+    } finally {
+      this.logPerformanceWarning(e, startTime);
+    }
+  }
+
+  /**
+   * 获取帮助图背景（转 data URI，带短时缓存）
+   * @param {string} url - 背景图地址
+   * @param {number} cacheSeconds - 缓存时间（秒），0 表示不缓存
+   * @returns {Promise<string>} data URI，获取失败返回空字符串
+   */
+  async _fetchHelpBackground(url, cacheSeconds = 0) {
+    if (!url) return '';
+
+    const now = Date.now();
+    const ttl = Math.max(0, Number(cacheSeconds) || 0) * 1000;
+    const cached = this.helpBackgroundCache.get(url);
+    if (cached && cached.expiresAt > now) return cached.value;
+
+    let value = '';
+    try {
+      const response = await fetch(url, { signal: AbortSignal.timeout(HELP_BG_TIMEOUT) });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const mime = response.headers.get('content-type') || 'image/jpeg';
+      if (!mime.startsWith('image/')) throw new Error(`非图片响应：${mime}`);
+      const buffer = Buffer.from(await response.arrayBuffer());
+      if (!buffer.length) throw new Error('响应内容为空');
+      value = `data:${mime};base64,${buffer.toString('base64')}`;
+    } catch (err) {
+      logger.warn(`[Wordle] 帮助图背景获取失败，本次回退白底：${err.message}`);
+    }
+
+    this.helpBackgroundCache.set(url, {
+      value,
+      expiresAt: now + (value ? ttl : Math.max(ttl, BACKGROUND_FAIL_TTL))
+    });
+    if (this.helpBackgroundCache.size > 8) {
+      const oldest = this.helpBackgroundCache.keys().next().value;
+      if (oldest !== undefined) this.helpBackgroundCache.delete(oldest);
+    }
+    return value;
+  }
+
+  /**
+   * 使用浏览器渲染帮助图片（样式由 config/config.yaml 的 render.preset 决定）
+   * @param {Object} e - 消息事件对象
+   * @param {Object} options - 渲染参数
+   * @param {Array} options.sections - 帮助章节数据
+   * @returns {Promise<*>} - 图片segment，失败返回 null
+   */
+  async renderHelp(e, { sections } = {}) {
+    const startTime = Date.now();
+    try {
+      const versionInfo = await this.getVersionInfo();
+      let mode = 'white';
+      let background = '';
+      if (Config.renderPreset === 'blur') {
+        background = await this._fetchHelpBackground(Config.background, Config.backgroundCache);
+        if (background) mode = 'blur';
+      }
+
+      const viewData = {
+        sections: Array.isArray(sections) ? sections : [],
+        mode,
+        background,
+        backgroundBlur: Config.backgroundBlur,
+        version: versionInfo.pluginVersion,
+        footer: `${versionInfo.yunzaiName} v${versionInfo.yunzaiVersion} & Wordle-Plugin ${versionInfo.pluginVersion}`
+      };
+
+      // 浏览器可能仍在启动，首次渲染失败时稍后重试
+      for (let attempt = 0; attempt < 2; attempt++) {
+        const img = await puppeteer.screenshot('wordle-help', {
+          tplFile: './plugins/wordle-plugin/resources/html/help.html',
+          saveId: `wordle-help_${Date.now()}_${attempt}`,
+          imgType: 'jpeg',
+          quality: 92,
+          ...viewData
+        });
+        if (img) return img;
+        await new Promise(resolve => setTimeout(resolve, 250));
+      }
+      return null;
+    } catch (err) {
+      logger.error('[Wordle] 帮助图片渲染失败：', err);
+      return null;
     } finally {
       this.logPerformanceWarning(e, startTime);
     }

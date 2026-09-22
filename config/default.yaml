@@ -1,0 +1,15 @@
+# Wordle 插件默认配置
+# 请勿直接修改本文件，修改 config/config.yaml 即可
+
+# 帮助图渲染配置
+render:
+  # 帮助图样式：
+  #   white = 白底（纯本地渲染，无需联网）
+  #   blur  = 背景图模糊（随机背景 + 磨砂）
+  preset: blur
+  # 自定义背景图地址；留空时 blur 样式使用内置随机图接口
+  background: ""
+  # 背景模糊度（px），仅 blur 样式生效
+  backgroundBlur: 16
+  # 背景图缓存时间（秒），避免频繁请求随机图接口；为 0 表示不缓存
+  backgroundCache: 60

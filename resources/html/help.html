@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #ffffff;
+      font-family: Arial, "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", sans-serif;
+    }
+
+    #container {
+      position: relative;
+      width: 1000px;
+      overflow: hidden;
+      background: #ffffff;
+      color: #1a1a1b;
+    }
+
+    #container::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 6px;
+      z-index: 3;
+      background: linear-gradient(90deg, #6aaa64, #c9b458 60%, #6aaa64);
+    }
+
+    .bg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: blur(var(--bg-blur, 16px)) saturate(1.12) brightness(1.05);
+      transform: scale(1.15);
+      z-index: 0;
+    }
+
+    .scrim {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      background: linear-gradient(135deg,
+          rgba(255, 255, 255, 0.88) 0%,
+          rgba(255, 255, 255, 0.78) 45%,
+          rgba(255, 255, 255, 0.62) 100%);
+    }
+
+    .content {
+      position: relative;
+      z-index: 2;
+      padding: 42px 48px 26px;
+    }
+
+    .head {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      padding-bottom: 20px;
+      border-bottom: 2px solid rgba(106, 170, 100, 0.25);
+    }
+
+    .logo {
+      flex: none;
+      width: 64px;
+      height: 64px;
+      border-radius: 12px;
+      background: #6aaa64;
+      color: #ffffff;
+      font-size: 38px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .titles {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .title {
+      font-size: 34px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .subtitle {
+      margin-top: 4px;
+      font-size: 18px;
+      color: #6b7280;
+    }
+
+    .version {
+      flex: none;
+      font-size: 16px;
+      color: #6b7280;
+    }
+
+    .sections {
+      margin-top: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+      font-size: 22px;
+      font-weight: 700;
+      color: #3f7d3a;
+    }
+
+    .section-title .bar {
+      flex: none;
+      width: 6px;
+      height: 22px;
+      border-radius: 3px;
+      background: #6aaa64;
+    }
+
+    .items {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .item {
+      display: flex;
+      align-items: baseline;
+      gap: 14px;
+    }
+
+    .item::before {
+      content: "";
+      flex: none;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #c9b458;
+    }
+
+    .cmd {
+      flex: none;
+      width: 330px;
+      font-size: 20px;
+      font-weight: 700;
+      color: #1a1a1b;
+    }
+
+    .desc {
+      flex: 1;
+      min-width: 0;
+      font-size: 18px;
+      line-height: 1.45;
+      color: #4b5563;
+    }
+
+    .footer {
+      margin-top: 26px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(26, 26, 27, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 14px;
+      color: #6b7280;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="container" class="mode-{{mode}}" style="--bg-blur: {{backgroundBlur}}px">
+    {{if background}}<img class="bg" src="{{@background}}" alt="" />{{/if}}
+    {{if background}}<div class="scrim"></div>{{/if}}
+    <div class="content">
+      <div class="head">
+        <div class="logo">W</div>
+        <div class="titles">
+          <div class="title">Wordle 猜词游戏</div>
+          <div class="subtitle">使用帮助</div>
+        </div>
+        <div class="version">v{{version}}</div>
+      </div>
+      <div class="sections">
+        {{each sections section}}
+        <div class="section">
+          <div class="section-title"><span class="bar"></span>{{section.title}}</div>
+          <div class="items">
+            {{each section.items item}}
+            <div class="item">
+              <div class="cmd">{{item.cmd}}</div>
+              <div class="desc">{{item.desc}}</div>
+            </div>
+            {{/each}}
+          </div>
+        </div>
+        {{/each}}
+      </div>
+      <div class="footer">
+        <span>{{footer}}</span>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>
