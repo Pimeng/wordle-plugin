@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta http-equiv="content-type" content="text/html;charset=utf-8" />
+  <link rel="shortcut icon" href="#" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #f8f8f8;
+      font-family: Arial, "Microsoft YaHei", "PingFang SC", sans-serif;
+    }
+
+    #container {
+      display: inline-block;
+      padding: 40px 40px 0;
+      background: #f8f8f8;
+    }
+
+    .board {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .cell {
+      width: 60px;
+      height: 60px;
+      border: 2px solid #d3d6da;
+      background: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      font-weight: bold;
+      color: #1a1a1b;
+      text-transform: uppercase;
+    }
+
+    .cell.correct {
+      background: #6aaa64;
+      border-color: #6aaa64;
+      color: #ffffff;
+    }
+
+    .cell.present {
+      background: #c9b458;
+      border-color: #c9b458;
+      color: #ffffff;
+    }
+
+    .cell.absent {
+      background: #787c7e;
+      border-color: #787c7e;
+      color: #ffffff;
+    }
+
+    .keyboard {
+      margin-top: 45px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .key-row {
+      display: flex;
+      gap: 5px;
+    }
+
+    .key {
+      width: 36px;
+      height: 42px;
+      border-radius: 6px;
+      background: #d3d6da;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: bold;
+      color: #1a1a1b;
+    }
+
+    .key.correct {
+      background: #6aaa64;
+      color: #ffffff;
+    }
+
+    .key.present {
+      background: #c9b458;
+      color: #ffffff;
+    }
+
+    .key.absent {
+      background: #787c7e;
+      color: #ffffff;
+    }
+
+    .footer {
+      margin-top: 48px;
+      height: 25px;
+      line-height: 27px;
+      text-align: center;
+      font-size: 12px;
+      color: #787c7e;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="container">
+    <div class="board">
+      {{each rows row}}
+      <div class="row">
+        {{each row cell}}
+        <div class="cell {{cell.status}}">{{cell.letter}}</div>
+        {{/each}}
+      </div>
+      {{/each}}
+    </div>
+    <div class="keyboard">
+      {{each keyboard keyRow}}
+      <div class="key-row">
+        {{each keyRow key}}
+        <div class="key {{key.status}}">{{key.letter}}</div>
+        {{/each}}
+      </div>
+      {{/each}}
+    </div>
+    <div class="footer">{{footer}}</div>
+  </div>
+</body>
+
+</html>

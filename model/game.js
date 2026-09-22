@@ -51,7 +51,7 @@ class WordleGame {
   }
 
   /**
-   * 延迟清理已结束的游戏数据与渲染缓存
+   * 延迟清理已结束的游戏数据
    * @param {string} groupId - 群组ID
    * @param {number} startTime - 本局开始时间，用于避免误删新对局
    */
@@ -62,14 +62,6 @@ class WordleGame {
         if (current?.startTime != null && current.startTime !== startTime) return;
       }
       await this.utils.db.deleteGameData(groupId);
-      const canvasCache = this.utils.renderer.canvasCache;
-      if (canvasCache && typeof canvasCache === 'object') {
-        if (typeof canvasCache.delete === 'function') {
-          canvasCache.delete(groupId);
-        } else {
-          delete canvasCache[groupId];
-        }
-      }
     }, 100);
   }
   

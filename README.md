@@ -4,7 +4,7 @@
 
 由于当时是真的闲得慌，所以就用AI写了这个插件，第一次写大插件如有不足之处还请多多包涵哈
 
-如果插件使用有问题请反馈！关于 `canvas` 问题的可以看[这里](#2-安装依赖by-千奈千祁)
+如果插件使用有问题请反馈！渲染使用云崽自带的 `Puppeteer`（Chromium），遇到渲染问题请看[常见问题](#-常见问题)
 
 > 这个仓库我也不知道为什么搬到 Gitee 会被封库，有知道的可以提 issue
 
@@ -31,54 +31,36 @@ git clone --depth=1 https://gh-proxy.com/https://github.com/Pimeng/wordle-plugin
 git clone --depth=1 https://gitcode.com/Mirror-Yunzai/wordle-plugin.git ./plugins/wordle-plugin
 ```
 
-### 2. 安装依赖（By 千奈千祁）
+### 2. 安装依赖
 
-#### Linux安装
-
-##### I. Ubuntu / Debian
-
-```console
-sudo apt update
-sudo apt install -y build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
-```
-
-##### I. CentOS / RHEL
-
-```console
-sudo yum install -y gcc-c++ cairo-devel pango-devel libjpeg-turbo-devel giflib-devel librsvg2-devel
-```
-
-##### II. 编译安装canvas
-
-```console
-cd plugins/wordle-plugin
-npm i
-npm install canvas --build-from-source
-```
-
-#### Windows & Other
+本插件使用云崽自带的 Puppeteer（Chromium）截图渲染，不再依赖 canvas：
 
 ```console
 cd plugins/wordle-plugin
 pnpm i
-pnpm approve-builds
 ```
+
+若云崽未安装 Chromium，可在云崽根目录执行：
+
+```console
+node node_modules/puppeteer/install.js
+```
+
+Linux 下如缺少 Chromium 运行库（如 `libnss3`、`libatk-bridge2.0-0`、`libx11-xcb1`、`libxcomposite1`、`libxdamage1`、`libxrandr2`、`libgbm1`、`libasound2` 等），请按发行版自行安装。
 
 ### 3. 重启云崽之后就可以食用啦
 
 ## 📚 常见问题
 
-如果渲染报错，请尝试使用pnpm安装canvas依赖
+如果渲染报错，请先确认云崽的 Chromium/Puppeteer 可用，可在云崽根目录执行安装命令：
+
 ```console
-pnpm i canvas
+node node_modules/puppeteer/install.js
 ```
 
-如果报错日志里面的有 `canvas.node` 字样请考虑安装完依赖之后运行安装脚本……
-```console
-pnpm approve-builds
-```
-
-canvas还是有问题那就自己问AI自求多福吧……因为我也被canvas折磨好久才装上的……
+- 日志出现 `Could not find Chromium`：Chromium 未安装或安装不完整
+- 日志出现 `cannot open shared object file`：缺少系统运行库，请补装对应的 Chromium 依赖
+- 浏览器连接异常时可尝试删除 `data/puppeteer` 后重启云崽
 
 ## 🚀 使用方法
 
