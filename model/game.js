@@ -49,6 +49,29 @@ class WordleGame {
       }
     }
   }
+
+  /**
+   * 延迟清理已结束的游戏数据与渲染缓存
+   * @param {string} groupId - 群组ID
+   * @param {number} startTime - 本局开始时间，用于避免误删新对局
+   */
+  _scheduleGameCleanup(groupId, startTime) {
+    setTimeout(async () => {
+      if (startTime != null) {
+        const current = await this.utils.db.getGameData(groupId);
+        if (current?.startTime != null && current.startTime !== startTime) return;
+      }
+      await this.utils.db.deleteGameData(groupId);
+      const canvasCache = this.utils.renderer.canvasCache;
+      if (canvasCache && typeof canvasCache === 'object') {
+        if (typeof canvasCache.delete === 'function') {
+          canvasCache.delete(groupId);
+        } else {
+          delete canvasCache[groupId];
+        }
+      }
+    }, 100);
+  }
   
   /**
    * 监听所有消息，用于游戏进行中的直接猜测
@@ -310,26 +333,14 @@ class WordleGame {
       if (resultMessage) {
         await e.reply(resultMessage);
       }
-      if (result != null) {
-        await e.reply(result);
-      }
+      await e.reply(result);
     } else {
       await e.reply('渲染失败，请稍后再试或联系开发者获取帮助');
     }
     if (gameData.finished) {
       const groupId = e?.group_id;
       if (!groupId) return;
-      const finishedStartTime = gameData?.startTime;
-      setTimeout(async () => {
-        if (finishedStartTime != null) {
-          const current = await this.utils.db.getGameData(groupId);
-          if (current?.startTime != null && current.startTime !== finishedStartTime) return;
-        }
-        await this.utils.db.deleteGameData(groupId);
-        if (this.utils.renderer.canvasCache && typeof this.utils.renderer.canvasCache === 'object') {
-          this.utils.renderer.canvasCache.delete(groupId);
-        }
-      }, 100);
+      this._scheduleGameCleanup(groupId, gameData?.startTime);
     }
   }
   
@@ -402,21 +413,7 @@ ${definition}`;
       }
       await e.reply(message);
       await this._updateLeaderboardStats(e, currentGame, null);
-      const finishedStartTime = currentGame?.startTime;
-      setTimeout(async () => {
-        if (finishedStartTime != null) {
-          const current = await this.utils.db.getGameData(groupId);
-          if (current?.startTime != null && current.startTime !== finishedStartTime) return;
-        }
-        await this.utils.db.deleteGameData(groupId);
-        if (this.utils.renderer.canvasCache && typeof this.utils.renderer.canvasCache === 'object') {
-          if (typeof this.utils.renderer.canvasCache.delete === 'function') {
-            this.utils.renderer.canvasCache.delete(groupId);
-          } else {
-            delete this.utils.renderer.canvasCache[groupId];
-          }
-        }
-      }, 100);
+      this._scheduleGameCleanup(groupId, currentGame?.startTime);
       return true;
     });
   }
@@ -479,54 +476,53 @@ ${definition}`;
       return true;
     }
     const input = (typeof e?.msg === 'string' ? e.msg : '').trim().toLowerCase();
-    
+
     const availableDicts = await this.utils.word.getAvailableDictionaries();
     const dictNameMatch = input.match(/#wordle\s+(?:词库|词典|wordbank)\s+(.+)/);
-    
+
     if (dictNameMatch && dictNameMatch[1]) {
       // 按名称切换词典
       const targetDictName = dictNameMatch[1].trim();
-      const targetDict = availableDicts.find(dict => 
+      const targetDict = availableDicts.find(dict =>
         dict.name.toLowerCase().includes(targetDictName.toLowerCase()) ||
         dict.id.toLowerCase().includes(targetDictName.toLowerCase())
       );
-      
-      if (targetDict) {
-        const currentDict = await this.utils.db.getWordbankSelection(groupId);
-        const currentDictInfo = availableDicts.find(dict => dict.id === currentDict) || availableDicts[0];
-        
-        // 设置新的词典选择
-        await this.utils.db.setWordbankSelection(groupId, targetDict.id);
-        
-        await e.reply(`词典已切换：${currentDictInfo.name} → ${targetDict.name}\n当前词典信息：\n- 包含 ${targetDict.wordCount} 个单词\n- 使用 #wordle 开始新游戏生效`);
-        return true;
-      } else {
+
+      if (!targetDict) {
         // 列出所有可用的词典
         const dictList = availableDicts.map(dict => `- ${dict.name} (${dict.wordCount}个单词)`).join('\n');
         await e.reply(`未找到名为"${targetDictName}"的词典\n\n可用词典列表：\n${dictList}\n\n请使用正确的词典名称，例如：#wordle 词典 四级`);
         return true;
       }
-    } else {
-      // 循环切换词典（原有逻辑）
+
       const currentDict = await this.utils.db.getWordbankSelection(groupId);
-      
-      // 找到当前词典的索引
-      let currentIndex = availableDicts.findIndex(dict => dict.id === currentDict);
-      if (currentIndex === -1) currentIndex = 0;
-      
-      // 计算下一个词典的索引（循环选择）
-      const nextIndex = (currentIndex + 1) % availableDicts.length;
-      const nextDict = availableDicts[nextIndex];
-      
-      // 设置新的词典选择
-      await this.utils.db.setWordbankSelection(groupId, nextDict.id);
-      
-      const currentDictInfo = availableDicts[currentIndex];
-      const nextDictInfo = nextDict;
-      
-      await e.reply(`词典已切换：${currentDictInfo.name} → ${nextDictInfo.name}\n当前词典信息：\n- 包含 ${nextDictInfo.wordCount} 个单词\n- 使用 #wordle 开始新游戏生效`);
+      const currentDictInfo = availableDicts.find(dict => dict.id === currentDict) || availableDicts[0];
+      await this._switchWordbank(e, currentDictInfo, targetDict);
       return true;
     }
+
+    // 循环切换词典
+    const currentDict = await this.utils.db.getWordbankSelection(groupId);
+    let currentIndex = availableDicts.findIndex(dict => dict.id === currentDict);
+    if (currentIndex === -1) currentIndex = 0;
+
+    // 计算下一个词典的索引（循环选择）
+    const nextIndex = (currentIndex + 1) % availableDicts.length;
+    await this._switchWordbank(e, availableDicts[currentIndex], availableDicts[nextIndex]);
+    return true;
+  }
+
+  /**
+   * 切换词库并回复结果
+   * @param {*} e - 消息事件对象
+   * @param {Object} currentDictInfo - 当前词库信息
+   * @param {Object} targetDict - 目标词库
+   */
+  async _switchWordbank(e, currentDictInfo, targetDict) {
+    // 设置新的词典选择
+    await this.utils.db.setWordbankSelection(e.group_id, targetDict.id);
+
+    await e.reply(`词典已切换：${currentDictInfo.name} → ${targetDict.name}\n当前词典信息：\n- 包含 ${targetDict.wordCount} 个单词\n- 使用 #wordle 开始新游戏生效`);
   }
 
   _getUserId(e) {

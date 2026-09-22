@@ -3,6 +3,12 @@ import path from 'node:path';
 import { createCanvas } from 'canvas';
 import { checkGuess, getLetterStatusFromResults } from './checker.js';
 
+const KEYBOARD_LAYOUT = [
+  ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
+  ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
+  ['Z', 'X', 'C', 'V', 'B', 'N', 'M']
+];
+
 /**
  * Wordle游戏渲染模块
  * 负责游戏界面的Canvas绘制
@@ -113,13 +119,8 @@ class WordleRenderer {
       const wordBasedWidth = letterCount * boxSize + (letterCount - 1) * gap + 2 * padding;
       const keyWidth = 36;
       const keyGap = 5;
-      const keyboardLayout = [
-        ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
-        ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
-        ['Z', 'X', 'C', 'V', 'B', 'N', 'M']
-      ];
       let maxKeyboardRowWidth = 0;
-      for (const row of keyboardLayout)
+      for (const row of KEYBOARD_LAYOUT)
         maxKeyboardRowWidth = Math.max(maxKeyboardRowWidth, row.length * keyWidth + (row.length - 1) * keyGap);
       const keyboardBasedWidth = maxKeyboardRowWidth + 2 * padding;
       const width = Math.max(wordBasedWidth, keyboardBasedWidth);
@@ -135,9 +136,6 @@ class WordleRenderer {
           canvas = createCanvas(width, height);
           ctx = canvas.getContext('2d');
           this.canvasCache.set(groupId, { canvas, lastUsed: Date.now() });
-        } else {
-          ctx.fillStyle = '#f8f8f8';
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
         }
       } else {
         canvas = createCanvas(width, height);
@@ -266,18 +264,13 @@ class WordleRenderer {
    * @param {Array<Array<{letter:string,status:string}>>} results - 与每次猜测对应的结果
    */
   async drawKeyboardHint(ctx, width, startY, guesses, results) {
-    const keyboardLayout = [
-      ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
-      ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
-      ['Z', 'X', 'C', 'V', 'B', 'N', 'M']
-    ];
     const letterStatus = getLetterStatusFromResults(guesses, results);
     const keyWidth = 36;
     const keyHeight = 42;
     const keyGap = 5;
     const rowGap = 8;
-    for (let rowIndex = 0; rowIndex < keyboardLayout.length; rowIndex++) {
-      const row = keyboardLayout[rowIndex];
+    for (let rowIndex = 0; rowIndex < KEYBOARD_LAYOUT.length; rowIndex++) {
+      const row = KEYBOARD_LAYOUT[rowIndex];
       const rowWidth = row.length * keyWidth + (row.length - 1) * keyGap;
       const startX = (width - rowWidth) / 2;
       for (let colIndex = 0; colIndex < row.length; colIndex++) {

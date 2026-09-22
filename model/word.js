@@ -12,6 +12,8 @@ class WordleWordNew {
     this.lengthStats = null;
     this.globalWordSet = null;        // 全部单词集合（小写）
     this.definitionIndex = null;      // 单词 -> 释义与来源词典
+    this.wordsByLengthCache = new WeakMap(); // 词库 -> (单词长度 -> 单词列表)
+    this._loadPromise = null;         // 词典加载中的共享Promise
 
     this.__filename = fileURLToPath(import.meta.url);
     this.__dirname = path.dirname(this.__filename);
@@ -45,25 +47,43 @@ class WordleWordNew {
       return this.wordsCache.data;
     }
 
+    // 并发调用时共享同一次加载，避免重复读取词典文件
+    if (!this._loadPromise) {
+      this._loadPromise = this._loadDictionaries().finally(() => {
+        this._loadPromise = null;
+      });
+    }
+    return await this._loadPromise;
+  }
+
+  /**
+   * 读取并解析全部词典文件
+   * @returns {Promise<Object>} - 包含所有词典数据的对象
+   */
+  async _loadDictionaries() {
     try {
       const allDictionaries = {};
       
       // 加载所有词典文件
       for (const dictFile of this.dictionaryFiles) {
         const dictPath = path.resolve(this.dictionariesPath, dictFile);
-        if (fs.existsSync(dictPath)) {
-          const content = fs.readFileSync(dictPath, 'utf-8');
-          const dictionary = JSON.parse(content);
-          
-          // 提取词典名称（不带.json后缀）
-          const dictName = dictFile.replace('.json', '');
-          const wordList = Object.keys(dictionary);
-          allDictionaries[dictName] = {
-            name: this.dictionaryNames[dictFile] || dictName,
-            words: dictionary,
-            wordList
-          };
+        let content;
+        try {
+          content = await fs.promises.readFile(dictPath, 'utf-8');
+        } catch (err) {
+          // 词典文件不存在时跳过
+          continue;
         }
+        const dictionary = JSON.parse(content);
+
+        // 提取词典名称（不带.json后缀）
+        const dictName = dictFile.replace('.json', '');
+        const wordList = Object.keys(dictionary);
+        allDictionaries[dictName] = {
+          name: this.dictionaryNames[dictFile] || dictName,
+          words: dictionary,
+          wordList
+        };
       }
 
       this.wordsCache = {
@@ -140,8 +160,8 @@ class WordleWordNew {
       return null;
     }
     
-    // 过滤指定长度的单词
-    const filteredWords = selectedDict.wordList.filter(word => word.length === letterCount);
+    // 过滤指定长度的单词（带缓存）
+    const filteredWords = this._getWordsOfLength(selectedDict, letterCount);
     
     if (filteredWords.length > 0) {
       const randomIndex = Math.floor(Math.random() * filteredWords.length);
@@ -151,6 +171,24 @@ class WordleWordNew {
     }
     
     return null;
+  }
+
+  /**
+   * 获取指定词库中指定长度的单词列表（带缓存）
+   * @param {Object} dict - 词库对象
+   * @param {number} letterCount - 字母数量
+   * @returns {Array<string>} 单词列表
+   */
+  _getWordsOfLength(dict, letterCount) {
+    let byLength = this.wordsByLengthCache.get(dict.wordList);
+    if (!byLength) {
+      byLength = new Map();
+      this.wordsByLengthCache.set(dict.wordList, byLength);
+    }
+    if (!byLength.has(letterCount)) {
+      byLength.set(letterCount, dict.wordList.filter(word => word.length === letterCount));
+    }
+    return byLength.get(letterCount);
   }
 
   /**

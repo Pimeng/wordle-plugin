@@ -120,8 +120,26 @@ class LeaderboardManager {
    * @returns {Array} 排序后的玩家数据
    */
   getLeaderboard(groupId, sortBy = 'wins', limit = 10) {
-    const leaderboard = this._readLeaderboard(groupId);
-    const players = Object.entries(leaderboard).map(([userId, data]) => {
+    return this._sortPlayers(this._toPlayerList(this._readLeaderboard(groupId)), sortBy).slice(0, limit);
+  }
+
+  /**
+   * 一次性获取胜场/参与/胜率三种排行榜（仅读取一次数据文件）
+   * @param {string|number} groupId - 群组ID
+   * @param {number} limit - 每个榜单返回的最大人数
+   * @returns {{wins: Array, games: Array, rate: Array}} 三种排序的排行榜
+   */
+  getLeaderboards(groupId, limit = 10) {
+    return this._buildSortedBoards(this._toPlayerList(this._readLeaderboard(groupId)), limit);
+  }
+
+  /**
+   * 将排行榜原始数据转换为玩家列表
+   * @param {Object} leaderboard - 排行榜原始数据
+   * @returns {Array} 玩家数据列表
+   */
+  _toPlayerList(leaderboard) {
+    return Object.entries(leaderboard).map(([userId, data]) => {
       const games = Number(data.gamesPlayed) || 0;
       const wins = Number(data.wins) || 0;
       return {
@@ -132,36 +150,52 @@ class LeaderboardManager {
         winRate: this._calculateWinRate(wins, games)
       };
     });
+  }
 
-    let sorted;
+  /**
+   * 生成三种排序方式的排行榜
+   * @param {Array} players - 玩家数据列表
+   * @param {number} limit - 每个榜单返回的最大人数
+   * @returns {{wins: Array, games: Array, rate: Array}} 三种排序的排行榜
+   */
+  _buildSortedBoards(players, limit) {
+    return {
+      wins: this._sortPlayers(players.slice(), 'wins').slice(0, limit),
+      games: this._sortPlayers(players.slice(), 'games').slice(0, limit),
+      rate: this._sortPlayers(players.slice(), 'rate').slice(0, limit)
+    };
+  }
+
+  /**
+   * 按指定方式排序玩家数据
+   * @param {Array} players - 玩家数据列表
+   * @param {('wins'|'games'|'rate')} sortBy - 排序方式
+   * @returns {Array} 排序后的玩家数据
+   */
+  _sortPlayers(players, sortBy) {
     switch (sortBy) {
       case 'games':
-        sorted = players.sort((a, b) => {
+        return players.sort((a, b) => {
           if (b.gamesPlayed !== a.gamesPlayed) return b.gamesPlayed - a.gamesPlayed;
           if (b.wins !== a.wins) return b.wins - a.wins;
           return a.userId.localeCompare(b.userId, 'zh-Hans-CN');
         });
-        break;
       case 'rate':
-        sorted = players
+        return players
           .filter(player => player.gamesPlayed >= 3)
           .sort((a, b) => {
             if (b.winRate !== a.winRate) return b.winRate - a.winRate;
             if (b.gamesPlayed !== a.gamesPlayed) return b.gamesPlayed - a.gamesPlayed;
             return a.userId.localeCompare(b.userId, 'zh-Hans-CN');
           });
-        break;
       case 'wins':
       default:
-        sorted = players.sort((a, b) => {
+        return players.sort((a, b) => {
           if (b.wins !== a.wins) return b.wins - a.wins;
           if (b.gamesPlayed !== a.gamesPlayed) return b.gamesPlayed - a.gamesPlayed;
           return a.userId.localeCompare(b.userId, 'zh-Hans-CN');
         });
-        break;
     }
-
-    return sorted.slice(0, limit);
   }
 
   /**
@@ -225,6 +259,23 @@ class LeaderboardManager {
    * @returns {Array} 排序后的全局玩家数据
    */
   getGlobalLeaderboard(sortBy = 'wins', limit = 10) {
+    return this._sortPlayers(this._collectGlobalPlayers(), sortBy).slice(0, limit);
+  }
+
+  /**
+   * 一次性获取全局胜场/参与/胜率三种排行榜（仅汇总一次数据）
+   * @param {number} limit - 每个榜单返回的最大人数
+   * @returns {{wins: Array, games: Array, rate: Array}} 三种排序的全局排行榜
+   */
+  getGlobalLeaderboards(limit = 10) {
+    return this._buildSortedBoards(this._collectGlobalPlayers(), limit);
+  }
+
+  /**
+   * 汇总所有群组的玩家数据
+   * @returns {Array} 全局玩家数据列表
+   */
+  _collectGlobalPlayers() {
     const groupIds = this._getAllGroupIds();
     const globalStats = new Map();
 
@@ -247,7 +298,7 @@ class LeaderboardManager {
       }
     }
 
-    const players = Array.from(globalStats.entries()).map(([userId, data]) => {
+    return Array.from(globalStats.entries()).map(([userId, data]) => {
       const games = Number(data.gamesPlayed) || 0;
       const wins = Number(data.wins) || 0;
       return {
@@ -258,36 +309,6 @@ class LeaderboardManager {
         winRate: this._calculateWinRate(wins, games)
       };
     });
-
-    let sorted;
-    switch (sortBy) {
-      case 'games':
-        sorted = players.sort((a, b) => {
-          if (b.gamesPlayed !== a.gamesPlayed) return b.gamesPlayed - a.gamesPlayed;
-          if (b.wins !== a.wins) return b.wins - a.wins;
-          return a.userId.localeCompare(b.userId, 'zh-Hans-CN');
-        });
-        break;
-      case 'rate':
-        sorted = players
-          .filter(player => player.gamesPlayed >= 3)
-          .sort((a, b) => {
-            if (b.winRate !== a.winRate) return b.winRate - a.winRate;
-            if (b.gamesPlayed !== a.gamesPlayed) return b.gamesPlayed - a.gamesPlayed;
-            return a.userId.localeCompare(b.userId, 'zh-Hans-CN');
-          });
-        break;
-      case 'wins':
-      default:
-        sorted = players.sort((a, b) => {
-          if (b.wins !== a.wins) return b.wins - a.wins;
-          if (b.gamesPlayed !== a.gamesPlayed) return b.gamesPlayed - a.gamesPlayed;
-          return a.userId.localeCompare(b.userId, 'zh-Hans-CN');
-        });
-        break;
-    }
-
-    return sorted.slice(0, limit);
   }
 
   /**

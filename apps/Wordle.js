@@ -98,16 +98,10 @@ ${definition}`);
       focus = 'games';
     }
 
-    let winsTop, gamesTop, rateTop;
-    if (isGlobal) {
-      winsTop = this.utils.leaderboard.getGlobalLeaderboard('wins', 10);
-      gamesTop = this.utils.leaderboard.getGlobalLeaderboard('games', 10);
-      rateTop = this.utils.leaderboard.getGlobalLeaderboard('rate', 10);
-    } else {
-      winsTop = this.utils.leaderboard.getLeaderboard(groupId, 'wins', 10);
-      gamesTop = this.utils.leaderboard.getLeaderboard(groupId, 'games', 10);
-      rateTop = this.utils.leaderboard.getLeaderboard(groupId, 'rate', 10);
-    }
+    const boards = isGlobal
+      ? this.utils.leaderboard.getGlobalLeaderboards(10)
+      : this.utils.leaderboard.getLeaderboards(groupId, 10);
+    const { wins: winsTop, games: gamesTop, rate: rateTop } = boards;
 
     if (!winsTop.length && !gamesTop.length && !rateTop.length) {
       const emptyMsg = isGlobal
