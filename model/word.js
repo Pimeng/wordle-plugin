@@ -26,7 +26,8 @@ class WordleWordNew {
     this.dictionaryFiles = [
       'CET4.json', 'CET6.json', 'GMAT.json', 'GRE.json', 
       'IELTS.json', 'SAT.json', 'TOEFL.json', '专八.json', 
-      '专四.json', '考研.json'
+      '专四.json', '考研.json', '小学.json', '中考.json', 
+      '高考.json', 'BEC.json'
     ];
     this.dictionaryNames = {
       'CET4.json': '四级词库',
@@ -38,7 +39,11 @@ class WordleWordNew {
       'TOEFL.json': '托福词库',
       '专八.json': '专八词库',
       '专四.json': '专四词库',
-      '考研.json': '考研词库'
+      '考研.json': '考研词库',
+      '小学.json': '小学词库',
+      '中考.json': '中考词库',
+      '高考.json': '高考词库',
+      'BEC.json': '商务英语词库'
     };
   }
 

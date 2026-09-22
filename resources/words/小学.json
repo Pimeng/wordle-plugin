@@ -1,0 +1,2719 @@
+{
+    "ruler": {
+        "中释": "尺子",
+        "英释": "a long flat straight piece of plastic, metal, or wood that you use for measuring things or drawing straight lines"
+    },
+    "pencil": {
+        "中释": "铅笔",
+        "英释": "an instrument that you use for writing or drawing, consisting of a wooden stick with a thin piece of a black or coloured substance in the middle"
+    },
+    "eraser": {
+        "中释": "橡皮",
+        "英释": "a small piece of rubber that you use to remove pencil or pen marks from paper"
+    },
+    "crayon": {
+        "中释": "蜡笔",
+        "英释": "a stick of coloured  wax  or  chalk  that children use to draw pictures"
+    },
+    "bag": {
+        "中释": "包",
+        "英释": "a flexible container with a single opening"
+    },
+    "pen": {
+        "中释": "钢笔",
+        "英释": "an instrument for writing or drawing with ink"
+    },
+    "book": {
+        "中释": "书",
+        "英释": "a set of printed pages that are held together in a cover so that you can read them"
+    },
+    "no": {
+        "中释": "不",
+        "英释": "used to give a negative reply to a question, offer, or request"
+    },
+    "your": {
+        "中释": "你（们）的",
+        "英释": "used when speaking or writing to one or more people to show that something belongs to them or is connected with them"
+    },
+    "red": {
+        "中释": "红色；红色的",
+        "英释": "having the colour of blood"
+    },
+    "green": {
+        "中释": "绿色；绿色的",
+        "英释": "having the colour of grass or leaves"
+    },
+    "yellow": {
+        "中释": "黄色；黄色的",
+        "英释": "having the colour of butter or the middle part of an egg"
+    },
+    "blue": {
+        "中释": "蓝色；蓝色的",
+        "英释": "having the colour of the sky or the sea on a fine day"
+    },
+    "black": {
+        "中释": "黑色；黑色的",
+        "英释": "having the darkest colour, like coal or night"
+    },
+    "brown": {
+        "中释": "棕色；棕色的",
+        "英释": "having the colour of earth, wood, or coffee"
+    },
+    "white": {
+        "中释": "白色；白色的",
+        "英释": "having the colour of milk, salt, or snow"
+    },
+    "orange": {
+        "中释": "橙色；橙色的",
+        "英释": "a colour that is between red and yellow"
+    },
+    "ok": {
+        "中释": "好；行",
+        "英释": "used to show that you agree with something or give permission for someone to do something"
+    },
+    "mum": {
+        "中释": "妈妈",
+        "英释": "mother"
+    },
+    "face": {
+        "中释": "脸",
+        "英释": "the front part of your head, where your eyes, nose, and mouth are"
+    },
+    "ear": {
+        "中释": "耳朵",
+        "英释": "one of the organs on either side of your head that you hear with"
+    },
+    "eye": {
+        "中释": "眼睛",
+        "英释": "one of the two parts of the body that you use to see with"
+    },
+    "nose": {
+        "中释": "鼻子",
+        "英释": "the part of a person’s or animal’s face used for smelling or breathing"
+    },
+    "mouth": {
+        "中释": "嘴",
+        "英释": "the part of your face which you put food into, or which you use for speaking"
+    },
+    "arm": {
+        "中释": "胳膊",
+        "英释": "if a man has a woman on his arm, she is walking beside him holding his arm"
+    },
+    "hand": {
+        "中释": "手",
+        "英释": "the part of your body at the end of your arm, including your fingers and thumb, that you use to hold things"
+    },
+    "head": {
+        "中释": "头",
+        "英释": "the top part of your body that has your face at the front and is supported by your neck"
+    },
+    "body": {
+        "中释": "身体",
+        "英释": "the physical structure of a person or animal"
+    },
+    "leg": {
+        "中释": "腿",
+        "英释": "one of the long parts of your body that your feet are joined to, or a similar part on an animal or insect"
+    },
+    "foot": {
+        "中释": "脚",
+        "英释": "the part of your body that you stand on and walk on"
+    },
+    "school": {
+        "中释": "学校",
+        "英释": "a place where children are taught"
+    },
+    "duck": {
+        "中释": "鸭子",
+        "英释": "a very common water bird with short legs and a wide beak, used for its meat, eggs, and soft feathers"
+    },
+    "pig": {
+        "中释": "猪",
+        "英释": "a farm animal with short legs, a fat body and a curved tail. Pigs are kept for their meat, which includes  pork  ,  bacon  and  ham  ."
+    },
+    "cat": {
+        "中释": "猫",
+        "英释": "to pretend to allow someone to do or have what they want, and then to stop them from doing or having it"
+    },
+    "bear": {
+        "中释": "熊"
+    },
+    "dog": {
+        "中释": "狗",
+        "英释": "a common animal with four legs, fur, and a tail. Dogs are kept as pets or trained to guard places, find drugs etc."
+    },
+    "elephant": {
+        "中释": "大象",
+        "英释": "a very large grey animal with four legs, two tusks(= long curved teeth ) and a trunk(= long nose ) that it can use to pick things up"
+    },
+    "monkey": {
+        "中释": "猴子",
+        "英释": "a small brown animal with a long tail, which uses its hands to climb trees and lives in hot countries"
+    },
+    "bird": {
+        "中释": "鸟",
+        "英释": "a creature with wings and feathers that can usually fly. Many birds sing and build nests, and female birds lay eggs"
+    },
+    "tiger": {
+        "中释": "老虎",
+        "英释": "a large wild animal that has yellow and black lines on its body and is a member of the cat family"
+    },
+    "panda": {
+        "中释": "大熊猫",
+        "英释": "a large black and white animal that looks like a bear and lives in the mountains of China"
+    },
+    "zoo": {
+        "中释": "动物园",
+        "英释": "a place, usually in a city, where animals of many kinds are kept so that people can go to look at them"
+    },
+    "funny": {
+        "中释": "滑稽的；好笑的",
+        "英释": "making you laugh"
+    },
+    "bread": {
+        "中释": "面包",
+        "英释": "a type of food made from flour and water that is mixed together and then baked"
+    },
+    "juice": {
+        "中释": "果汁",
+        "英释": "the liquid that comes from fruit and vegetables, or a drink that is made from this"
+    },
+    "egg": {
+        "中释": "蛋",
+        "英释": "a round object with a hard surface, that contains a baby bird, snake, insect etc and which is produced by a female bird, snake, insect etc"
+    },
+    "milk": {
+        "中释": "牛奶",
+        "英释": "a white liquid produced by cows or goats that is drunk by people"
+    },
+    "water": {
+        "中释": "水",
+        "英释": "the clear liquid without colour, smell, or taste that falls as rain and that is used for drinking, washing etc"
+    },
+    "cake": {
+        "中释": "蛋糕",
+        "英释": "a soft sweet food made by baking a mixture of flour, butter, sugar, and eggs"
+    },
+    "fish": {
+        "中释": "鱼",
+        "英释": "an animal that lives in water, and uses its  fins  and tail to swim"
+    },
+    "rice": {
+        "中释": "米饭",
+        "英释": "a food that consists of small white or brown grains that you boil in water until they become soft enough to eat"
+    },
+    "one": {
+        "中释": "一",
+        "英释": "the number 1"
+    },
+    "two": {
+        "中释": "二",
+        "英释": "the number 2"
+    },
+    "three": {
+        "中释": "三",
+        "英释": "the number 3"
+    },
+    "four": {
+        "中释": "四",
+        "英释": "the number 4"
+    },
+    "five": {
+        "中释": "五",
+        "英释": "the number 5"
+    },
+    "six": {
+        "中释": "六",
+        "英释": "the number 6"
+    },
+    "seven": {
+        "中释": "七",
+        "英释": "the number 7"
+    },
+    "eight": {
+        "中释": "八",
+        "英释": "the number 8"
+    },
+    "nine": {
+        "中释": "九",
+        "英释": "the number 9"
+    },
+    "ten": {
+        "中释": "十",
+        "英释": "the number 10"
+    },
+    "brother": {
+        "中释": "兄；弟",
+        "英释": "a male who has the same parents as you"
+    },
+    "plate": {
+        "中释": "盘子",
+        "英释": "a flat and usually round dish that you eat from or serve food on"
+    },
+    "uk": {
+        "中释": "英国"
+    },
+    "canada": {
+        "中释": "加拿大"
+    },
+    "usa": {
+        "中释": "美国"
+    },
+    "china": {
+        "中释": "中国"
+    },
+    "she": {
+        "中释": "她；（指雌性动物）它",
+        "英释": "used to refer to a woman, girl, or female animal that has already been mentioned or is already known about"
+    },
+    "student": {
+        "中释": "学生, 学者",
+        "英释": "someone who is studying at a university, school etc"
+    },
+    "pupil": {
+        "中释": "小学生",
+        "英释": "someone who is being taught, especially a child"
+    },
+    "he": {
+        "中释": "他；它（指雄性动物）",
+        "英释": "used to refer to a man, boy, or male animal that has already been mentioned or is already known about"
+    },
+    "teacher": {
+        "中释": "教师, 老师, 导师",
+        "英释": "someone whose job is to teach, especially in a school"
+    },
+    "boy": {
+        "中释": "男孩, 儿子, 孩子气的人, 男仆",
+        "英释": "a male child, or a male person in general"
+    },
+    "and": {
+        "中释": "和",
+        "英释": "used to join two words, phrases etc referring to things that are related in some way"
+    },
+    "girl": {
+        "中释": "女孩, 少女, 女仆, (商店等的)女工作人员",
+        "英释": "a female child"
+    },
+    "new": {
+        "中释": "新的，新近的；新来的；不熟悉的",
+        "英释": "recently made, built, invented, written, designed etc"
+    },
+    "friend": {
+        "中释": "朋友，友人；支持者，同情者",
+        "英释": "someone who you know and like very much and enjoy spending time with"
+    },
+    "today": {
+        "中释": "今天；现在，目前",
+        "英释": "on the day that is happening now"
+    },
+    "father": {
+        "中释": "父亲；爸爸",
+        "英释": "a male parent"
+    },
+    "dad": {
+        "中释": "（口语）爸爸；爹爹",
+        "英释": "father"
+    },
+    "man": {
+        "中释": "男人",
+        "英释": "an adult male human"
+    },
+    "woman": {
+        "中释": "女人",
+        "英释": "an adult female person"
+    },
+    "mother": {
+        "中释": "母亲；妈妈",
+        "英释": "a female parent of a child or animal"
+    },
+    "sister": {
+        "中释": "姐；妹",
+        "英释": "a girl or woman who has the same parents as you"
+    },
+    "grandmother": {
+        "中释": "（外）祖母",
+        "英释": "the mother of your mother or father"
+    },
+    "grandma": {
+        "中释": "（口语）（外）祖母"
+    },
+    "grandfather": {
+        "中释": "（外）祖父",
+        "英释": "the father of your father or mother"
+    },
+    "grandpa": {
+        "中释": "（口语）（外）祖父"
+    },
+    "family": {
+        "中释": "家；家庭",
+        "英释": "a group of people who are related to each other, especially a mother, a father, and their children"
+    },
+    "thin": {
+        "中释": "瘦的",
+        "英释": "if something is thin, there is only a small distance between its two opposite sides or surfaces"
+    },
+    "fat": {
+        "中释": "胖的；肥的",
+        "英释": "weighing too much because you have too much flesh on your body"
+    },
+    "tall": {
+        "中释": "高的",
+        "英释": "a person, building, tree etc that is tall is a greater height than normal"
+    },
+    "short": {
+        "中释": "矮的；短的",
+        "英释": "happening or continuing for only a little time or for less time than usual"
+    },
+    "long": {
+        "中释": "长的",
+        "英释": "measuring a great length from one end to the other"
+    },
+    "small": {
+        "中释": "小的",
+        "英释": "not large in size or amount"
+    },
+    "big": {
+        "中释": "大的",
+        "英释": "of more than average size or amount"
+    },
+    "giraffe": {
+        "中释": "长颈鹿",
+        "英释": "a tall African animal with a very long neck and legs and dark spots on its yellow-brown fur"
+    },
+    "so": {
+        "中释": "这么；那么",
+        "英释": "used to get someone’s attention, especially in order to ask them a question"
+    },
+    "children": {
+        "中释": "儿童"
+    },
+    "child": {
+        "中释": "儿童",
+        "英释": "someone who is not yet an adult"
+    },
+    "tail": {
+        "中释": "尾巴",
+        "英释": "the part that sticks out at the back of an animal’s body, and that it can move"
+    },
+    "on": {
+        "中释": "在⋯⋯上",
+        "英释": "used to say what part of someone or something is hit or touched"
+    },
+    "in": {
+        "中释": "在⋯⋯里",
+        "英释": "used with the name of a container, place, or area to say where someone or something is"
+    },
+    "under": {
+        "中释": "在⋯⋯下面",
+        "英释": "below or at a lower level than something, or covered by something"
+    },
+    "chair": {
+        "中释": "椅子",
+        "英释": "a piece of furniture for one person to sit on, which has a back, a seat, and four legs"
+    },
+    "desk": {
+        "中释": "书桌",
+        "英释": "a piece of furniture like a table, usually with drawers in it, that you sit at to write and work"
+    },
+    "cap": {
+        "中释": "帽子",
+        "英释": "a  contraceptive  made of a round piece of rubber that a woman puts inside her  vagina"
+    },
+    "ball": {
+        "中释": "球",
+        "英释": "a round object that is thrown, kicked, or hit in a game or sport"
+    },
+    "car": {
+        "中释": "小汽车",
+        "英释": "a vehicle with four wheels and an engine, that can carry a small number of passengers"
+    },
+    "boat": {
+        "中释": "小船",
+        "英释": "a vehicle that travels across water"
+    },
+    "map": {
+        "中释": "地图",
+        "英释": "a drawing of a particular area, for example a city or country, which shows its main features, such as its roads, rivers, mountains etc"
+    },
+    "toy": {
+        "中释": "玩具",
+        "英释": "an object for children to play with"
+    },
+    "box": {
+        "中释": "盒；箱",
+        "英释": "a container for putting things in, especially one with four stiff straight sides"
+    },
+    "pear": {
+        "中释": "梨",
+        "英释": "a sweet juicy fruit that has a round base and is thinner near the top, or the tree that produces this fruit"
+    },
+    "apple": {
+        "中释": "苹果",
+        "英释": "a hard round fruit that has red, light green, or yellow skin and is white inside"
+    },
+    "banana": {
+        "中释": "香蕉",
+        "英释": "a long curved tropical fruit with a yellow skin"
+    },
+    "watermelon": {
+        "中释": "西瓜",
+        "英释": "a large round fruit with hard green skin, red flesh, and black seeds"
+    },
+    "strawberry": {
+        "中释": "草莓",
+        "英释": "a soft red juicy fruit with small seeds on its surface, or the plant that grows this fruit"
+    },
+    "grape": {
+        "中释": "葡萄",
+        "英释": "one of a number of small round green or purple fruits that grow together on a  vine . Grapes are often used for making wine"
+    },
+    "buy": {
+        "中释": "买",
+        "英释": "to pay money to someone, especially someone in a position of authority, in order to persuade them to do something dishonest"
+    },
+    "fruit": {
+        "中释": "水果",
+        "英释": "something that grows on a plant, tree, or bush, can be eaten as a food, contains seeds or a stone, and is usually sweet"
+    },
+    "eleven": {
+        "中释": "十一",
+        "英释": "the number"
+    },
+    "twelve": {
+        "中释": "十二",
+        "英释": "the number 12"
+    },
+    "thirteen": {
+        "中释": "十三",
+        "英释": "the number 13"
+    },
+    "fourteen": {
+        "中释": "十四",
+        "英释": "the number 14"
+    },
+    "fifteen": {
+        "中释": "十五",
+        "英释": "the number 15"
+    },
+    "sixteen": {
+        "中释": "十六",
+        "英释": "the number"
+    },
+    "seventeen": {
+        "中释": "十七",
+        "英释": "the number 17"
+    },
+    "eighteen": {
+        "中释": "十八",
+        "英释": "the number 18"
+    },
+    "nineteen": {
+        "中释": "十九",
+        "英释": "the number 19"
+    },
+    "twenty": {
+        "中释": "二十",
+        "英释": "the number 20"
+    },
+    "kite": {
+        "中释": "风筝",
+        "英释": "a light frame covered in coloured paper or plastic that you let fly in the air on the end of one or two long strings"
+    },
+    "beautiful": {
+        "中释": "美丽的",
+        "英释": "someone or something that is beautiful is extremely attractive to look at"
+    },
+    "classroom": {
+        "中释": "教室",
+        "英释": "a room that you have lessons in at a school or college"
+    },
+    "window": {
+        "中释": "窗户",
+        "英释": "a space or an area of glass in the wall of a building or vehicle that lets in light"
+    },
+    "blackboard": {
+        "中释": "黑板",
+        "英释": "a board with a dark smooth surface, used in schools for writing on with  chalk"
+    },
+    "light": {
+        "中释": "电灯",
+        "英释": "one of a set of red, green, and yellow lights used for controlling traffic"
+    },
+    "picture": {
+        "中释": "图画",
+        "英释": "shapes, lines etc painted or drawn on a surface, showing what someone or something looks like"
+    },
+    "door": {
+        "中释": "门",
+        "英释": "the large flat piece of wood, glass etc that you move when you go into or out of a building, room, vehicle etc, or when you open a cupboard"
+    },
+    "computer": {
+        "中释": "计算机",
+        "英释": "an electronic machine that stores information and uses programs to help you find, organize, or change the information"
+    },
+    "fan": {
+        "中释": "风扇",
+        "英释": "a machine with turning blades that is used to cool the air in a room by moving it around"
+    },
+    "wall": {
+        "中释": "墙壁",
+        "英释": "an upright flat structure made of stone or brick, that divides one area from another or surrounds an area"
+    },
+    "floor": {
+        "中释": "地板",
+        "英释": "the flat surface that you stand on inside a building"
+    },
+    "really": {
+        "中释": "真的",
+        "英释": "used when you are talking about what actually happened or is true, rather than what people might wrongly think"
+    },
+    "near": {
+        "中释": "距离近",
+        "英释": "only a short distance from a person or thing"
+    },
+    "tv": {
+        "中释": "电视",
+        "英释": "television"
+    },
+    "clean": {
+        "中释": "打扫",
+        "英释": "If you clean a room or house, you make the inside of it and the furniture in it free from dirt and dust"
+    },
+    "help": {
+        "中释": "帮助",
+        "英释": "to make it possible or easier for someone to do something by doing part of their work or by giving them something they need"
+    },
+    "schoolbag": {
+        "中释": "书包",
+        "英释": "A schoolbag is a bag that children use to carry books and other things to and from school"
+    },
+    "storybook": {
+        "中释": "故事书",
+        "英释": "a book of stories for children"
+    },
+    "candy": {
+        "中释": "糖果",
+        "英释": "a sweet food made from sugar or chocolate"
+    },
+    "notebook": {
+        "中释": "笔记本",
+        "英释": "a book made of plain paper on which you can write notes"
+    },
+    "key": {
+        "中释": "钥匙",
+        "英释": "A key is a specially shaped piece of metal that you place in a lock and turn in order to open or lock a door, or to start or stop the engine of a vehicle"
+    },
+    "wow": {
+        "中释": "呀",
+        "英释": "used when you think something is very impressive or surprising"
+    },
+    "lost": {
+        "中释": "丢失",
+        "英释": "if something is lost, you had it but cannot now find"
+    },
+    "cute": {
+        "中释": "可爱的",
+        "英释": "very pretty or attractive"
+    },
+    "strong": {
+        "中释": "强壮的",
+        "英释": "having a lot of physical power so that you can lift heavy things, do hard physical work etc"
+    },
+    "friendly": {
+        "中释": "友好的",
+        "英释": "behaving towards someone in a way that shows you like them and are ready to talk to them or help them"
+    },
+    "quiet": {
+        "中释": "安静的",
+        "英释": "not making much noise, or making no noise at all"
+    },
+    "hair": {
+        "中释": "头发",
+        "英释": "the mass of things like fine threads that grows on your head"
+    },
+    "shoe": {
+        "中释": "鞋",
+        "英释": "something that you wear to cover your feet, made of leather or some other strong material"
+    },
+    "glasses": {
+        "中释": "眼镜",
+        "英释": "Glasses are two lenses in a frame that some people wear in front of their eyes in order to help them see better"
+    },
+    "his": {
+        "中释": "他的",
+        "英释": "used to refer to something that belongs to or is connected with a man, boy, or male animal that has already been mentioned"
+    },
+    "or": {
+        "中释": "或者",
+        "英释": "used between two words or phrases to show that either of two things is possible, or used before the last in a list of possibilities or choices"
+    },
+    "right": {
+        "中释": "对的",
+        "英释": "the right thing, person, method etc is the one that is most suitable or effective"
+    },
+    "hat": {
+        "中释": "帽子",
+        "英释": "a piece of clothing that you wear on your head"
+    },
+    "her": {
+        "中释": "她的",
+        "英释": "belonging to or connected with a woman, girl, or female animal that has already been mentioned"
+    },
+    "bedroom": {
+        "中释": "卧室",
+        "英释": "a room for sleeping in"
+    },
+    "study": {
+        "中释": "书房",
+        "英释": "a room in a house that is used for work or study"
+    },
+    "kitchen": {
+        "中释": "厨房",
+        "英释": "the room where you prepare and cook food"
+    },
+    "bathroom": {
+        "中释": "浴室",
+        "英释": "a room where there is a bath or  shower  , a  basin  , and sometimes a toilet"
+    },
+    "bed": {
+        "中释": "床",
+        "英释": "a piece of furniture that you sleep on"
+    },
+    "phone": {
+        "中释": "电话",
+        "英释": "a telephone"
+    },
+    "table": {
+        "中释": "桌子",
+        "英释": "a piece of furniture with a flat top supported by legs"
+    },
+    "sofa": {
+        "中释": "长沙发",
+        "英释": "a comfortable seat with raised arms and a back, that is wide enough for two or three people to sit on"
+    },
+    "fridge": {
+        "中释": "冰箱",
+        "英释": "a large piece of electrical kitchen equipment, used for keeping food and drinks cool"
+    },
+    "find": {
+        "中释": "找到",
+        "英释": "to discover, see, or get something that you have been searching for"
+    },
+    "them": {
+        "中释": "他们",
+        "英释": "used to refer to two or more people or things that have already been mentioned or are already known about"
+    },
+    "beef": {
+        "中释": "牛肉",
+        "英释": "the meat from a cow"
+    },
+    "chicken": {
+        "中释": "鸡肉",
+        "英释": "a common farm bird that is kept for its meat and eggs"
+    },
+    "noodles": {
+        "中释": "面条",
+        "英释": "Noodles are long, thin strips of pasta. They are used especially in Chinese and Italian cooking."
+    },
+    "soup": {
+        "中释": "汤",
+        "英释": "cooked liquid food, often containing small pieces of meat, fish, or vegetables"
+    },
+    "vegetable": {
+        "中释": "蔬菜",
+        "英释": "a plant that is eaten raw or cooked, such as a cabbage, a carrot, or peas"
+    },
+    "chopsticks": {
+        "中释": "筷子"
+    },
+    "bowl": {
+        "中释": "碗",
+        "英释": "a wide round container that is open at the top, used to hold liquids, food, flowers etc"
+    },
+    "fork": {
+        "中释": "餐叉",
+        "英释": "a tool you use for picking up and eating food, with a handle and three or four points"
+    },
+    "knife": {
+        "中释": "刀",
+        "英释": "a metal blade fixed into a handle, used for cutting or as a weapon"
+    },
+    "spoon": {
+        "中释": "匙,勺子",
+        "英释": "an object that you use for eating, cooking, or serving food. It has a small bowl-shaped part and a long handle."
+    },
+    "dinner": {
+        "中释": "正餐",
+        "英释": "the main meal of the day, eaten in the middle of the day or the evening"
+    },
+    "ready": {
+        "中释": "准备好",
+        "英释": "if you are ready, you are prepared for what you are going to do"
+    },
+    "pass": {
+        "中释": "给",
+        "英释": "to hold something in your hand and give it to someone else"
+    },
+    "try": {
+        "中释": "试",
+        "英释": "to take action in order to do something that you may not be able to do"
+    },
+    "parents": {
+        "中释": "父母",
+        "英释": "Your parents are your mother and father"
+    },
+    "cousin": {
+        "中释": "同辈表亲"
+    },
+    "uncle": {
+        "中释": "叔叔",
+        "英释": "used by children, in front of a first name, to address or refer to a man who is a close friend of their parents"
+    },
+    "aunt": {
+        "中释": "阿姨",
+        "英释": "the sister of your father or mother, or the wife of your father’s or mother’s brother"
+    },
+    "doctor": {
+        "中释": "医生",
+        "英释": "someone who is trained to treat people who are ill"
+    },
+    "cook": {
+        "中释": "厨师",
+        "英释": "A cook is a person whose job is to prepare and cook food, especially in someone's home or in an institution"
+    },
+    "driver": {
+        "中释": "司机",
+        "英释": "someone who drives a car, bus etc"
+    },
+    "farmer": {
+        "中释": "农民",
+        "英释": "someone who owns or manages a farm"
+    },
+    "nurse": {
+        "中释": "护士",
+        "英释": "someone whose job is to look after people who are ill or injured, usually in a hospital"
+    },
+    "people": {
+        "中释": "人们",
+        "英释": "used as the plural of ‘person’ to refer to men, women, and children"
+    },
+    "but": {
+        "中释": "但是",
+        "英释": "used to connect two statements or phrases when the second one adds something different or seems surprising after the first one"
+    },
+    "little": {
+        "中释": "小的",
+        "英释": "small in size"
+    },
+    "puppy": {
+        "中释": "小狗",
+        "英释": "a young dog"
+    },
+    "job": {
+        "中释": "工作",
+        "英释": "the regular paid work that you do for an employer"
+    },
+    "basketball": {
+        "中释": "篮球",
+        "英释": "a game played indoors between two teams of five players, in which each team tries to win points by throwing a ball through a net"
+    },
+    "library": {
+        "中释": "图书馆",
+        "英释": "a room or building containing books that can be looked at or borrowed"
+    },
+    "playground": {
+        "中释": "操场",
+        "英释": "an area for children to play, especially at a school or in a park, that often has special equipment for climbing on, riding on etc"
+    },
+    "homework": {
+        "中释": "作业",
+        "英释": "work that a student at school is asked to do at home"
+    },
+    "class": {
+        "中释": "班级",
+        "英释": "one of the different standards of seats, food etc available on a train, aircraft etc"
+    },
+    "forty": {
+        "中释": "四十",
+        "英释": "the number 40"
+    },
+    "way": {
+        "中释": "方向",
+        "英释": "a method that you use to do or achieve something"
+    },
+    "breakfast": {
+        "中释": "早餐",
+        "英释": "the meal you have in the morning"
+    },
+    "lunch": {
+        "中释": "午饭",
+        "英释": "a meal eaten in the middle of the day"
+    },
+    "over": {
+        "中释": "结束"
+    },
+    "now": {
+        "中释": "现在",
+        "英释": "You use now to refer to the present time, often in contrast to a time in the past or the future"
+    },
+    "kid": {
+        "中释": "小孩",
+        "英释": "a child"
+    },
+    "thirty": {
+        "中释": "三十",
+        "英释": "the number 30"
+    },
+    "cold": {
+        "中释": "冷的",
+        "英释": "something that is cold has a low temperature"
+    },
+    "cool": {
+        "中释": "凉的",
+        "英释": "low in temperature, but not cold, often in a way that feels pleasant"
+    },
+    "warm": {
+        "中释": "温暖的",
+        "英释": "slightly hot, especially in a pleasant way"
+    },
+    "hot": {
+        "中释": "热的",
+        "英释": "food that tastes hot has a burning taste because it contains strong spices"
+    },
+    "sunny": {
+        "中释": "阳光充足的",
+        "英释": "having a lot of light from the sun"
+    },
+    "windy": {
+        "中释": "多风的",
+        "英释": "if it is windy, there is a lot of wind"
+    },
+    "cloudy": {
+        "中释": "多云的",
+        "英释": "a cloudy sky, day etc is dark because there are a lot of clouds"
+    },
+    "snowy": {
+        "中释": "下雪的",
+        "英释": "with a lot of snow"
+    },
+    "rainy": {
+        "中释": "阴雨的",
+        "英释": "a rainy period of time is one when it rains a lot"
+    },
+    "outside": {
+        "中释": "在户外",
+        "英释": "beyond the limits or range of a situation, activity etc"
+    },
+    "weather": {
+        "中释": "天气",
+        "英释": "the temperature and other conditions such as sun, rain, and wind"
+    },
+    "degree": {
+        "中释": "度",
+        "英释": "a unit for measuring temperature. It can be shown as a symbol after a number. For example, 70° means 70 degrees."
+    },
+    "world": {
+        "中释": "世界",
+        "英释": "the  planet  we live on, and all the people, cities, and countries on it"
+    },
+    "london": {
+        "中释": "伦敦"
+    },
+    "moscow": {
+        "中释": "莫斯科"
+    },
+    "singapore": {
+        "中释": "新加坡城"
+    },
+    "sydney": {
+        "中释": "悉尼"
+    },
+    "fly": {
+        "中释": "放（风筝）",
+        "英释": "to make a  kite  fly in the air"
+    },
+    "love": {
+        "中释": "爱你的",
+        "英释": "to have a strong feeling of  affection  for someone, combined with sexual attraction"
+    },
+    "tomato": {
+        "中释": "西红柿",
+        "英释": "a round soft red fruit eaten raw or cooked as a vegetable"
+    },
+    "potato": {
+        "中释": "马铃薯",
+        "英释": "a round white vegetable with a brown, red, or pale yellow skin, that grows under the ground"
+    },
+    "carrot": {
+        "中释": "胡萝卜",
+        "英释": "a long pointed orange vegetable that grows under the ground"
+    },
+    "horse": {
+        "中释": "马",
+        "英释": "a large strong animal that people ride and use for pulling heavy things"
+    },
+    "cow": {
+        "中释": "牛",
+        "英释": "a large female animal that is kept on farms and used to produce milk or meat"
+    },
+    "sheep": {
+        "中释": "绵羊",
+        "英释": "a farm animal that is kept for its wool and its meat"
+    },
+    "hen": {
+        "中释": "母鸡",
+        "英释": "an adult female chicken"
+    },
+    "these": {
+        "中释": "这些",
+        "英释": "You use these at the beginning of noun groups to refer to someone or something that you have already mentioned or identified"
+    },
+    "yum": {
+        "中释": "味道好"
+    },
+    "animal": {
+        "中释": "动物",
+        "英释": "a living creature such as a dog or cat, that is not an insect, plant, bird, fish, or person"
+    },
+    "those": {
+        "中释": "那些",
+        "英释": "You use those to refer to people or things which have already been mentioned"
+    },
+    "garden": {
+        "中释": "花园",
+        "英释": "the area of land next to a house, where there are flowers, grass, and other plants, and often a place for people to sit"
+    },
+    "farm": {
+        "中释": "农场",
+        "英释": "an area of land used for growing crops or keeping animals"
+    },
+    "goat": {
+        "中释": "山羊",
+        "英释": "an animal that has horns on top of its head and long hair under its chin, and can climb steep hills and rocks. Goats live wild in the mountains or are kept as farm animals."
+    },
+    "eat": {
+        "中释": "吃",
+        "英释": "to put food in your mouth and chew and swallow it"
+    },
+    "clothes": {
+        "中释": "服装",
+        "英释": "the things that people wear to cover their body or keep warm"
+    },
+    "pants": {
+        "中释": "裤子",
+        "英释": "a piece of clothing that covers you from your waist to your feet and has a separate part for each leg"
+    },
+    "dress": {
+        "中释": "连衣裙",
+        "英释": "a piece of clothing worn by a woman or girl that covers the top of her body and part or all of her legs"
+    },
+    "skirt": {
+        "中释": "女裙",
+        "英释": "a piece of outer clothing worn by women and girls, which hangs down from the waist like the bottom part of a dress"
+    },
+    "coat": {
+        "中释": "大衣",
+        "英释": "a piece of clothing with long sleeves that is worn over your clothes to protect them or to keep you warm"
+    },
+    "sweater": {
+        "中释": "毛衣",
+        "英释": "a piece of warm wool or cotton clothing with long sleeves, which covers the top half of your body"
+    },
+    "sock": {
+        "中释": "短袜",
+        "英释": "a piece of clothing made of soft material that you wear on your foot inside your shoe"
+    },
+    "shorts": {
+        "中释": "短裤",
+        "英释": "trousers reaching the top of the thigh or partway to the knee, worn by both sexes for sport, relaxing in summer, etc"
+    },
+    "jacket": {
+        "中释": "夹克衫",
+        "英释": "a short light coat"
+    },
+    "shirt": {
+        "中释": "衬衫",
+        "英释": "a piece of clothing that covers the upper part of your body and your arms, usually has a collar, and is fastened at the front by buttons"
+    },
+    "yours": {
+        "中释": "你的",
+        "英释": "used when speaking or writing to one or more people to refer to something that belongs to them or is connected with them"
+    },
+    "whose": {
+        "中释": "谁的",
+        "英释": "used to ask which person or people a particular thing belongs to"
+    },
+    "mine": {
+        "中释": "我的",
+        "英释": "used by the person speaking or writing to refer to something that belongs to or is connected with himself or herself"
+    },
+    "pack": {
+        "中释": "收拾"
+    },
+    "wait": {
+        "中释": "等待",
+        "英释": "to stay somewhere or not do something until something else happens, someone arrives etc"
+    },
+    "glove": {
+        "中释": "手套",
+        "英释": "a piece of clothing that you wear on your hand in order to protect it or keep it warm"
+    },
+    "scarf": {
+        "中释": "围巾",
+        "英释": "a piece of cloth that you wear around your neck, head, or shoulders, especially to keep warm"
+    },
+    "umbrella": {
+        "中释": "伞",
+        "英释": "an object that you use to protect yourself against rain or hot sun. It consists of a circular folding frame covered in cloth."
+    },
+    "sunglasses": {
+        "中释": "太阳镜",
+        "英释": "dark glasses that you wear to protect your eyes when the sun is very bright"
+    },
+    "pretty": {
+        "中释": "美丽的"
+    },
+    "expensive": {
+        "中释": "贵的",
+        "英释": "costing a lot of money"
+    },
+    "cheap": {
+        "中释": "便宜的",
+        "英释": "not at all expensive, or lower in price than you expected"
+    },
+    "nice": {
+        "中释": "好的",
+        "英释": "pleasant, attractive, or enjoyable"
+    },
+    "size": {
+        "中释": "尺码",
+        "英释": "how big or small something is"
+    },
+    "too": {
+        "中释": "太",
+        "英释": "more than is acceptable or possible"
+    },
+    "just": {
+        "中释": "正好",
+        "英释": "exactly"
+    },
+    "eighty": {
+        "中释": "八十",
+        "英释": "the number 80"
+    },
+    "dollar": {
+        "中释": "元",
+        "英释": "the standard unit of money in the US, Canada, Australia, and some other countries, divided into 100  cent s  : symbol $"
+    },
+    "sale": {
+        "中释": "特价销售",
+        "英释": "when you sell something"
+    },
+    "more": {
+        "中释": "更多的",
+        "英释": "You use more to indicate that there is a greater amount of something than before or than average, or than something else. You can use \"a little,\" \"a lot,\" \"a bit,\" \"far,\" and \"much\" in front of more."
+    },
+    "us": {
+        "中释": "我们",
+        "英释": "used by the person speaking or writing to refer to himself or herself and one or more other people"
+    },
+    "old": {
+        "中释": "老的",
+        "英释": "something that is old has existed or been used for a long time"
+    },
+    "young": {
+        "中释": "年轻的",
+        "英释": "a young person, plant, or animal has not lived for very long"
+    },
+    "kind": {
+        "中释": "体贴的"
+    },
+    "strict": {
+        "中释": "严厉的",
+        "英释": "expecting people to obey rules or to do what you say"
+    },
+    "polite": {
+        "中释": "有礼貌的",
+        "英释": "behaving or speaking in a way that is correct for the social situation you are in, and showing that you are careful to consider other people’s needs and feelings"
+    },
+    "helpful": {
+        "中释": "有用的",
+        "英释": "providing useful help in making a situation better or easier"
+    },
+    "clever": {
+        "中释": "聪明的",
+        "英释": "able to learn and understand things quickly"
+    },
+    "shy": {
+        "中释": "羞怯的",
+        "英释": "nervous and embarrassed about meeting and speaking to other people, especially people you do not know"
+    },
+    "know": {
+        "中释": "知道",
+        "英释": "to have information about something"
+    },
+    "our": {
+        "中释": "我们的",
+        "英释": "belonging to or connected with us"
+    },
+    "ms": {
+        "中释": "女士"
+    },
+    "will": {
+        "中释": "将要",
+        "英释": "used to make future tenses"
+    },
+    "sometimes": {
+        "中释": "有时",
+        "英释": "on some occasions but not always"
+    },
+    "robot": {
+        "中释": "机器人",
+        "英释": "a machine that can move and do some of the work of a person, and is usually controlled by a computer"
+    },
+    "him": {
+        "中释": "他",
+        "英释": "used to refer to a man, boy, or male animal that has already been mentioned or is already known about"
+    },
+    "speak": {
+        "中释": "会说",
+        "英释": "to use your voice to produce words"
+    },
+    "finish": {
+        "中释": "完成",
+        "英释": "to complete the last part of something that you are doing"
+    },
+    "monday": {
+        "中释": "星期一",
+        "英释": "the day between Sunday and Tuesday"
+    },
+    "tuesday": {
+        "中释": "星期二",
+        "英释": "the day between Monday and Wednesday"
+    },
+    "wednesday": {
+        "中释": "星期三",
+        "英释": "the day between Tuesday and Thursday"
+    },
+    "thursday": {
+        "中释": "星期四",
+        "英释": "the day between Wednesday and Friday"
+    },
+    "friday": {
+        "中释": "星期五",
+        "英释": "the day between Thursday and Saturday"
+    },
+    "saturday": {
+        "中释": "星期六",
+        "英释": "the day between Friday and Sunday"
+    },
+    "sunday": {
+        "中释": "星期日",
+        "英释": "the day between Saturday and Monday"
+    },
+    "weekend": {
+        "中释": "周末",
+        "英释": "Saturday and Sunday, especially considered as time when you do not work"
+    },
+    "wash": {
+        "中释": "洗",
+        "英释": "to clean something using water and a type of soap"
+    },
+    "watch": {
+        "中释": "看",
+        "英释": "to look at someone or something for a period of time, paying attention to what is happening"
+    },
+    "do": {
+        "中释": "做",
+        "英释": "used instead of repeating a verb that has already been used"
+    },
+    "read": {
+        "中释": "看",
+        "英释": "to find out information from books, newspapers etc"
+    },
+    "play": {
+        "中释": "玩",
+        "英释": "when children play, they do things that they enjoy, often with other people or with toys"
+    },
+    "cooking": {
+        "中释": "烹饪",
+        "英释": "Cooking is the activity of preparing food"
+    },
+    "often": {
+        "中释": "时常",
+        "英释": "if something happens often, it happens regularly or many times"
+    },
+    "park": {
+        "中释": "公园",
+        "英释": "a large open area with grass and trees, especially in a town, where people can walk, play games etc"
+    },
+    "tired": {
+        "中释": "疲倦的",
+        "英释": "feeling that you want to sleep or rest"
+    },
+    "sport": {
+        "中释": "体育运动",
+        "英释": "an activity that people do in the countryside, especially hunting or fishing"
+    },
+    "should": {
+        "中释": "应该",
+        "英释": "used to give or ask for advice"
+    },
+    "every": {
+        "中释": "每一个",
+        "英释": "used to refer to all the people or things in a particular group or all the parts of something"
+    },
+    "day": {
+        "中释": "一天",
+        "英释": "a period of 24 hours"
+    },
+    "schedule": {
+        "中释": "工作计划",
+        "英释": "a plan of what someone is going to do and when they are going to do it"
+    },
+    "sandwich": {
+        "中释": "三明治",
+        "英释": "two pieces of bread with cheese, meat, cooked egg etc between them"
+    },
+    "salad": {
+        "中释": "沙拉",
+        "英释": "a mixture of raw vegetables, especially  lettuce  ,  cucumber  , and tomato"
+    },
+    "hamburger": {
+        "中释": "汉堡包",
+        "英释": "a flat round piece of finely cut beef(= meat from a cow ) which is cooked and eaten in a bread bun"
+    },
+    "tea": {
+        "中释": "茶",
+        "英释": "a hot drink made by pouring boiling water onto leaves or flowers, sometimes used as a medicine"
+    },
+    "fresh": {
+        "中释": "新鲜的",
+        "英释": "adding to or replacing something"
+    },
+    "healthy": {
+        "中释": "健康的",
+        "英释": "physically strong and not likely to become ill or weak"
+    },
+    "delicious": {
+        "中释": "美味的",
+        "英释": "very pleasant to taste or smell"
+    },
+    "sweet": {
+        "中释": "甜的",
+        "英释": "containing or having a taste like sugar"
+    },
+    "drink": {
+        "中释": "喝",
+        "英释": "to take liquid into your mouth and swallow it"
+    },
+    "thirsty": {
+        "中释": "渴的",
+        "英释": "feeling that you want or need a drink"
+    },
+    "favourite": {
+        "中释": "特别喜欢的",
+        "英释": "your favourite person or thing is the one that you like the most"
+    },
+    "food": {
+        "中释": "食物",
+        "英释": "things that people and animals eat, such as vege-tables or meat"
+    },
+    "dear": {
+        "中释": "亲爱的",
+        "英释": "You use dear to describe someone or something that you feel affection for"
+    },
+    "onion": {
+        "中释": "洋葱",
+        "英释": "a round white vegetable with a brown, red, or white skin and many layers. Onions have a strong taste and smell."
+    },
+    "sing": {
+        "中释": "唱",
+        "英释": "to produce a musical sound with your voice"
+    },
+    "song": {
+        "中释": "歌曲",
+        "英释": "a short piece of music with words that you sing"
+    },
+    "dance": {
+        "中释": "跳舞",
+        "英释": "a special set of movements performed to a particular type of music"
+    },
+    "draw": {
+        "中释": "画",
+        "英释": "to produce a picture of something using a pencil, pen etc"
+    },
+    "cartoon": {
+        "中释": "漫画",
+        "英释": "a short film that is made by photographing a series of drawings"
+    },
+    "swim": {
+        "中释": "游泳",
+        "英释": "to move yourself through water using your arms and legs"
+    },
+    "party": {
+        "中释": "聚会",
+        "英释": "a social event when a lot of people meet together to enjoy themselves by eating, drinking, dancing etc"
+    },
+    "next": {
+        "中释": "下一个的",
+        "英释": "the next event, day, time etc is the one that happens after the present one, or the previous one"
+    },
+    "wonderful": {
+        "中释": "极好的",
+        "英释": "If you describe something or someone as wonderful, you think they are extremely good"
+    },
+    "learn": {
+        "中释": "学习",
+        "英释": "to gain knowledge of a subject or skill, by experience, by studying it, or by being taught"
+    },
+    "any": {
+        "中释": "任何的",
+        "英释": "used to refer to a person or thing of a particular type when what you are saying is true of all people or things of that type"
+    },
+    "problem": {
+        "中释": "没问题",
+        "英释": "a situation that causes difficulties"
+    },
+    "want": {
+        "中释": "要",
+        "英释": "to have a desire for something"
+    },
+    "send": {
+        "中释": "邮寄",
+        "英释": "to arrange for something to go or be taken to another place, especially by post"
+    },
+    "email": {
+        "中释": "电子邮件",
+        "英释": "a system that allows you to send and receive messages by computer"
+    },
+    "at": {
+        "中释": "（接邮件地址）",
+        "英释": "used to say exactly where something or someone is, or where something happens"
+    },
+    "clock": {
+        "中释": "时钟",
+        "英释": "an instrument that shows what time it is, in a room or outside on a building"
+    },
+    "plant": {
+        "中释": "植物",
+        "英释": "a living thing that has leaves and roots and grows in earth, especially one that is smaller than a tree"
+    },
+    "bottle": {
+        "中释": "瓶子",
+        "英释": "a container with a narrow top for keeping liquids in, usually made of plastic or glass"
+    },
+    "bike": {
+        "中释": "自行车",
+        "英释": "a bicycle"
+    },
+    "photo": {
+        "中释": "照片",
+        "英释": "a photograph"
+    },
+    "front": {
+        "中释": "正面",
+        "英释": "the part of something that is furthest forward in the direction that it is facing or moving"
+    },
+    "between": {
+        "中释": "在⋯⋯中间",
+        "英释": "in or through the place that seprates two things, people, or places"
+    },
+    "above": {
+        "中释": "在⋯⋯上面",
+        "英释": "in a higher position than something else"
+    },
+    "beside": {
+        "中释": "在旁边",
+        "英释": "next to or very close to the side of someone or something"
+    },
+    "behind": {
+        "中释": "在⋯⋯后面",
+        "英释": "at or towards the back of a thing or person"
+    },
+    "there": {
+        "中释": "（存在或发生）",
+        "英释": "used to say that something exists or happens"
+    },
+    "grandparent": {
+        "中释": "（外）祖父母",
+        "英释": "one of the parents of your mother or father"
+    },
+    "their": {
+        "中释": "他们的",
+        "英释": "belonging to or connected with people or things that have already been mentioned"
+    },
+    "house": {
+        "中释": "房子",
+        "英释": "a building that someone lives in, especially one that has more than one level and is intended to be used by one family"
+    },
+    "lot": {
+        "中释": "大量",
+        "英释": "a large amount or number"
+    },
+    "flower": {
+        "中释": "花",
+        "英释": "a coloured or white part that a plant or tree produces before fruit or seeds"
+    },
+    "move": {
+        "中释": "搬家",
+        "英释": "to change from one place or position to another, or to make something do this"
+    },
+    "dirty": {
+        "中释": "肮脏的",
+        "英释": "covered in or marked by an unwanted substance"
+    },
+    "everywhere": {
+        "中释": "处处",
+        "英释": "in or to every place"
+    },
+    "mouse": {
+        "中释": "老鼠",
+        "英释": "a small furry animal with a pointed nose and a long tail that lives in people’s houses or in fields"
+    },
+    "live": {
+        "中释": "住",
+        "英释": "if you live in a place, you have your home there"
+    },
+    "nature": {
+        "中释": "自然界",
+        "英释": "everything in the physical world that is not controlled by humans, such as wild plants and animals, earth and rocks, and the weather"
+    },
+    "forest": {
+        "中释": "森林",
+        "英释": "a large area of land that is covered with trees"
+    },
+    "river": {
+        "中释": "河",
+        "英释": "a natural and continuous flow of water in a long line across a country into the sea"
+    },
+    "lake": {
+        "中释": "湖",
+        "英释": "a large area of water surrounded by land"
+    },
+    "mountain": {
+        "中释": "山",
+        "英释": "a very high hill"
+    },
+    "hill": {
+        "中释": "小山",
+        "英释": "an area of land that is higher than the land around it, like a mountain but smaller"
+    },
+    "tree": {
+        "中释": "树",
+        "英释": "a very tall plant that has branches and leaves, and lives for many years"
+    },
+    "bridge": {
+        "中释": "桥",
+        "英释": "a structure built over a river, road etc that allows people or vehicles to cross from one side to the other"
+    },
+    "building": {
+        "中释": "建筑",
+        "英释": "a structure such as a house, church, or factory, that has a roof and walls"
+    },
+    "village": {
+        "中释": "村庄",
+        "英释": "a very small town in the countryside"
+    },
+    "boating": {
+        "中释": "划船",
+        "英释": "the activity of travelling in a small boat for pleasure"
+    },
+    "rabbit": {
+        "中释": "兔",
+        "英释": "a small animal with long ears and soft fur, that lives in a hole in the ground"
+    },
+    "high": {
+        "中释": "高的",
+        "英释": "measuring a long distance from the bottom to the top"
+    },
+    "exercise": {
+        "中释": "活动",
+        "英释": "physical activities that you do in order to stay healthy and become stronger"
+    },
+    "take": {
+        "中释": "上（课）"
+    },
+    "dancing": {
+        "中释": "跳舞",
+        "英释": "When people dance for enjoyment or to entertain others, you can refer to this activity as dancing"
+    },
+    "when": {
+        "中释": "什么时候",
+        "英释": "at what time"
+    },
+    "after": {
+        "中释": "在⋯⋯之后",
+        "英释": "when a particular event or time has happened, or when someone has done something"
+    },
+    "start": {
+        "中释": "开始",
+        "英释": "to do something that you were not doing before, and continue doing it"
+    },
+    "usually": {
+        "中释": "通常地",
+        "英释": "used to talk about what happens on most occasions or in most situations"
+    },
+    "spain": {
+        "中释": "西班牙"
+    },
+    "late": {
+        "中释": "晚",
+        "英释": "arriving, happening, or done after the time that was expected, agreed, or arranged"
+    },
+    "why": {
+        "中释": "为什么",
+        "英释": "used to ask or talk about the reason for something"
+    },
+    "shop": {
+        "中释": "购物",
+        "英释": "an occasion when you go shopping, especially for food and other things you need regularly"
+    },
+    "work": {
+        "中释": "工作",
+        "英释": "to do a job that you are paid for"
+    },
+    "last": {
+        "中释": "上一个的",
+        "英释": "most recent or nearest to the present time"
+    },
+    "sound": {
+        "中释": "听起来好像",
+        "英释": "judging from what you have heard or read about something"
+    },
+    "also": {
+        "中释": "还",
+        "英释": "in addition to something else that you have mentioned"
+    },
+    "busy": {
+        "中释": "忙的",
+        "英释": "if you are busy, you are working hard and have a lot of things to do"
+    },
+    "need": {
+        "中释": "需要",
+        "英释": "to have to have something or someone, because you cannot do something without them, or because you cannot continue or cannot exist without them"
+    },
+    "letter": {
+        "中释": "信",
+        "英释": "a written or printed message that is usually put in an envelope and sent by mail"
+    },
+    "island": {
+        "中释": "岛",
+        "英释": "a piece of land completely surrounded by water"
+    },
+    "always": {
+        "中释": "总是",
+        "英释": "all the time, at all times, or every time"
+    },
+    "cave": {
+        "中释": "山洞",
+        "英释": "a large natural hole in the side of a cliff or hill, or under the ground"
+    },
+    "win": {
+        "中释": "获胜",
+        "英释": "to be the best or most successful in a competition, game, election etc"
+    },
+    "spring": {
+        "中释": "春天",
+        "英释": "the season between winter and summer when leaves and flowers appear"
+    },
+    "summer": {
+        "中释": "夏天",
+        "英释": "the time of the year when the sun is hottest and the days are longest, between spring and autumn"
+    },
+    "autumn": {
+        "中释": "秋天",
+        "英释": "the season between summer and winter, when leaves change colour and the weather becomes cooler"
+    },
+    "winter": {
+        "中释": "冬天",
+        "英释": "the season after autumn and before spring, when the weather is coldest"
+    },
+    "season": {
+        "中释": "季节",
+        "英释": "one of the main periods into which a year is divided, each of which has a particular type of weather. The seasons are spring, summer, autumn, and winter"
+    },
+    "picnic": {
+        "中释": "野餐",
+        "英释": "if you have a picnic, you take food and eat it outdoors, especially in the country"
+    },
+    "pick": {
+        "中释": "摘",
+        "英释": "to remove a flower, fruit, nut etc from a plant or tree"
+    },
+    "snowman": {
+        "中释": "雪人",
+        "英释": "a simple figure of a person made of snow, made especially by children"
+    },
+    "which": {
+        "中释": "哪一个",
+        "英释": "used to ask or talk about one or more members of a group of people or things, when you are uncertain about it or about them"
+    },
+    "best": {
+        "中释": "最",
+        "英释": "better than anything else or anyone else in quality, skill, how effective it is etc"
+    },
+    "snow": {
+        "中释": "雪",
+        "英释": "soft white pieces of frozen water that fall from the sky in cold weather and cover the ground"
+    },
+    "because": {
+        "中释": "因为",
+        "英释": "used when you are giving the reason for something"
+    },
+    "vacation": {
+        "中释": "假期",
+        "英释": "a holiday, or time spent not working"
+    },
+    "all": {
+        "中释": "完全",
+        "英释": "the whole of an amount, thing, or type of thing"
+    },
+    "pink": {
+        "中释": "粉色",
+        "英释": "pale red"
+    },
+    "lovely": {
+        "中释": "可爱的",
+        "英释": "beautiful or attractive"
+    },
+    "leaf": {
+        "中释": "叶子",
+        "英释": "one of the flat green parts of a plant that are joined to its stem or branches"
+    },
+    "fall": {
+        "中释": "落下",
+        "英释": "to move or drop down from a higher position to a lower position"
+    },
+    "paint": {
+        "中释": "绘画",
+        "英释": "tubes or dry blocks of a coloured substance, used for painting pictures"
+    },
+    "january": {
+        "中释": "一月",
+        "英释": "the first month of the year, between December and February"
+    },
+    "february": {
+        "中释": "二月",
+        "英释": "the second month of the year, between January and March"
+    },
+    "march": {
+        "中释": "三月",
+        "英释": "the third month of the year, between February and April"
+    },
+    "april": {
+        "中释": "四月",
+        "英释": "the fourth month of the year, between March and May"
+    },
+    "may": {
+        "中释": "五月",
+        "英释": "the fifth month of the year, between April and June"
+    },
+    "june": {
+        "中释": "六月",
+        "英释": "the sixth month of the year, between May and July"
+    },
+    "july": {
+        "中释": "七月",
+        "英释": "the seventh month of the year, between June and August"
+    },
+    "august": {
+        "中释": "八月",
+        "英释": "the eighth month of the year, between July and September"
+    },
+    "september": {
+        "中释": "九月",
+        "英释": "the ninth month of the year, between August and October"
+    },
+    "october": {
+        "中释": "十月",
+        "英释": "the tenth month of the year, between September and November"
+    },
+    "november": {
+        "中释": "十一月",
+        "英释": "the 11th month of the year, between October and December"
+    },
+    "december": {
+        "中释": "十二月",
+        "英释": "the 12th month of the year, between November and January"
+    },
+    "few": {
+        "中释": "不多",
+        "英释": "a fairly large number of things or people"
+    },
+    "thing": {
+        "中释": "事情",
+        "英释": "an idea, action, feeling, or fact that someone thinks, does, says, or talks about, or that happens"
+    },
+    "meet": {
+        "中释": "集会",
+        "英释": "to go to a place where someone will be at a particular time, according to an arrangement, so that you can talk or do something together"
+    },
+    "easter": {
+        "中释": "复活节",
+        "英释": "a Christian holy day in March or April when Christians remember the death of Christ and his return to life"
+    },
+    "trip": {
+        "中释": "旅行",
+        "英释": "a visit to a place that involves a journey, for pleasure or a particular purpose"
+    },
+    "year": {
+        "中释": "年",
+        "英释": "a period of about 365 days or 12 months, measured from any particular time"
+    },
+    "contest": {
+        "中释": "比赛",
+        "英释": "a competition or a situation in which two or more people or groups are competing with each other"
+    },
+    "national": {
+        "中释": "国家的",
+        "英释": "related to a whole nation as opposed to any of its parts"
+    },
+    "american": {
+        "中释": "美国的",
+        "英释": "relating to the US or its people"
+    },
+    "thanksgiving": {
+        "中释": "感恩节",
+        "英释": "a public holiday in the US and in Canada when families have a large meal together to celebrate and be thankful for food, health, families etc"
+    },
+    "christmas": {
+        "中释": "圣诞节",
+        "英释": "the period of time around December 25th, the day when Christians celebrate the birth of Christ"
+    },
+    "holiday": {
+        "中释": "节日",
+        "英释": "a time of rest from work, school etc"
+    },
+    "game": {
+        "中释": "游戏",
+        "英释": "a children’s activity in which they play with toys, pretend to be someone else etc"
+    },
+    "roll": {
+        "中释": "滚动",
+        "英释": "if something rolls, especially something round, or if you roll it, it moves along a surface by turning over and over"
+    },
+    "chocolate": {
+        "中释": "巧克力",
+        "英释": "a sweet brown food that you can eat as a sweet or use in cooking to give foods such as cakes a special sweet taste"
+    },
+    "bunny": {
+        "中释": "兔子",
+        "英释": "a word for a rabbit, used especially by or to children"
+    },
+    "rsvp": {
+        "中释": "请赐复"
+    },
+    "by": {
+        "中释": "在⋯⋯之前",
+        "英释": "before or not later than a particular time"
+    },
+    "first": {
+        "中释": "第一",
+        "英释": "coming before all the other things or people in a series"
+    },
+    "second": {
+        "中释": "第二",
+        "英释": "the second person, thing, event etc is the one that comes after the first"
+    },
+    "third": {
+        "中释": "第三",
+        "英释": "coming after two other things in a series"
+    },
+    "fourth": {
+        "中释": "第四",
+        "英释": "coming after three other things in a series"
+    },
+    "fifth": {
+        "中释": "第五",
+        "英释": "coming after four other things in a series"
+    },
+    "twelfth": {
+        "中释": "第十二",
+        "英释": "one of twelve equal parts of something"
+    },
+    "twentieth": {
+        "中释": "第二十"
+    },
+    "thirtieth": {
+        "中释": "第三十"
+    },
+    "special": {
+        "中释": "特殊的",
+        "英释": "not ordinary or usual, but different in some way and often better or more important"
+    },
+    "fool": {
+        "中释": "蠢人",
+        "英释": "a stupid person or someone who has done something stupid"
+    },
+    "kitten": {
+        "中释": "小猫",
+        "英释": "a young cat"
+    },
+    "diary": {
+        "中释": "日记",
+        "英释": "a book in which you write down the things that happen to you each day"
+    },
+    "still": {
+        "中释": "仍然",
+        "英释": "up to a particular point in time and continuing at that moment"
+    },
+    "noise": {
+        "中释": "噪音",
+        "英释": "a sound, especially one that is loud, unpleasant, or frightening"
+    },
+    "fur": {
+        "中释": "动物皮毛",
+        "英释": "the thick soft hair that covers the bodies of some animals, such as cats, dogs, and rabbits"
+    },
+    "open": {
+        "中释": "开着的",
+        "英释": "not closed, so that things, people, air etc can go in and out or be put in and out"
+    },
+    "walk": {
+        "中释": "行走",
+        "英释": "to move forward by putting one foot in front of the other"
+    },
+    "hers": {
+        "中释": "她的",
+        "英释": "used to refer to something that belongs to or is connected with a woman, girl, or female animal that has already been mentioned"
+    },
+    "theirs": {
+        "中释": "他们的",
+        "英释": "used to refer to something that belongs to or is connected with people that have already been mentioned"
+    },
+    "ours": {
+        "中释": "我们的",
+        "英释": "used to refer to something that belongs to or is connected with us"
+    },
+    "climbing": {
+        "中释": "攀登",
+        "英释": "the sport of climbing mountains or rocks"
+    },
+    "eating": {
+        "中释": "吃"
+    },
+    "playing": {
+        "中释": "玩",
+        "英释": "When children, animals, or adults play, they spend time doing enjoyable things, such as using toys and taking part in games"
+    },
+    "jumping": {
+        "中释": "跳",
+        "英释": "If you jump, you bend your knees, push against the ground with your feet, and move quickly upward into the air"
+    },
+    "drinking": {
+        "中释": "喝",
+        "英释": "the activity of drinking alcohol"
+    },
+    "sleeping": {
+        "中释": "睡觉",
+        "英释": "You use sleeping to describe places where people sleep or things concerned with where people sleep"
+    },
+    "each": {
+        "中释": "每个",
+        "英释": "every one of two or more things or people, considered separately"
+    },
+    "other": {
+        "中释": "其他",
+        "英释": "used to refer to all the people or things in a group apart from the one you have already men­tioned or the one that is already known about"
+    },
+    "excited": {
+        "中释": "兴奋地",
+        "英释": "happy, interested, or hopeful because something good has happened or will happen"
+    },
+    "like": {
+        "中释": "像⋯⋯那样",
+        "英释": "used when you are showing someone how to do something"
+    },
+    "keep": {
+        "中释": "保持",
+        "英释": "to stay in a particular state, condition, or position, or to make someone or something do this"
+    },
+    "turn": {
+        "中释": "顺序"
+    },
+    "bamboo": {
+        "中释": "竹子",
+        "英释": "a tall tropical plant with hollow stems that is used for making furniture"
+    },
+    "its": {
+        "中释": "它的",
+        "英释": "used to refer to something that belongs to or is connected with a thing, animal, baby etc that has already been mentioned"
+    },
+    "show": {
+        "中释": "指导，引导",
+        "英释": "If you show someone to a room or seat, you lead them there"
+    },
+    "anything": {
+        "中释": "任何事物",
+        "英释": "any thing, event, situation etc, when it is not important to say exactly which"
+    },
+    "else": {
+        "中释": "另外",
+        "英释": "besides or in addition to someone or something"
+    },
+    "exhibition": {
+        "中释": "展览",
+        "英释": "a show of paintings, photographs, or other objects that people can go to see"
+    },
+    "say": {
+        "中释": "说；讲",
+        "英释": "to express an idea, feeling, thought etc using words"
+    },
+    "sushi": {
+        "中释": "寿司",
+        "英释": "a Japanese dish that consists of small cakes of cooked rice served with raw fish"
+    },
+    "teach": {
+        "中释": "教",
+        "英释": "to give lessons in a school, college, or university, or to help someone learn about something by giving them information"
+    },
+    "sure": {
+        "中释": "当然",
+        "英释": "used to agree to something"
+    },
+    "canadian": {
+        "中释": "加拿大的",
+        "英释": "relating to Canada or its people"
+    },
+    "spanish": {
+        "中释": "西班牙的",
+        "英释": "relating to Spain, its people, or its language"
+    },
+    "science": {
+        "中释": "科学",
+        "英释": "knowledge about the world, especially based on examining, testing, and proving facts"
+    },
+    "museum": {
+        "中释": "博物馆",
+        "英释": "a building where important  cultural  , historical, or scientific objects are kept and shown to the public"
+    },
+    "bookstore": {
+        "中释": "书店",
+        "英释": "a shop that sells books"
+    },
+    "cinema": {
+        "中释": "电影院",
+        "英释": "a building in which films are shown"
+    },
+    "hospital": {
+        "中释": "医院",
+        "英释": "a large building where sick or injured people receive medical treatment"
+    },
+    "crossing": {
+        "中释": "十字路口",
+        "英释": "a place where two lines, roads, tracks etc cross"
+    },
+    "left": {
+        "中释": "左",
+        "英释": "your left side is the side of your body that contains your heart"
+    },
+    "bus": {
+        "中释": "公共汽车",
+        "英释": "a large vehicle that people pay to travel on"
+    },
+    "plane": {
+        "中释": "飞机",
+        "英释": "a vehicle that flies in the air and has wings and at least one engine"
+    },
+    "taxi": {
+        "中释": "出租汽车",
+        "英释": "a car and driver that you pay to take you somewhere"
+    },
+    "ship": {
+        "中释": "船",
+        "英释": "a large boat used for carrying people or goods across the sea"
+    },
+    "subway": {
+        "中释": "地铁",
+        "英释": "a railway system that runs under the ground below a big city"
+    },
+    "train": {
+        "中释": "火车",
+        "英释": "a set of several carriages that are connected to each other and pulled along a railway line by an engine"
+    },
+    "slow": {
+        "中释": "慢的",
+        "英释": "not moving, being done, or happening quickly"
+    },
+    "down": {
+        "中释": "减少",
+        "英释": "at or towards a level or amount that is less"
+    },
+    "stop": {
+        "中释": "停下",
+        "英释": "to not walk, move, or travel any more, or to make someone or something do this"
+    },
+    "mrs": {
+        "中释": "夫人"
+    },
+    "early": {
+        "中释": "早到的",
+        "英释": "in the first part of a period of time, event, or process"
+    },
+    "helmet": {
+        "中释": "头盔",
+        "英释": "a strong hard hat that soldiers,  motorcycle  riders, the police etc wear to protect their heads"
+    },
+    "must": {
+        "中释": "必须",
+        "英释": "to have to do something because it is necessary or important, or because of a law or order"
+    },
+    "wear": {
+        "中释": "戴",
+        "英释": "to have something such as clothes, shoes, or jewellery on your body"
+    },
+    "attention": {
+        "中释": "注意",
+        "英释": "when you carefully listen to, look at, or think about someone or something"
+    },
+    "traffic": {
+        "中释": "交通",
+        "英释": "the vehicles moving along a road or street"
+    },
+    "munich": {
+        "中释": "慕尼黑"
+    },
+    "germany": {
+        "中释": "德国"
+    },
+    "alaska": {
+        "中释": "阿拉斯加州"
+    },
+    "sled": {
+        "中释": "雪橇",
+        "英释": "A sled is the same as a"
+    },
+    "fast": {
+        "中释": "快的",
+        "英释": "moving quickly"
+    },
+    "ferry": {
+        "中释": "轮渡",
+        "英释": "a boat that carries people or goods across a river or a narrow area of water"
+    },
+    "scotland": {
+        "中释": "苏格兰"
+    },
+    "visit": {
+        "中释": "拜访",
+        "英释": "to go and spend time in a place or with someone, especially for pleasure or interest"
+    },
+    "film": {
+        "中释": "电影",
+        "英释": "a story that is told using sound and moving pictures, shown at a cinema or on television"
+    },
+    "supermarket": {
+        "中释": "超市",
+        "英释": "a very large shop that sells food, drinks, and things that people need regularly in their homes"
+    },
+    "evening": {
+        "中释": "晚上",
+        "英释": "the early part of the night between the end of the day and the time you go to bed"
+    },
+    "tonight": {
+        "中释": "今晚",
+        "英释": "during the night of this day"
+    },
+    "tomorrow": {
+        "中释": "明天",
+        "英释": "on or during the day after today"
+    },
+    "dictionary": {
+        "中释": "词典",
+        "英释": "a book that gives a list of words in alphabetical order and explains their meanings in the same language, or another language"
+    },
+    "comic": {
+        "中释": "滑稽的",
+        "英释": "amusing you and making you want to laugh"
+    },
+    "word": {
+        "中释": "单词",
+        "英释": "a single group of letters that are used together with a particular meaning"
+    },
+    "lesson": {
+        "中释": "课",
+        "英释": "a period of time in which someone is taught a particular skill, for example how to play a musical instrument or drive a car"
+    },
+    "space": {
+        "中释": "太空",
+        "英释": "the amount of an area, room, container etc that is empty or available to be used"
+    },
+    "travel": {
+        "中释": "旅行",
+        "英释": "to go a particular distance or at a particular speed"
+    },
+    "half": {
+        "中释": "一半",
+        "英释": "exactly or about 50% (1/2) of an amount, time, distance, number etc"
+    },
+    "price": {
+        "中释": "价格",
+        "英释": "the amount of money you have to pay for something"
+    },
+    "together": {
+        "中释": "一起",
+        "英释": "if two or more people do something together, they do it with each other"
+    },
+    "mooncake": {
+        "中释": "月饼",
+        "英释": "A mooncake is a type of cake that is eaten during the Chinese . It is filled with a thick paste, and often has a salted egg inside it."
+    },
+    "poem": {
+        "中释": "诗",
+        "英释": "a piece of writing that expresses emotions, experiences, and ideas, especially in short lines using words that  rhyme (= end with the same sound )"
+    },
+    "moon": {
+        "中释": "月亮",
+        "英释": "the round object that you can see shining in the sky at night, and that moves around the Earth every 28 days"
+    },
+    "studies": {
+        "中释": "学习",
+        "英释": "If you study, you spend time learning about a particular subject or subjects"
+    },
+    "puzzle": {
+        "中释": "谜",
+        "英释": "something that is difficult to understand or explain"
+    },
+    "hiking": {
+        "中释": "远足",
+        "英释": "the activity of taking long walks in the mountains or country"
+    },
+    "hobby": {
+        "中释": "业余爱好",
+        "英释": "an activity that you enjoy doing in your free time"
+    },
+    "jasmine": {
+        "中释": "茉莉",
+        "英释": "a plant that grows up a wall, frame etc and has small sweet-smelling white or yellow flowers"
+    },
+    "idea": {
+        "中释": "主意",
+        "英释": "a plan or suggestion for a possible course of action, especially one that you think of suddenly"
+    },
+    "canberra": {
+        "中释": "堪培拉"
+    },
+    "amazing": {
+        "中释": "令人惊奇的",
+        "英释": "very good, especially in an unexpected way"
+    },
+    "shall": {
+        "中释": "表示征求意见",
+        "英释": "You use shall with \"I\" and \"we\" in questions in order to make offers or suggestions, or to ask for advice"
+    },
+    "goal": {
+        "中释": "射门",
+        "英释": "the area between two posts where the ball must go in order to score in games such as football or  hockey"
+    },
+    "join": {
+        "中释": "加入",
+        "英释": "to become a member of an organization, society, or group"
+    },
+    "club": {
+        "中释": "俱乐部",
+        "英释": "a professional organization including the players, managers, and owners of a sports team"
+    },
+    "share": {
+        "中释": "分享",
+        "英释": "to have or use something with other people"
+    },
+    "factory": {
+        "中释": "工厂",
+        "英释": "a building or group of buildings in which goods are produced in large quantities, using machines"
+    },
+    "worker": {
+        "中释": "工人",
+        "英释": "someone who does a job, especially a particular type of job"
+    },
+    "postman": {
+        "中释": "邮递员",
+        "英释": "someone whose job is to collect and deliver letters"
+    },
+    "businessman": {
+        "中释": "商人",
+        "英释": "a man who works in business"
+    },
+    "fisherman": {
+        "中释": "渔民",
+        "英释": "someone who catches fish as a sport or as a job"
+    },
+    "scientist": {
+        "中释": "科学家",
+        "英释": "someone who works or is trained in science"
+    },
+    "pilot": {
+        "中释": "飞行员",
+        "英释": "someone who operates the controls of an aircraft or spacecraft"
+    },
+    "coach": {
+        "中释": "教练",
+        "英释": "someone who trains a person or team in a sport"
+    },
+    "country": {
+        "中释": "国家",
+        "英释": "an area of land that is controlled by its own government, president, king etc"
+    },
+    "sea": {
+        "中释": "大海",
+        "英释": "the large area of salty water that covers much of the Earth’s surface"
+    },
+    "stay": {
+        "中释": "保持",
+        "英释": "to continue to be in a particular position, place, or state, without changing"
+    },
+    "university": {
+        "中释": "大学",
+        "英释": "an educational institution at the highest level, where you study for a degree"
+    },
+    "gym": {
+        "中释": "体育馆",
+        "英释": "a special building or room that has equipment for doing physical exercise"
+    },
+    "if": {
+        "中释": "如果",
+        "英释": "used when talking about something that might happen or be true, or might have happened"
+    },
+    "reporter": {
+        "中释": "记者",
+        "英释": "someone whose job is to write about news events for a newspaper, or to tell people about them on television or on the radio"
+    },
+    "use": {
+        "中释": "使用",
+        "英释": "if you use a particular tool, method, service, ability etc, you do something with that tool, by means of that method etc, for a particular purpose"
+    },
+    "type": {
+        "中释": "打字",
+        "英释": "printed letters"
+    },
+    "quickly": {
+        "中释": "迅速地",
+        "英释": "fast"
+    },
+    "secretary": {
+        "中释": "秘书",
+        "英释": "someone who works in an office  typing  letters, keeping records, answering telephone calls, arranging meetings etc"
+    },
+    "angry": {
+        "中释": "生气的",
+        "英释": "feeling strong emotions which make you want to shout at someone or hurt them because they have behaved in an unfair, cruel, offensive etc way, or because you think that a situation is unfair, unacceptable etc"
+    },
+    "afraid": {
+        "中释": "害怕",
+        "英释": "frightened because you think that you may get hurt or that something bad may happen"
+    },
+    "sad": {
+        "中释": "难过的",
+        "英释": "not happy, especially because something unpleasant has happened"
+    },
+    "worried": {
+        "中释": "担心的",
+        "英释": "unhappy because you keep thinking about a problem, or about something bad that might happen"
+    },
+    "happy": {
+        "中释": "高兴的",
+        "英释": "having feelings of pleasure, for example because something good has happened to you or you are very satisfied with your life"
+    },
+    "deep": {
+        "中释": "深的",
+        "英释": "going far in from the outside or from the front edge of something"
+    },
+    "breath": {
+        "中释": "呼吸",
+        "英释": "to start breathing normally again after running or making a lot of effort"
+    },
+    "count": {
+        "中释": "数数",
+        "英释": "to calculate the total number of things or people in a group"
+    },
+    "chase": {
+        "中释": "追赶",
+        "英释": "to quickly follow someone or something in order to catch them"
+    },
+    "mice": {
+        "中释": "老鼠"
+    },
+    "bad": {
+        "中释": "邪恶的",
+        "英释": "Something that is bad is unpleasant, harmful, or undesirable"
+    },
+    "hurt": {
+        "中释": "受伤",
+        "英释": "to injure yourself or someone else"
+    },
+    "ill": {
+        "中释": "有病",
+        "英释": "suffering from a disease or not feeling well"
+    },
+    "wrong": {
+        "中释": "有毛病",
+        "英释": "used to describe a situation where there are problems, or when someone is ill or unhappy"
+    },
+    "feel": {
+        "中释": "觉得",
+        "英释": "to experience a particular physical feeling or emotion"
+    },
+    "well": {
+        "中释": "健康",
+        "英释": "if someone who has been ill is doing well, they are becoming healthy again"
+    },
+    "sit": {
+        "中释": "坐",
+        "英释": "to be in a particular position or condition"
+    },
+    "grass": {
+        "中释": "草坪",
+        "英释": "an area of grass, especially an area where the grass is kept cut short"
+    },
+    "ant": {
+        "中释": "蚂蚁",
+        "英释": "a small insect that lives in large groups"
+    },
+    "worry": {
+        "中释": "担心",
+        "英释": "to be anxious or unhappy about someone or something, so that you think about them a lot"
+    },
+    "stuck": {
+        "中释": "陷住",
+        "英释": "impossible or unable to move from a particular position"
+    },
+    "mud": {
+        "中释": "泥",
+        "英释": "wet earth that has become soft and sticky"
+    },
+    "pull": {
+        "中释": "拉",
+        "英释": "to use your hands to make something or someone move towards you or in the direction that your hands are moving"
+    },
+    "everyone": {
+        "中释": "每人",
+        "英释": "every person"
+    },
+    "younger": {
+        "中释": "更年轻的"
+    },
+    "older": {
+        "中释": "更年长的"
+    },
+    "taller": {
+        "中释": "更高的"
+    },
+    "shorter": {
+        "中释": "更矮的"
+    },
+    "longer": {
+        "中释": "更长的"
+    },
+    "thinner": {
+        "中释": "更瘦的"
+    },
+    "heavier": {
+        "中释": "更重的"
+    },
+    "bigger": {
+        "中释": "更大的"
+    },
+    "smaller": {
+        "中释": "更小的"
+    },
+    "stronger": {
+        "中释": "更强壮的"
+    },
+    "dinosaur": {
+        "中释": "恐龙",
+        "英释": "one of a group of  reptile s  that lived millions of years ago"
+    },
+    "hall": {
+        "中释": "大厅",
+        "英释": "the area just inside the door of a house or other building, that leads to other rooms"
+    },
+    "metre": {
+        "中释": "米",
+        "英释": "the basic unit for measuring length in the  metric system"
+    },
+    "meter": {
+        "中释": "米"
+    },
+    "than": {
+        "中释": "比",
+        "英释": "used when comparing two things, people, situations etc"
+    },
+    "both": {
+        "中释": "两个都",
+        "英释": "used to talk about two people, things etc together, and emphasize that each is included"
+    },
+    "kilogram": {
+        "中释": "千克",
+        "英释": "a unit for measuring weight, equal to 1,000 grams"
+    },
+    "countryside": {
+        "中释": "乡村",
+        "英释": "land that is outside cities and towns"
+    },
+    "lower": {
+        "中释": "更低地",
+        "英释": "If you say that you would not lower yourself by doing something, you mean that you would not behave in a way that would make you or other people respect you less"
+    },
+    "shadow": {
+        "中释": "影子",
+        "英释": "the dark shape that someone or something makes on a surface when they are between that surface and the light"
+    },
+    "smarter": {
+        "中释": "更聪明的"
+    },
+    "become": {
+        "中释": "变成",
+        "英释": "to start to have a feeling or quality, or to start to develop into something"
+    },
+    "cleaned": {
+        "中释": "打扫",
+        "英释": "If you clean a room or house, you make the inside of it and the furniture in it free from dirt and dust"
+    },
+    "stayed": {
+        "中释": "待"
+    },
+    "washed": {
+        "中释": "洗",
+        "英释": "If you wash something, you clean it using water and usually a substance such as soap or detergent"
+    },
+    "watched": {
+        "中释": "看",
+        "英释": "If you watch someone or something, you look at them, usually for a period of time, and pay attention to what is happening"
+    },
+    "had": {
+        "中释": "得病（例如 had a cold 得了感冒）"
+    },
+    "slept": {
+        "中释": "睡觉"
+    },
+    "saw": {
+        "中释": "看"
+    },
+    "yesterday": {
+        "中释": "昨天",
+        "英释": "on or during the day before today"
+    },
+    "before": {
+        "中释": "在⋯⋯之前",
+        "英释": "earlier than a particular event or action"
+    },
+    "drank": {
+        "中释": "喝"
+    },
+    "magazine": {
+        "中释": "杂志",
+        "英释": "a large thin book with a paper cover that contains news stories, articles, photographs etc, and is sold weekly or monthly"
+    },
+    "better": {
+        "中释": "更好的",
+        "英释": "more useful, interesting, satisfactory, effective, suitable etc"
+    },
+    "faster": {
+        "中释": "更快的"
+    },
+    "hotel": {
+        "中释": "旅馆",
+        "英释": "a building where people pay to stay and eat meals"
+    },
+    "fixed": {
+        "中释": "修理"
+    },
+    "broken": {
+        "中释": "破损的",
+        "英释": "in small pieces because it has been hit, dropped etc"
+    },
+    "lamp": {
+        "中释": "台灯",
+        "英释": "an object that produces light by using electricity, oil, or gas"
+    },
+    "loud": {
+        "中释": "大声的",
+        "英释": "making a lot of noise"
+    },
+    "enjoy": {
+        "中释": "享受⋯⋯的乐趣",
+        "英释": "to get pleasure from something"
+    },
+    "went": {
+        "中释": "去"
+    },
+    "camp": {
+        "中释": "野营",
+        "英释": "a place where people stay in tents, shelters etc for a short time, usually in the mountains, a forest etc"
+    },
+    "rode": {
+        "中释": "骑"
+    },
+    "ate": {
+        "中释": "吃"
+    },
+    "took": {
+        "中释": "拍照"
+    },
+    "bought": {
+        "中释": "买"
+    },
+    "gift": {
+        "中释": "礼物",
+        "英释": "something that you give someone, for example to thank them or because you like them, especially on a special occasion"
+    },
+    "fell": {
+        "中释": "摔倒"
+    },
+    "off": {
+        "中释": "落下",
+        "英释": "out of a bus, train, plane etc"
+    },
+    "mule": {
+        "中释": "骡子",
+        "英释": "an animal that has a  donkey  and a horse as parents"
+    },
+    "turpan": {
+        "中释": "吐鲁番"
+    },
+    "could": {
+        "中释": "能",
+        "英释": "used as the past tense of ‘can’ to say what someone was able to do or was allowed to do in the past"
+    },
+    "till": {
+        "中释": "直到",
+        "英释": "until"
+    },
+    "beach": {
+        "中释": "沙滩",
+        "英释": "an area of sand or small stones at the edge of the sea or a lake"
+    },
+    "basket": {
+        "中释": "篮子",
+        "英释": "a container made of thin pieces of plastic, wire, or wood woven together, used to carry things or put things in"
+    },
+    "part": {
+        "中释": "角色",
+        "英释": "the words and actions of a particular character in a play or film"
+    },
+    "licked": {
+        "中释": "舔",
+        "英释": "When people or animals lick something, they move their tongue across its surface"
+    },
+    "laughed": {
+        "中释": "笑",
+        "英释": "When you laugh, you make a sound with your throat while smiling and show that you are happy or amused. People also sometimes laugh when they feel nervous or are being unfriendly."
+    },
+    "ago": {
+        "中释": "以前",
+        "英释": "used to show how far back in the past something happened"
+    },
+    "cycling": {
+        "中释": "骑自行车运动",
+        "英释": "the activity of riding a bicycle"
+    },
+    "badminton": {
+        "中释": "羽毛球运动",
+        "英释": "a game that is similar to tennis but played with a  shuttlecock (=  small feathered object  )  instead of a ball"
+    },
+    "star": {
+        "中释": "星",
+        "英释": "a large ball of burning gas in space that can be seen at night as a point of light in the sky"
+    },
+    "easy": {
+        "中释": "容易的",
+        "英释": "not difficult to do, and not needing much effort"
+    },
+    "internet": {
+        "中释": "互联网",
+        "英释": "The Internet is the network that allows computer users to connect with computers all over the world, and that carries e-mail"
+    },
+    "different": {
+        "中释": "不同的",
+        "英释": "not like something or someone else, or not like before"
+    },
+    "active": {
+        "中释": "活跃的",
+        "英释": "always busy doing things, especially physical or mental activities"
+    },
+    "race": {
+        "中释": "赛跑",
+        "英释": "a competition in which people or animals compete to run, drive etc fastest and finish first"
+    },
+    "nothing": {
+        "中释": "没有什么",
+        "英释": "not anything or no thing"
+    },
+    "thought": {
+        "中释": "想",
+        "英释": "something that you think of, remember, or realize"
+    },
+    "felt": {
+        "中释": "感觉"
+    },
+    "cheetah": {
+        "中释": "猎豹",
+        "英释": "a member of the cat family that has long legs and black spots on its fur, and can run extremely fast"
+    },
+    "woke": {
+        "中释": "醒"
+    },
+    "dream": {
+        "中释": "梦",
+        "英释": "a series of thoughts, images, and feelings that you experience when you are asleep"
+    },
+    "straight": {
+        "中释": "笔直的",
+        "英释": "in a line or direction that is not curved or bent"
+    },
+    "ask": {
+        "中释": "问",
+        "英释": "to speak or write to someone in order to get an answer, information, or a solution"
+    },
+    "sir": {
+        "中释": "先生",
+        "英释": "used when speaking to a man in order to be polite or show respect"
+    },
+    "interesting": {
+        "中释": "有趣的",
+        "英释": "if something is interesting, you give it your attention because it seems unusual or exciting or provides information that you did not know about"
+    },
+    "italian": {
+        "中释": "意大利的",
+        "英释": "relating to Italy, its people, or its language"
+    },
+    "restaurant": {
+        "中释": "餐馆",
+        "英释": "a place where you can buy and eat a meal"
+    },
+    "pizza": {
+        "中释": "比萨饼",
+        "英释": "A pizza is a flat, round piece of dough covered with tomatoes, cheese, and other toppings, and then baked in an oven"
+    },
+    "street": {
+        "中释": "大街",
+        "英释": "a public road in a city or town that has houses, shops etc on one or both sides"
+    },
+    "get": {
+        "中释": "到达",
+        "英释": "to receive something that someone gives you or sends you"
+    },
+    "gps": {
+        "中释": "全球（卫星）",
+        "英释": "a system that uses radio signals from  satellites  to show your exact position on the Earth on a special piece of equipment"
+    },
+    "gave": {
+        "中释": "提供"
+    },
+    "feature": {
+        "中释": "特点",
+        "英释": "a part of something that you notice because it seems important, interesting, or typical"
+    },
+    "follow": {
+        "中释": "跟着",
+        "英释": "to go, walk, drive etc behind or after someone else"
+    },
+    "far": {
+        "中释": "较远的",
+        "英释": "used to talk about how much progress someone makes, or how much effect something has"
+    },
+    "tell": {
+        "中释": "告诉",
+        "英释": "if someone tells you something, they communicate information, a story, their feelings etc to you"
+    }
+}
